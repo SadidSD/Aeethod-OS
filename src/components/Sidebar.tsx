@@ -22,6 +22,7 @@ import {
   Clapperboard,
   Cpu,
   Palette,
+  PenTool,
 } from 'lucide-react';
 
 
@@ -124,6 +125,14 @@ export const Sidebar: React.FC = () => {
             title="Game Theory War Room"
           >
             <span className="text-sm">♟️</span>
+          </a>
+
+          <a
+            href="#/whiteboard"
+            className="w-8 h-8 rounded-md hover:bg-[#2c2c2c] flex items-center justify-center text-[#9b9b9b] hover:text-white transition"
+            title="Miro Whiteboard Canvas"
+          >
+            <PenTool className="w-4 h-4 text-amber-400" />
           </a>
 
           <a
@@ -324,6 +333,17 @@ export const Sidebar: React.FC = () => {
                 >
                   <Palette className="w-3.5 h-3.5 text-purple-400" />
                   <span className="font-semibold text-white">UI & UX Design Studio</span>
+                </a>
+                <a
+                  href="#/whiteboard"
+                  className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs transition ${
+                    currentPath === 'whiteboard'
+                      ? 'bg-[#2c2c2c] text-white font-medium'
+                      : 'text-[#9b9b9b] hover:text-white hover:bg-[#282828]'
+                  }`}
+                >
+                  <PenTool className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="font-semibold text-amber-300">Whiteboard (Miro Canvas)</span>
                 </a>
                 <a
                   href="#/dev/board"

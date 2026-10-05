@@ -22,6 +22,7 @@ import { GameTheoryView } from './views/GameTheoryView';
 import { ContentManagementView } from './views/ContentManagementView';
 import { DevArchitectureTrackerView } from './views/DevArchitectureTrackerView';
 import { UiUxStudioView } from './views/UiUxStudioView';
+import { WhiteboardView } from './views/WhiteboardView';
 
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 
@@ -161,7 +162,10 @@ export const App: React.FC = () => {
       case 'vibe':
       case 'plan':
         return <DevArchitectureTrackerView />;
-
+      case 'whiteboard':
+      case 'miro':
+      case 'board-canvas':
+        return <WhiteboardView />;
 
       case 'metrics':
         return <SaaSMetricsView />;
