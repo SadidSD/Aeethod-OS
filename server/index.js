@@ -16,7 +16,20 @@ const BACKUP_DIR = path.join(DATA_DIR, 'backups');
 const DIST_DIR = path.join(ROOT, 'dist');
 const PORT = Number(process.env.API_PORT || 4317);
 
-const COLLECTIONS = ['topics', 'tasks', 'docs', 'fields', 'metrics', 'sprints', 'epics', 'content_videos', 'saas_products', 'dev_items', 'ui_ux_items'];
+const COLLECTIONS = [
+  'topics',
+  'tasks',
+  'docs',
+  'fields',
+  'metrics',
+  'sprints',
+  'epics',
+  'content_videos',
+  'saas_products',
+  'dev_items',
+  'ui_ux_items',
+  'whiteboard_elements',
+];
 
 // ---------- persistence ----------
 function writeNow(data) {
@@ -142,6 +155,24 @@ app.patch('/api/settings', (req, res) => {
   db.settings = { ...db.settings, ...req.body };
   persist();
   res.json(db.settings);
+});
+
+// Dedicated Whiteboard batch sync endpoints
+app.get('/api/whiteboard', (_req, res) => {
+  if (!Array.isArray(db.whiteboard_elements)) {
+    db.whiteboard_elements = [];
+  }
+  res.json({ elements: db.whiteboard_elements });
+});
+
+app.put('/api/whiteboard', (req, res) => {
+  const incoming = req.body?.elements;
+  if (!Array.isArray(incoming)) {
+    return res.status(400).json({ error: 'Expected { elements: [...] }' });
+  }
+  db.whiteboard_elements = incoming;
+  persist();
+  res.json({ ok: true, count: incoming.length });
 });
 
 app.post('/api/:col', validCol, (req, res) => {

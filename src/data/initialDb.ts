@@ -3757,6 +3757,7 @@ export const INITIAL_DB: DB = {
       ],
       "screensCount": 4
     }
-  ]
+  ],
+  "whiteboard_elements": []
 };
 

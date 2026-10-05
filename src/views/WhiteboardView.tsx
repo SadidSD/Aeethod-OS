@@ -27,8 +27,12 @@ import {
   ChevronDown,
   LayoutGrid,
   Share2,
-  Check
+  Check,
+  Cloud,
+  CheckCircle2,
+  Loader2
 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 export type ToolType =
   | 'select'
@@ -357,14 +361,96 @@ export const WhiteboardView: React.FC = () => {
   // Dropdowns / UI
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [copiedLinkFeedback, setCopiedLinkFeedback] = useState(false);
+  const [dbSyncStatus, setDbSyncStatus] = useState<'synced' | 'saving' | 'offline'>('synced');
+  const [lastSavedTime, setLastSavedTime] = useState<string>('Just now');
+  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Auto-save
+  // 1. Initial Load from Backend Database (and migrate existing localStorage drawings to DB)
   useEffect(() => {
+    let isMounted = true;
+    async function loadFromDb() {
+      try {
+        const res = await fetch('/api/whiteboard');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.elements) && data.elements.length > 0) {
+            if (isMounted) {
+              setElements(data.elements);
+              localStorage.setItem('aeethod_advanced_whiteboard_v3', JSON.stringify(data.elements));
+              setDbSyncStatus('synced');
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Backend DB not reachable, using local copy:', err);
+      }
+
+      // If DB was empty or not populated yet, immediately sync the existing local drawings to DB!
+      try {
+        const currentSaved = localStorage.getItem('aeethod_advanced_whiteboard_v3');
+        const toSave = currentSaved ? JSON.parse(currentSaved) : INITIAL_BOARD;
+        await fetch('/api/whiteboard', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ elements: toSave }),
+        });
+        if (isMounted) setDbSyncStatus('synced');
+      } catch (err) {
+        console.warn('Could not push initial seed to DB:', err);
+      }
+    }
+
+    loadFromDb();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // 2. Auto-save after every drawing, move, or text edit (Debounced 500ms to database & localStorage)
+  useEffect(() => {
+    // Save to localStorage immediately
     try {
       localStorage.setItem('aeethod_advanced_whiteboard_v3', JSON.stringify(elements));
     } catch (e) {
       console.error(e);
     }
+
+    // Debounced automatic background sync to database
+    setDbSyncStatus('saving');
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+
+    syncTimeoutRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/whiteboard', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ elements }),
+        });
+
+        // Also sync to Supabase if table exists
+        try {
+          await supabase
+            .from('whiteboard_elements')
+            .upsert({ id: 'current_board', data: elements, updatedAt: new Date().toISOString() });
+        } catch {}
+
+        if (res.ok) {
+          setDbSyncStatus('synced');
+          setLastSavedTime(
+            new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+          );
+        } else {
+          setDbSyncStatus('offline');
+        }
+      } catch (err) {
+        setDbSyncStatus('offline');
+      }
+    }, 500);
+
+    return () => {
+      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+    };
   }, [elements]);
 
   const pushHistory = useCallback(
@@ -1714,6 +1800,26 @@ export const WhiteboardView: React.FC = () => {
           >
             <Maximize2 className="w-3.5 h-3.5" />
           </button>
+        </div>
+
+        {/* Live Database Sync Indicator */}
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/80 text-xs text-slate-600">
+          {dbSyncStatus === 'saving' ? (
+            <>
+              <Loader2 className="w-3.5 h-3.5 text-indigo-600 animate-spin" />
+              <span className="text-[11px] font-medium text-indigo-600">Saving to DB...</span>
+            </>
+          ) : dbSyncStatus === 'synced' ? (
+            <>
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="text-[11px] font-medium text-slate-700">Saved to DB</span>
+            </>
+          ) : (
+            <>
+              <Cloud className="w-3.5 h-3.5 text-amber-500" />
+              <span className="text-[11px] font-medium text-amber-700">Offline (Local)</span>
+            </>
+          )}
         </div>
 
         {/* Share & Export */}

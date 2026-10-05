@@ -131,6 +131,7 @@ export interface Collections {
   saas_products: SaaSProductPillar;
   dev_items: DevWorkItem;
   ui_ux_items: UiUxItem;
+  whiteboard_elements: Record<string, unknown>;
 }
 
 export type Col = keyof Collections;

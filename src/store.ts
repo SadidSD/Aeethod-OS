@@ -169,7 +169,20 @@ export const useStore = create<State>((set, get) => ({
   theme: typeof window !== 'undefined' ? ((localStorage.getItem('notion_theme') as 'dark' | 'light') || 'dark') : 'dark',
 
   load: async () => {
-    const collections: Col[] = ['topics', 'tasks', 'docs', 'fields', 'metrics', 'sprints', 'epics', 'content_videos', 'saas_products', 'dev_items', 'ui_ux_items'];
+    const collections: Col[] = [
+      'topics',
+      'tasks',
+      'docs',
+      'fields',
+      'metrics',
+      'sprints',
+      'epics',
+      'content_videos',
+      'saas_products',
+      'dev_items',
+      'ui_ux_items',
+      'whiteboard_elements',
+    ];
     const supabaseResults: Partial<Record<Col, any[]>> = {};
 
     let hasSupabaseData = false;
