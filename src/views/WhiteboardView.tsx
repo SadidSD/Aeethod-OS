@@ -30,7 +30,8 @@ import {
   Check,
   Cloud,
   CheckCircle2,
-  Loader2
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -364,51 +365,202 @@ export const WhiteboardView: React.FC = () => {
   const [dbSyncStatus, setDbSyncStatus] = useState<'synced' | 'saving' | 'offline'>('synced');
   const [lastSavedTime, setLastSavedTime] = useState<string>('Just now');
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isInitialLoadedRef = useRef<boolean>(false);
+  const lastCloudUpdatedAtRef = useRef<string | null>(null);
 
-  // 1. Initial Load from Backend Database (and migrate existing localStorage drawings to DB)
-  useEffect(() => {
-    let isMounted = true;
-    async function loadFromDb() {
-      try {
-        const res = await fetch('/api/whiteboard');
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data.elements) && data.elements.length > 0) {
-            if (isMounted) {
-              setElements(data.elements);
-              localStorage.setItem('aeethod_advanced_whiteboard_v3', JSON.stringify(data.elements));
-              setDbSyncStatus('synced');
-              return;
-            }
-          }
-        }
-      } catch (err) {
-        console.warn('Backend DB not reachable, using local copy:', err);
-      }
+  // Helper: check if elements array is untouched INITIAL_BOARD template
+  const isDefaultBoard = (els: CanvasElement[]): boolean => {
+    if (!els || els.length !== INITIAL_BOARD.length) return false;
+    return els.every((el, idx) => el.id === INITIAL_BOARD[idx]?.id);
+  };
 
-      // If DB was empty or not populated yet, immediately sync the existing local drawings to DB!
+  // Cloud Save Function (persists to Supabase docs table and local endpoints)
+  const saveToCloudDb = useCallback(async (els: CanvasElement[], isBackground = true) => {
+    if (!isBackground) setDbSyncStatus('saving');
+    try {
+      const nowIso = new Date().toISOString();
+      lastCloudUpdatedAtRef.current = nowIso;
+
+      // 1. Primary: Upsert to Supabase 'docs' table
+      const { error: sbErr } = await supabase.from('docs').upsert({
+        id: 'whiteboard_state',
+        topicId: 'strategy',
+        title: 'Whiteboard Canvas State',
+        content: JSON.stringify(els),
+        updatedAt: nowIso,
+      });
+
+      // 2. Secondary: Send to local Express backend if available (dev mode)
       try {
-        const currentSaved = localStorage.getItem('aeethod_advanced_whiteboard_v3');
-        const toSave = currentSaved ? JSON.parse(currentSaved) : INITIAL_BOARD;
         await fetch('/api/whiteboard', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ elements: toSave }),
+          body: JSON.stringify({ elements: els }),
         });
-        if (isMounted) setDbSyncStatus('synced');
+      } catch {}
+
+      if (!sbErr) {
+        setDbSyncStatus('synced');
+        setLastSavedTime(
+          new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        );
+        try {
+          localStorage.setItem('aeethod_whiteboard_updated_at', nowIso);
+        } catch {}
+      } else {
+        console.warn('[Supabase save error]:', sbErr.message);
+        setDbSyncStatus('offline');
+      }
+    } catch (err) {
+      console.warn('[Cloud save error]:', err);
+      setDbSyncStatus('offline');
+    }
+  }, []);
+
+  // Manual Reload from Cloud
+  const reloadFromCloudDb = useCallback(async () => {
+    setDbSyncStatus('saving');
+    try {
+      const { data, error } = await supabase
+        .from('docs')
+        .select('content, updatedAt')
+        .eq('id', 'whiteboard_state')
+        .single();
+      if (!error && data?.content) {
+        const parsed = JSON.parse(data.content);
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]?.type) {
+          setElements(parsed);
+          setHistory([parsed]);
+          setHistoryIndex(0);
+          setSelectedIds(new Set());
+          localStorage.setItem('aeethod_advanced_whiteboard_v3', JSON.stringify(parsed));
+          if (data.updatedAt) localStorage.setItem('aeethod_whiteboard_updated_at', data.updatedAt);
+          setDbSyncStatus('synced');
+          setLastSavedTime(
+            new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+          );
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Reload error:', err);
+    }
+    setDbSyncStatus('synced');
+  }, []);
+
+  // 1. Initial Load from Supabase Database (or migrate existing local browser drawings)
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadFromDb() {
+      setDbSyncStatus('saving');
+      let cloudElements: CanvasElement[] | null = null;
+      let cloudUpdatedAt: string | null = null;
+
+      // 1. Fetch from Supabase docs table
+      try {
+        const { data, error } = await supabase
+          .from('docs')
+          .select('content, updatedAt')
+          .eq('id', 'whiteboard_state')
+          .single();
+
+        if (!error && data && data.content) {
+          try {
+            const parsed = JSON.parse(data.content);
+            if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]?.type) {
+              cloudElements = parsed;
+              cloudUpdatedAt = data.updatedAt || null;
+            }
+          } catch {}
+        }
       } catch (err) {
-        console.warn('Could not push initial seed to DB:', err);
+        console.warn('Error fetching whiteboard from Supabase:', err);
+      }
+
+      // Check existing drawings in localStorage
+      let localElements: CanvasElement[] | null = null;
+      let localUpdatedAt: string | null = null;
+      try {
+        const saved = localStorage.getItem('aeethod_advanced_whiteboard_v3');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]?.type) {
+            localElements = parsed;
+          }
+        }
+        localUpdatedAt = localStorage.getItem('aeethod_whiteboard_updated_at');
+      } catch {}
+
+      // Decision logic:
+      // Case A: Cloud has saved elements
+      if (cloudElements) {
+        const isLocalNewer =
+          localElements &&
+          localUpdatedAt &&
+          cloudUpdatedAt &&
+          new Date(localUpdatedAt).getTime() > new Date(cloudUpdatedAt).getTime();
+
+        const localHasCustomWork = localElements && !isDefaultBoard(localElements);
+
+        if ((isLocalNewer || (!cloudUpdatedAt && localHasCustomWork)) && localElements) {
+          // Local has newer custom drawings: keep local and sync to cloud
+          if (isMounted) {
+            setElements(localElements);
+            lastCloudUpdatedAtRef.current = localUpdatedAt;
+            isInitialLoadedRef.current = true;
+            await saveToCloudDb(localElements, false);
+          }
+        } else {
+          // Cloud is authoritative (e.g. Incognito session, or cloud is newer)
+          if (isMounted) {
+            setElements(cloudElements);
+            lastCloudUpdatedAtRef.current = cloudUpdatedAt;
+            try {
+              localStorage.setItem('aeethod_advanced_whiteboard_v3', JSON.stringify(cloudElements));
+              if (cloudUpdatedAt) {
+                localStorage.setItem('aeethod_whiteboard_updated_at', cloudUpdatedAt);
+              }
+            } catch {}
+            setDbSyncStatus('synced');
+            setLastSavedTime('Synced from Cloud');
+            isInitialLoadedRef.current = true;
+          }
+        }
+        return;
+      }
+
+      // Case B: Cloud had no valid elements yet, but local browser has user drawings!
+      if (localElements) {
+        if (isMounted) {
+          setElements(localElements);
+          isInitialLoadedRef.current = true;
+          // Immediately save the local drawings to Supabase cloud!
+          await saveToCloudDb(localElements, false);
+        }
+        return;
+      }
+
+      // Case C: Brand new clean board (e.g. first run everywhere)
+      if (isMounted) {
+        setElements(INITIAL_BOARD);
+        isInitialLoadedRef.current = true;
+        await saveToCloudDb(INITIAL_BOARD, false);
       }
     }
 
     loadFromDb();
+
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [saveToCloudDb]);
 
-  // 2. Auto-save after every drawing, move, or text edit (Debounced 500ms to database & localStorage)
+  // 2. Auto-save after every drawing, stroke, move, resize, or text edit (debounced 400ms)
   useEffect(() => {
+    // Prevent auto-saving until initial load is complete to avoid race conditions
+    if (!isInitialLoadedRef.current) return;
+
     // Save to localStorage immediately
     try {
       localStorage.setItem('aeethod_advanced_whiteboard_v3', JSON.stringify(elements));
@@ -416,42 +568,17 @@ export const WhiteboardView: React.FC = () => {
       console.error(e);
     }
 
-    // Debounced automatic background sync to database
     setDbSyncStatus('saving');
     if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
 
-    syncTimeoutRef.current = setTimeout(async () => {
-      try {
-        const res = await fetch('/api/whiteboard', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ elements }),
-        });
-
-        // Also sync to Supabase if table exists
-        try {
-          await supabase
-            .from('whiteboard_elements')
-            .upsert({ id: 'current_board', data: elements, updatedAt: new Date().toISOString() });
-        } catch {}
-
-        if (res.ok) {
-          setDbSyncStatus('synced');
-          setLastSavedTime(
-            new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-          );
-        } else {
-          setDbSyncStatus('offline');
-        }
-      } catch (err) {
-        setDbSyncStatus('offline');
-      }
-    }, 500);
+    syncTimeoutRef.current = setTimeout(() => {
+      saveToCloudDb(elements, false);
+    }, 400);
 
     return () => {
       if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
     };
-  }, [elements]);
+  }, [elements, saveToCloudDb]);
 
   const pushHistory = useCallback(
     (newElements: CanvasElement[]) => {
@@ -1807,19 +1934,34 @@ export const WhiteboardView: React.FC = () => {
           {dbSyncStatus === 'saving' ? (
             <>
               <Loader2 className="w-3.5 h-3.5 text-indigo-600 animate-spin" />
-              <span className="text-[11px] font-medium text-indigo-600">Saving to DB...</span>
+              <span className="text-[11px] font-medium text-indigo-600">Saving to Cloud DB...</span>
             </>
           ) : dbSyncStatus === 'synced' ? (
             <>
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="text-[11px] font-medium text-slate-700">Saved to DB</span>
+              <div className="flex items-center gap-1">
+                <span className="text-[11px] font-medium text-slate-700">Saved to Cloud DB</span>
+                <span className="text-[9px] text-slate-400 font-mono">({lastSavedTime})</span>
+              </div>
             </>
           ) : (
-            <>
+            <button
+              onClick={() => saveToCloudDb(elements, false)}
+              className="flex items-center gap-1 text-[11px] font-medium text-amber-700 hover:text-amber-900 transition"
+              title="Click to retry saving to Supabase cloud database"
+            >
               <Cloud className="w-3.5 h-3.5 text-amber-500" />
-              <span className="text-[11px] font-medium text-amber-700">Offline (Local)</span>
-            </>
+              <span>Retry Cloud Save</span>
+            </button>
           )}
+
+          <button
+            onClick={() => reloadFromCloudDb()}
+            className="p-1 rounded text-slate-400 hover:text-indigo-600 hover:bg-slate-200/60 transition ml-0.5"
+            title="Reload latest state from Supabase Cloud DB"
+          >
+            <RefreshCw className="w-3 h-3" />
+          </button>
         </div>
 
         {/* Share & Export */}
