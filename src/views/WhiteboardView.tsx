@@ -913,12 +913,34 @@ export const WhiteboardView: React.FC = () => {
         const tox = el.x + (el.width || 100);
         const toy = el.y + (el.height || 0);
         if (
-          x >= Math.min(el.x, tox) - 8 &&
-          x <= Math.max(el.x, tox) + 8 &&
-          y >= Math.min(el.y, toy) - 8 &&
-          y <= Math.max(el.y, toy) + 8
+          x >= Math.min(el.x, tox) - 10 &&
+          x <= Math.max(el.x, tox) + 10 &&
+          y >= Math.min(el.y, toy) - 10 &&
+          y <= Math.max(el.y, toy) + 10
         )
           return el;
+      } else if ((el.type === 'path' || el.type === 'highlighter') && el.points && el.points.length > 0) {
+        // Point-to-stroke distance hit testing
+        const threshold = (el.type === 'highlighter' ? el.strokeWidth * 4 : Math.max(el.strokeWidth, 8)) + 6;
+        for (let j = 0; j < el.points.length - 1; j++) {
+          const p1 = el.points[j];
+          const p2 = el.points[j + 1];
+
+          // Distance from (x, y) to line segment (p1 -> p2)
+          const l2 = Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2);
+          let dist = 0;
+          if (l2 === 0) {
+            dist = Math.hypot(x - p1.x, y - p1.y);
+          } else {
+            const t = Math.max(0, Math.min(1, ((x - p1.x) * (p2.x - p1.x) + (y - p1.y) * (p2.y - p1.y)) / l2));
+            const projX = p1.x + t * (p2.x - p1.x);
+            const projY = p1.y + t * (p2.y - p1.y);
+            dist = Math.hypot(x - projX, y - projY);
+          }
+          if (dist <= threshold) {
+            return el;
+          }
+        }
       }
     }
     return null;
@@ -1006,6 +1028,7 @@ export const WhiteboardView: React.FC = () => {
       setIsDrawing(true);
       setCurrentStroke([{ x, y }]);
     } else if (tool === 'eraser') {
+      setIsDrawing(true);
       const clicked = getElementAt(x, y);
       if (clicked) {
         const next = elements.filter((el) => el.id !== clicked.id);
@@ -1153,7 +1176,16 @@ export const WhiteboardView: React.FC = () => {
       return;
     }
 
-    // 5. Drawing pen or shapes
+    // 5. Drag-to-Erase continuous brush erasing
+    if (tool === 'eraser' && isDrawing) {
+      const clicked = getElementAt(x, y);
+      if (clicked) {
+        setElements((prev) => prev.filter((el) => el.id !== clicked.id));
+      }
+      return;
+    }
+
+    // 6. Drawing pen or shapes
     if ((tool === 'pen' || tool === 'highlighter') && isDrawing) {
       setCurrentStroke((prev) => [...prev, { x, y }]);
     } else if (shapeStart && isDrawing) {
@@ -1238,6 +1270,12 @@ export const WhiteboardView: React.FC = () => {
 
     if (selectionBox) {
       setSelectionBox(null);
+      return;
+    }
+
+    if (tool === 'eraser' && isDrawing) {
+      setIsDrawing(false);
+      pushHistory(elements);
       return;
     }
 
