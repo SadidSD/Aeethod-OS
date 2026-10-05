@@ -20,7 +20,9 @@ import {
   Sun,
   Moon,
   Clapperboard,
+  Cpu,
 } from 'lucide-react';
+
 import { useDb, useStore } from '../store';
 import { emojiForTopic, CATEGORY_ORDER } from '../lib/constants';
 import { useRoute, href } from '../lib/router';
@@ -300,6 +302,17 @@ export const Sidebar: React.FC = () => {
             {devOpen && (
               <div className="space-y-0.5 pl-2 pt-0.5 border-l border-[#2e2e2e] ml-2.5">
                 <a
+                  href="#/dev/architecture"
+                  className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs transition ${
+                    currentPath === 'dev' && (currentSub === 'architecture' || currentSub === 'stack' || currentSub === 'plan')
+                      ? 'bg-[#2c2c2c] text-white font-medium'
+                      : 'text-[#9b9b9b] hover:text-white hover:bg-[#282828]'
+                  }`}
+                >
+                  <Cpu className="w-3.5 h-3.5 text-cyan-400" />
+                  <span className="font-semibold text-white">Full-Stack Architecture & Plan</span>
+                </a>
+                <a
                   href="#/dev/board"
                   className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs transition ${
                     currentPath === 'dev' && (currentSub === 'board' || !currentSub)
@@ -307,9 +320,10 @@ export const Sidebar: React.FC = () => {
                       : 'text-[#9b9b9b] hover:text-white hover:bg-[#282828]'
                   }`}
                 >
-                  <KanbanSquare className="w-3.5 h-3.5 text-cyan-400" />
+                  <KanbanSquare className="w-3.5 h-3.5 text-indigo-400" />
                   <span>Sprint Kanban Board</span>
                 </a>
+
                 <a
                   href="#/dev/sprints"
                   className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs transition ${
