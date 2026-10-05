@@ -268,6 +268,10 @@ export const Sidebar: React.FC = () => {
                 } else if (favId === 'game-theory') {
                   name = 'Game Theory War Room';
                   emoji = '♟️';
+                } else if (favId === 'whiteboard') {
+                  name = 'Whiteboard (Miro Canvas)';
+                  emoji = '🎨';
+                  link = '#/whiteboard';
                 }
 
                 return (

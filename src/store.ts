@@ -154,7 +154,17 @@ export const useStore = create<State>((set, get) => ({
   paletteOpen: false,
   quickAddOpen: false,
   sidebarOpen: typeof window !== 'undefined' ? localStorage.getItem('notion_sidebar') !== 'false' : true,
-  favorites: typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('notion_favorites') || '["economics", "strategy", "metrics"]') : ['economics', 'strategy', 'metrics'],
+  favorites: typeof window !== 'undefined' 
+    ? (() => {
+        try {
+          const list = JSON.parse(localStorage.getItem('notion_favorites') || '[]');
+          if (Array.isArray(list) && list.length > 0) {
+            return list.includes('whiteboard') ? list : [...list, 'whiteboard'];
+          }
+        } catch {}
+        return ['whiteboard', 'economics', 'strategy', 'metrics'];
+      })()
+    : ['whiteboard', 'economics', 'strategy', 'metrics'],
   peekMode: (typeof window !== 'undefined' ? (localStorage.getItem('notion_peek_mode') as 'side' | 'center' | 'full') : null) || 'side',
   theme: typeof window !== 'undefined' ? ((localStorage.getItem('notion_theme') as 'dark' | 'light') || 'dark') : 'dark',
 
