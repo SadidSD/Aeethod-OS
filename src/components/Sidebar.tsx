@@ -21,7 +21,9 @@ import {
   Moon,
   Clapperboard,
   Cpu,
+  Palette,
 } from 'lucide-react';
+
 
 import { useDb, useStore } from '../store';
 import { emojiForTopic, CATEGORY_ORDER } from '../lib/constants';
@@ -313,6 +315,17 @@ export const Sidebar: React.FC = () => {
                   <span className="font-semibold text-white">Full-Stack Architecture & Plan</span>
                 </a>
                 <a
+                  href="#/dev/ui-ux"
+                  className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs transition ${
+                    (currentPath === 'dev' && currentSub === 'ui-ux') || currentPath === 'ui-ux'
+                      ? 'bg-[#2c2c2c] text-white font-medium'
+                      : 'text-[#9b9b9b] hover:text-white hover:bg-[#282828]'
+                  }`}
+                >
+                  <Palette className="w-3.5 h-3.5 text-purple-400" />
+                  <span className="font-semibold text-white">UI & UX Design Studio</span>
+                </a>
+                <a
                   href="#/dev/board"
                   className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs transition ${
                     currentPath === 'dev' && (currentSub === 'board' || !currentSub)
@@ -323,6 +336,7 @@ export const Sidebar: React.FC = () => {
                   <KanbanSquare className="w-3.5 h-3.5 text-indigo-400" />
                   <span>Sprint Kanban Board</span>
                 </a>
+
 
                 <a
                   href="#/dev/sprints"

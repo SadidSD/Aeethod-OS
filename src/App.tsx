@@ -21,8 +21,10 @@ import { EconomicsView } from './views/EconomicsView';
 import { GameTheoryView } from './views/GameTheoryView';
 import { ContentManagementView } from './views/ContentManagementView';
 import { DevArchitectureTrackerView } from './views/DevArchitectureTrackerView';
+import { UiUxStudioView } from './views/UiUxStudioView';
 
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+
 
 
 export const App: React.FC = () => {
@@ -146,14 +148,20 @@ export const App: React.FC = () => {
       case 'content-management':
         return <ContentManagementView />;
       case 'dev':
+        if (sub === 'ui-ux' || sub === 'ui' || sub === 'ux') return <UiUxStudioView />;
         if (sub === 'architecture' || sub === 'stack' || sub === 'plan') return <DevArchitectureTrackerView />;
         if (sub === 'sprints') return <DevSprintsView />;
         if (sub === 'epics') return <DevEpicsView />;
         return <DevBoardView />;
+      case 'ui-ux':
+      case 'ui':
+      case 'ux':
+        return <UiUxStudioView />;
       case 'architecture':
       case 'vibe':
       case 'plan':
         return <DevArchitectureTrackerView />;
+
 
       case 'metrics':
         return <SaaSMetricsView />;
