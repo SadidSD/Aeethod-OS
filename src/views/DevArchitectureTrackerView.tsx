@@ -32,17 +32,20 @@ import {
 } from '../data/devPlanningData';
 
 export const DevArchitectureTrackerView: React.FC = () => {
-  const { theme } = useStore();
+  const { theme, db, create, update, remove } = useStore();
   const isLight = theme === 'light';
 
-  // Navigation Sub-Tabs: ONLY 2 Tabs now (Full-Stack Tracker & My SaaS Products)
+  // Navigation Sub-Tabs: ONLY 2 Tabs (Full-Stack Tracker & My SaaS Products)
   const [activeTab, setActiveTab] = useState<'stack-tracker' | 'saas-products'>('stack-tracker');
 
-  // Work Items State
-  const [workItems, setWorkItems] = useState<DevWorkItem[]>(INITIAL_DEV_WORK_ITEMS);
+  // Work Items synced with persistent store / Supabase
+  const workItems: DevWorkItem[] = db?.dev_items && db.dev_items.length > 0
+    ? db.dev_items
+    : INITIAL_DEV_WORK_ITEMS;
 
-  // User-defined SaaS Products State (starts empty as requested)
-  const [saasProducts, setSaasProducts] = useState<SaaSProductPillar[]>(INITIAL_SAAS_PRODUCTS);
+  // User-defined SaaS Products synced with persistent store / Supabase
+  const saasProducts: SaaSProductPillar[] = db?.saas_products || [];
+
 
   // Filters for Stack Tracker
   const [selectedLayer, setSelectedLayer] = useState<string>('All');
@@ -117,8 +120,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
     e.preventDefault();
     if (!newTitle.trim()) return;
 
-    const newItem: DevWorkItem = {
-      id: `dev-${Date.now()}`,
+    create('dev_items', {
       title: newTitle.trim(),
       layer: newLayer,
       status: newStatus,
@@ -127,9 +129,8 @@ export const DevArchitectureTrackerView: React.FC = () => {
       solutionApproach: newSolution.trim() || 'Modern scalable implementation',
       targetSprint: newSprint,
       complexity: 'M'
-    };
+    });
 
-    setWorkItems((prev) => [newItem, ...prev]);
     setIsTaskModalOpen(false);
     setNewTitle('');
     setNewProblem('');
@@ -140,8 +141,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
     e.preventDefault();
     if (!prodName.trim()) return;
 
-    const newProd: SaaSProductPillar = {
-      id: `prod-${Date.now()}`,
+    create('saas_products', {
       name: prodName.trim(),
       tagline: prodTagline.trim() || 'High-impact SaaS solution',
       icon: prodIcon.trim() || '📦',
@@ -150,9 +150,8 @@ export const DevArchitectureTrackerView: React.FC = () => {
       targetAudience: prodAudience.trim() || 'Card stores & online merchants',
       pricingModel: prodPricing.trim() || '$99 - $299/mo',
       status: prodStatus
-    };
+    });
 
-    setSaasProducts((prev) => [newProd, ...prev]);
     setIsProductModalOpen(false);
     setProdName('');
     setProdTagline('');
@@ -163,12 +162,13 @@ export const DevArchitectureTrackerView: React.FC = () => {
   };
 
   const deleteProduct = (id: string) => {
-    setSaasProducts((prev) => prev.filter((p) => p.id !== id));
+    remove('saas_products', id);
   };
 
   const updateItemStatus = (id: string, nextStatus: DevStatus) => {
-    setWorkItems((prev) => prev.map((item) => (item.id === id ? { ...item, status: nextStatus } : item)));
+    update('dev_items', id, { status: nextStatus });
   };
+
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 animate-slide-in">

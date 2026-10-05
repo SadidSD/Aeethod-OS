@@ -116,6 +116,8 @@ export interface Settings {
 }
 
 import type { VideoRecord } from './data/contentData';
+import type { DevWorkItem, SaaSProductPillar } from './data/devPlanningData';
+import type { UiUxItem } from './data/uiUxData';
 
 export interface Collections {
   topics: Topic;
@@ -126,9 +128,13 @@ export interface Collections {
   sprints: Sprint;
   epics: Epic;
   content_videos: VideoRecord;
+  saas_products: SaaSProductPillar;
+  dev_items: DevWorkItem;
+  ui_ux_items: UiUxItem;
 }
 
 export type Col = keyof Collections;
 
 export type DB = { [K in Col]: Collections[K][] } & { settings: Settings; version?: number };
+
 

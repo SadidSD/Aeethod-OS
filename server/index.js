@@ -16,7 +16,7 @@ const BACKUP_DIR = path.join(DATA_DIR, 'backups');
 const DIST_DIR = path.join(ROOT, 'dist');
 const PORT = Number(process.env.API_PORT || 4317);
 
-const COLLECTIONS = ['topics', 'tasks', 'docs', 'fields', 'metrics', 'sprints', 'epics', 'content_videos'];
+const COLLECTIONS = ['topics', 'tasks', 'docs', 'fields', 'metrics', 'sprints', 'epics', 'content_videos', 'saas_products', 'dev_items', 'ui_ux_items'];
 
 // ---------- persistence ----------
 function writeNow(data) {

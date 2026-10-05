@@ -28,13 +28,17 @@ import {
 } from '../data/uiUxData';
 
 export const UiUxStudioView: React.FC = () => {
-  const { theme } = useStore();
+  const { theme, db, create, update, remove } = useStore();
   const isLight = theme === 'light';
 
-  const [items, setItems] = useState<UiUxItem[]>(INITIAL_UI_UX_ITEMS);
+  const items: UiUxItem[] = db?.ui_ux_items && db.ui_ux_items.length > 0
+    ? db.ui_ux_items
+    : INITIAL_UI_UX_ITEMS;
+
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedSurface, setSelectedSurface] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
+
 
   // Add Item Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -100,8 +104,7 @@ export const UiUxStudioView: React.FC = () => {
       .map((s) => s.trim())
       .filter(Boolean);
 
-    const newItem: UiUxItem = {
-      id: `ux-${Date.now()}`,
+    create('ui_ux_items', {
       title: newTitle.trim(),
       category: newCategory,
       surface: newSurface,
@@ -110,9 +113,8 @@ export const UiUxStudioView: React.FC = () => {
       uxDesignSolution: newSolution.trim() || 'Ergonomic, accessible interface solution',
       designChecklist: checklist.length > 0 ? checklist : ['Accessible contrast ratio >= 4.5:1', 'Zero layout shift'],
       figmaOrPreviewNotes: newNotes.trim() || undefined
-    };
+    });
 
-    setItems((prev) => [newItem, ...prev]);
     setIsModalOpen(false);
     setNewTitle('');
     setNewUserProblem('');
@@ -122,8 +124,9 @@ export const UiUxStudioView: React.FC = () => {
   };
 
   const updateItemStatus = (id: string, status: UiUxStatus) => {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, status } : item)));
+    update('ui_ux_items', id, { status });
   };
+
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 animate-slide-in">

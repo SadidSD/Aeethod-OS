@@ -3609,5 +3609,154 @@ export const INITIAL_DB: DB = {
       "hook": "Bandai just dropped distributors updates for OP-02 reprints, but here is what nobody tells you about allocation numbers...",
       "notes": "Seamless loop script crafted for 90%+ replay rate."
     }
+  ],
+  "saas_products": [],
+  "dev_items": [
+    {
+      "id": "dev-fe-1",
+      "title": "Camera AI Optical Scanner Stream Handler",
+      "layer": "Frontend",
+      "status": "In Progress",
+      "priority": "Critical P0",
+      "problemSolved": "Eliminates clerk manual card typing and reduces intake friction.",
+      "solutionApproach": "WebRTC video stream captured into HTML5 Canvas, downsampled, and processed with client-side frame differencing.",
+      "targetSprint": "Sprint 1",
+      "complexity": "XL"
+    },
+    {
+      "id": "dev-fe-2",
+      "title": "Bidirectional Shopify Inventory Real-Time Sync",
+      "layer": "Frontend",
+      "status": "Shipped",
+      "priority": "Critical P0",
+      "problemSolved": "Eliminates GMV taxes and slow synchronization lag.",
+      "solutionApproach": "Zustand store wired to Supabase dual-write and optimistic UI state management.",
+      "targetSprint": "Sprint 1",
+      "complexity": "M"
+    },
+    {
+      "id": "dev-be-1",
+      "title": "Marketplace Price Feeds Normalized Scraper & Ingest",
+      "layer": "Backend",
+      "status": "In Progress",
+      "priority": "Critical P0",
+      "problemSolved": "Provides accurate real-time market prices for buylist quotes without manual lookups.",
+      "solutionApproach": "Node / Edge worker pulling daily price snapshots for Pokemon, One Piece, and MTG; caches locally.",
+      "targetSprint": "Sprint 1",
+      "complexity": "L"
+    },
+    {
+      "id": "dev-be-2",
+      "title": "Automated Price Floor Boundary Validator",
+      "layer": "Backend",
+      "status": "Backlog",
+      "priority": "High P1",
+      "problemSolved": "Prevents auto-repricing bots from selling cards below intake cost.",
+      "solutionApproach": "Express / Edge endpoint that validates suggested prices against intake cost before dispatching.",
+      "targetSprint": "Sprint 2",
+      "complexity": "M"
+    },
+    {
+      "id": "dev-db-1",
+      "title": "Relational TCG Card Catalog Schema",
+      "layer": "Database",
+      "status": "Shipped",
+      "priority": "Critical P0",
+      "problemSolved": "Enables instant search auto-complete and variant pricing across all games.",
+      "solutionApproach": "Normalized PostgreSQL schema with full-text search index on card name and variant codes.",
+      "targetSprint": "Sprint 1",
+      "complexity": "L"
+    },
+    {
+      "id": "dev-db-2",
+      "title": "Customer Buylist & Store Credit Ledger Schema",
+      "layer": "Database",
+      "status": "In Review",
+      "priority": "Critical P0",
+      "problemSolved": "Tracks pending customer trade-in submissions and audit trails for store credit payouts.",
+      "solutionApproach": "Double-entry ledger table in PostgreSQL recording credit additions and POS redemptions.",
+      "targetSprint": "Sprint 1",
+      "complexity": "M"
+    },
+    {
+      "id": "dev-ops-1",
+      "title": "Supabase Real-Time Client Dual-Write & Vercel Deploy Pipeline",
+      "layer": "DevOps & Tooling",
+      "status": "Shipped",
+      "priority": "Critical P0",
+      "problemSolved": "Ensures zero 404 crashes on hosted environments and live cloud data persistence.",
+      "solutionApproach": "Supabase client setup with static Vite build compatibility and GitHub auto-deploy to Vercel.",
+      "targetSprint": "Sprint 1",
+      "complexity": "S"
+    }
+  ],
+  "ui_ux_items": [
+    {
+      "id": "ux-1",
+      "title": "High-Speed Counter Buylist Intake Kiosk",
+      "category": "Component Library",
+      "surface": "POS Counter Kiosk",
+      "status": "In Code / Prototyping",
+      "userProblem": "Card store counter clerks have greasy fingers, fast-moving customers, and bright retail lighting. Small buttons and nested dropdowns cause miss-clicks and slow lines.",
+      "uxDesignSolution": "Large touch target pads (minimum 48px), high-contrast ivory & dark-slate tokens, tactile audio-click feedback, 1-tap accept/reject toggle.",
+      "designChecklist": [
+        "Touch targets >= 48px for retail iPads",
+        "Instant keyboard numeric shortcuts (Numpad enter)",
+        "Clear split between Cash (Red/Rose) vs Store Credit (Emerald)",
+        "High-contrast readability under retail fluorescent lights"
+      ],
+      "figmaOrPreviewNotes": "Designed with Linear + Square Terminal aesthetic. Minimal visual clutter.",
+      "screensCount": 3
+    },
+    {
+      "id": "ux-2",
+      "title": "Adaptive Dual-Theme System (Clean Ivory White & Charcoal Obsidian)",
+      "category": "Design System & Tokens",
+      "surface": "Desktop App",
+      "status": "Polished & Done",
+      "userProblem": "Cluttered all-black dark mode makes dense tabular data look heavy, while uncalibrated bright white strains eyes during 8-hour inventory sorting sessions.",
+      "uxDesignSolution": "Neutral ivory/slate surfaces (#f8fafc / #191919), clean JetBrains Mono numbers, subtle 1px border hierarchy, and zero pitch-black OLED contrast fatigue.",
+      "designChecklist": [
+        "Tokenized CSS variables for background, card, and borders",
+        "JetBrains Mono for currency & numeric matrix data",
+        "Plus Jakarta Sans for readable UI headers",
+        "Smooth 150ms theme transition"
+      ],
+      "figmaOrPreviewNotes": "Implemented across all views with instant localStorage sync.",
+      "screensCount": 12
+    },
+    {
+      "id": "ux-3",
+      "title": "Holographic & Foil Card Tilt Micro-Interaction",
+      "category": "Micro-Interaction",
+      "surface": "Customer Storefront",
+      "status": "In Code / Prototyping",
+      "userProblem": "Online buyers cannot appreciate the beauty or authenticity of expensive Manga Rares or Special Illustration Rares from a flat static image.",
+      "uxDesignSolution": "Gyroscope (mobile) & cursor-responsive (desktop) CSS 3D card tilt with realistic dynamic holographic glare gradient.",
+      "designChecklist": [
+        "Subtle 3D perspective matrix transform on mousemove",
+        "Radial glare gradient mask that follows cursor angle",
+        "Hardware-accelerated CSS transforms (will-change: transform)",
+        "Graceful fallback on reduced-motion preference"
+      ],
+      "figmaOrPreviewNotes": "Creates the signature collector premium feel on product pages.",
+      "screensCount": 2
+    },
+    {
+      "id": "ux-4",
+      "title": "Singles Condition Selector & Grading State Pills",
+      "category": "Wireframe & Flow",
+      "surface": "Desktop App",
+      "status": "In Code / Prototyping",
+      "userProblem": "Selecting card condition (Near Mint, Lightly Played, Moderately Played, Heavily Played, Damaged) is tedious in generic e-commerce platforms.",
+      "uxDesignSolution": "Single-row segmented pill group with color-coded condition badges and instant market price delta indicators.",
+      "designChecklist": [
+        "5 distinct condition tiers with color-coded dots",
+        "Price percentage modifier preview (+0%, -15%, -30%)",
+        "1-tap condition swapping with keyboard hotkeys (1-5)"
+      ],
+      "screensCount": 4
+    }
   ]
 };
+
