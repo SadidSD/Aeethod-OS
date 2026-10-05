@@ -248,13 +248,28 @@ const INITIAL_BOARD: CanvasElement[] = [
 
 // Helper: Calculate 4 Anchor Points (Edges: top, right, bottom, left) of an element
 function getAnchorPoints(el: CanvasElement): Record<AnchorEdge, { x: number; y: number }> {
-  const w = el.width || 120;
-  const h = el.height || 80;
+  const { width: w, height: h } = getElementBounds(el);
   return {
     top: { x: el.x + w / 2, y: el.y },
     right: { x: el.x + w, y: el.y + h / 2 },
     bottom: { x: el.x + w / 2, y: el.y + h },
     left: { x: el.x, y: el.y + h / 2 },
+  };
+}
+
+// Helper: Calculate accurate bounds (width, height) for any element, including text
+export function getElementBounds(el: CanvasElement): { width: number; height: number } {
+  if (el.type === 'text') {
+    const fSize = el.fontSize || 16;
+    const txt = el.text || 'Text';
+    // Approximation or pre-set width
+    const calculatedW = Math.max(txt.length * (fSize * 0.62), el.width || 40);
+    const calculatedH = fSize * 1.35;
+    return { width: Math.max(calculatedW, 30), height: Math.max(calculatedH, 20) };
+  }
+  return {
+    width: el.width || (el.type === 'sticky' ? 210 : el.type === 'diamond' ? 120 : 120),
+    height: el.height || (el.type === 'sticky' ? 160 : el.type === 'diamond' ? 100 : 80),
   };
 }
 
@@ -712,8 +727,7 @@ export const WhiteboardView: React.FC = () => {
 
       // DRAW SELECTION BOUNDING BOX & HANDLES & ANCHORS
       if (isSelected && el.type !== 'path' && el.type !== 'highlighter') {
-        const w = el.width || 120;
-        const h = el.height || 80;
+        const { width: w, height: h } = getElementBounds(el);
 
         // Selection Border
         ctx.strokeStyle = '#4f46e5';
@@ -827,9 +841,8 @@ export const WhiteboardView: React.FC = () => {
     for (const id of selectedIds) {
       const el = elements.find((e) => e.id === id);
       if (!el || el.locked) continue;
-      const w = el.width || 120;
-      const h = el.height || 80;
-      const hitDist = 9;
+      const { width: w, height: h } = getElementBounds(el);
+      const hitDist = 11;
 
       if (Math.abs(x - (el.x - 5)) < hitDist && Math.abs(y - (el.y - 5)) < hitDist)
         return { element: el, handle: 'tl' };
@@ -906,8 +919,7 @@ export const WhiteboardView: React.FC = () => {
         const cy = el.y + ry;
         if (Math.pow((x - cx) / rx, 2) + Math.pow((y - cy) / ry, 2) <= 1) return el;
       } else if (el.type === 'text') {
-        const w = el.width || 200;
-        const h = (el.fontSize || 16) * 1.5;
+        const { width: w, height: h } = getElementBounds(el);
         if (x >= el.x && x <= el.x + w && y >= el.y && y <= el.y + h) return el;
       } else if (el.type === 'arrow' || el.type === 'line') {
         const tox = el.x + (el.width || 100);
@@ -977,6 +989,7 @@ export const WhiteboardView: React.FC = () => {
       // 3. CHECK FOR CORNER RESIZE HANDLES (Resize Element Size)
       const resizeHit = getResizeHandleAt(x, y);
       if (resizeHit) {
+        const bounds = getElementBounds(resizeHit.element);
         setResizeHandle({
           elementId: resizeHit.element.id,
           handle: resizeHit.handle,
@@ -984,8 +997,8 @@ export const WhiteboardView: React.FC = () => {
           startY: y,
           initialX: resizeHit.element.x,
           initialY: resizeHit.element.y,
-          initialW: resizeHit.element.width || 120,
-          initialH: resizeHit.element.height || 80,
+          initialW: bounds.width,
+          initialH: bounds.height,
         });
         return;
       }
@@ -1113,23 +1126,31 @@ export const WhiteboardView: React.FC = () => {
           let newH = resizeHandle.initialH;
 
           if (resizeHandle.handle === 'br') {
-            newW = Math.max(50, resizeHandle.initialW + dx);
-            newH = Math.max(40, resizeHandle.initialH + dy);
+            newW = Math.max(el.type === 'text' ? 24 : 50, resizeHandle.initialW + dx);
+            newH = Math.max(el.type === 'text' ? 14 : 40, resizeHandle.initialH + dy);
           } else if (resizeHandle.handle === 'tr') {
-            newW = Math.max(50, resizeHandle.initialW + dx);
-            newH = Math.max(40, resizeHandle.initialH - dy);
+            newW = Math.max(el.type === 'text' ? 24 : 50, resizeHandle.initialW + dx);
+            newH = Math.max(el.type === 'text' ? 14 : 40, resizeHandle.initialH - dy);
             newY = resizeHandle.initialY + (resizeHandle.initialH - newH);
           } else if (resizeHandle.handle === 'bl') {
-            newW = Math.max(50, resizeHandle.initialW - dx);
-            newH = Math.max(40, resizeHandle.initialH + dy);
-            newX = resizeHandle.initialX + (resizeHandle.initialH - newW);
+            newW = Math.max(el.type === 'text' ? 24 : 50, resizeHandle.initialW - dx);
+            newH = Math.max(el.type === 'text' ? 14 : 40, resizeHandle.initialH + dy);
+            newX = resizeHandle.initialX + (resizeHandle.initialW - newW);
           } else if (resizeHandle.handle === 'tl') {
-            newW = Math.max(50, resizeHandle.initialW - dx);
-            newH = Math.max(40, resizeHandle.initialH - dy);
+            newW = Math.max(el.type === 'text' ? 24 : 50, resizeHandle.initialW - dx);
+            newH = Math.max(el.type === 'text' ? 14 : 40, resizeHandle.initialH - dy);
             newX = resizeHandle.initialX + (resizeHandle.initialW - newW);
             newY = resizeHandle.initialY + (resizeHandle.initialH - newH);
           }
-          return { ...el, x: newX, y: newY, width: newW, height: newH };
+
+          // Dynamically scale font size when dragging text box corners
+          let newFontSize = el.fontSize;
+          if (el.type === 'text' && resizeHandle.initialH > 0) {
+            const scaleRatio = newH / resizeHandle.initialH;
+            newFontSize = Math.max(10, Math.min(180, Math.round((el.fontSize || 16) * scaleRatio)));
+          }
+
+          return { ...el, x: newX, y: newY, width: newW, height: newH, fontSize: newFontSize };
         })
       );
       return;
@@ -1929,32 +1950,60 @@ export const WhiteboardView: React.FC = () => {
             </div>
           </div>
 
-          {/* Stroke Width */}
-          <div className="flex items-center gap-1.5 pl-2.5 border-l border-slate-200">
-            <span className="text-[11px] text-slate-500 font-medium">Width:</span>
-            <div className="flex items-center gap-0.5">
-              {[2, 3, 5].map((w) => (
-                <button
-                  key={w}
-                  onClick={() => {
-                    setStrokeWidth(w);
-                    if (selectedIds.size > 0) {
-                      setElements((prev) =>
-                        prev.map((el) => (selectedIds.has(el.id) ? { ...el, strokeWidth: w } : el))
-                      );
-                    }
-                  }}
-                  className={`px-2 py-0.5 rounded-md text-xs font-mono ${
-                    strokeWidth === w
-                      ? 'bg-indigo-600 text-white font-semibold'
-                      : 'text-slate-600 hover:bg-slate-100'
-                  }`}
-                >
-                  {w}px
-                </button>
-              ))}
+          {/* Stroke Width or Font Size */}
+          {activeSelected?.type === 'text' || activeSelected?.type === 'sticky' ? (
+            <div className="flex items-center gap-1.5 pl-2.5 border-l border-slate-200">
+              <span className="text-[11px] text-slate-500 font-medium">Text Size:</span>
+              <div className="flex items-center gap-0.5">
+                {[14, 18, 24, 36, 48].map((fs) => (
+                  <button
+                    key={fs}
+                    onClick={() => {
+                      setFontSize(fs);
+                      if (selectedIds.size > 0) {
+                        setElements((prev) =>
+                          prev.map((el) => (selectedIds.has(el.id) ? { ...el, fontSize: fs } : el))
+                        );
+                      }
+                    }}
+                    className={`px-1.5 py-0.5 rounded-md text-xs font-mono ${
+                      (activeSelected.fontSize || 16) === fs
+                        ? 'bg-indigo-600 text-white font-semibold'
+                        : 'text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    {fs}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex items-center gap-1.5 pl-2.5 border-l border-slate-200">
+              <span className="text-[11px] text-slate-500 font-medium">Width:</span>
+              <div className="flex items-center gap-0.5">
+                {[2, 3, 5].map((w) => (
+                  <button
+                    key={w}
+                    onClick={() => {
+                      setStrokeWidth(w);
+                      if (selectedIds.size > 0) {
+                        setElements((prev) =>
+                          prev.map((el) => (selectedIds.has(el.id) ? { ...el, strokeWidth: w } : el))
+                        );
+                      }
+                    }}
+                    className={`px-2 py-0.5 rounded-md text-xs font-mono ${
+                      strokeWidth === w
+                        ? 'bg-indigo-600 text-white font-semibold'
+                        : 'text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    {w}px
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Duplicate & Delete */}
           {selectedIds.size > 0 && (
