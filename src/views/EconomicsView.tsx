@@ -38,12 +38,15 @@ import { FeatureSupplyDemand } from '../components/FeatureSupplyDemand';
 import { serviceableFeaturesData, ServiceableFeature } from '../data/serviceableFeatures';
 import { navigate, href } from '../lib/router';
 import { fmtMoney } from '../lib/metrics';
+import { TcgMarketEconomicsTerminal } from '../components/TcgMarketEconomicsTerminal';
 
 export const EconomicsView: React.FC = () => {
   const db = useDb();
-  const { setOpenTask } = useStore();
+  const { setOpenTask, theme } = useStore();
+  const isLight = theme === 'light';
 
-  const [activeTab, setActiveTab] = useState<'climate' | 'micro-topics' | 'features' | 'profiles'>('climate');
+  const [activeTab, setActiveTab] = useState<'climate' | 'tcg-market' | 'micro-topics' | 'features' | 'profiles'>('tcg-market');
+
   const [selectedTopic, setSelectedTopic] = useState<string>('scarcity');
   const [inspectedCompetitor, setInspectedCompetitor] = useState<Competitor | null>(null);
 
@@ -311,6 +314,18 @@ export const EconomicsView: React.FC = () => {
       {/* Main Navigation Sub-Tabs */}
       <div className="flex items-center gap-1.5 border-b border-[#2e2e2e] pb-3 text-xs overflow-x-auto">
         <button
+          onClick={() => setActiveTab('tcg-market')}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg font-semibold transition shrink-0 ${
+            activeTab === 'tcg-market'
+              ? 'bg-indigo-600 text-white shadow-xs'
+              : 'text-slate-400 hover:text-white hover:bg-[#252525]'
+          }`}
+        >
+          <TrendingUp className="w-4 h-4 text-emerald-300" />
+          <span>🔴 TCG Market & Retail Dynamics Terminal</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('climate')}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg font-semibold transition shrink-0 ${
             activeTab === 'climate'
@@ -360,9 +375,17 @@ export const EconomicsView: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
+      {/* TAB 0: TCG MACRO & RETAIL MARKET INTELLIGENCE TERMINAL                   */}
+      {/* ========================================================================= */}
+      {activeTab === 'tcg-market' && (
+        <TcgMarketEconomicsTerminal isLight={isLight} />
+      )}
+
+      {/* ========================================================================= */}
       {/* TAB 1: CLIMATE & COMPETITOR MAPPING GRAPH                                */}
       {/* ========================================================================= */}
       {activeTab === 'climate' && (
+
         <div className="space-y-8 animate-slide-in">
           {/* Executive Microeconomic Squeeze Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
