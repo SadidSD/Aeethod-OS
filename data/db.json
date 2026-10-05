@@ -3540,5 +3540,72 @@
       "createdAt": "2026-10-04T16:52:42.700Z",
       "updatedAt": "2026-10-04T16:52:42.700Z"
     }
+  ],
+  "content_videos": [
+    {
+      "id": "vid-101",
+      "creator": "Sadid",
+      "title": "Real Cost of a Japanese Pokemon Booster Box (Wholesale vs Retail)",
+      "topic": "Price Analysis and Prediction",
+      "format": "Price Breakdown and Analysis",
+      "status": "Uploaded",
+      "hook": "Ever wondered why your local shop charges  when distributor sheet says  Let us break down the exact math.",
+      "publishDate": "2026-10-01",
+      "views": 14200,
+      "likes": 1240,
+      "shares": 310,
+      "saves": 520,
+      "notes": "Huge engagement from collectors realizing distributor tiers."
+    },
+    {
+      "id": "vid-102",
+      "creator": "Sadid",
+      "title": "Never Ship Cards in Penny Sleeves Alone",
+      "topic": "Education for Resellers and Shop Owners",
+      "format": "Prevention",
+      "status": "Uploaded",
+      "hook": "This  packaging mistake cost a TCG seller  in chargebacks last week.",
+      "publishDate": "2026-10-03",
+      "views": 9800,
+      "likes": 850,
+      "shares": 190,
+      "saves": 410,
+      "notes": "Packaging demo with semi-rigid holders and team bags."
+    },
+    {
+      "id": "vid-103",
+      "creator": "Sadid",
+      "title": "Why 80% of Card Shops Fail Within 24 Months",
+      "topic": "Shop Problem",
+      "format": "Teardown and Challenge",
+      "status": "Editing",
+      "hook": "Most card shop owners love the hobby, but hate cash flow management. Here is the fatal margin trap.",
+      "notes": "Interview quote breakdown and inventory turnover ratio diagram."
+    },
+    {
+      "id": "vid-104",
+      "creator": "Anika",
+      "title": "Is Grading Raw Vintage Actually Worth It in 2026?",
+      "topic": "Controversy and Opinion",
+      "format": "Myth Blast",
+      "status": "Uploaded",
+      "hook": "Grading companies dont want you to know this secret multiplier before sending in vintage foils.",
+      "publishDate": "2026-10-02",
+      "views": 18500,
+      "likes": 2100,
+      "shares": 640,
+      "saves": 890,
+      "notes": "Comparing PSA 9 vs Raw Near-Mint fees."
+    },
+    {
+      "id": "vid-105",
+      "creator": "Anika",
+      "title": "One Piece Paramount War Restock Wave Truth",
+      "topic": "Release Content",
+      "format": "Looping",
+      "status": "Recording",
+      "hook": "Bandai just dropped distributors updates for OP-02 reprints, but here is what nobody tells you about allocation numbers...",
+      "notes": "Seamless loop script crafted for 90%+ replay rate."
+    }
   ]
 }

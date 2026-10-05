@@ -115,6 +115,8 @@ export interface Settings {
   company?: string;
 }
 
+import type { VideoRecord } from './data/contentData';
+
 export interface Collections {
   topics: Topic;
   tasks: Task;
@@ -123,8 +125,10 @@ export interface Collections {
   metrics: MetricRow;
   sprints: Sprint;
   epics: Epic;
+  content_videos: VideoRecord;
 }
 
 export type Col = keyof Collections;
 
 export type DB = { [K in Col]: Collections[K][] } & { settings: Settings; version?: number };
+

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Col, Collections, DB, Settings } from './types';
+import { supabase } from './lib/supabase';
 
 type SyncState = 'idle' | 'saving' | 'error';
 
@@ -56,6 +57,34 @@ async function api(method: string, url: string, body?: unknown) {
   }
 }
 
+// Dual-write helper for Supabase
+async function supabaseSyncCreate<K extends Col>(col: K, item: Collections[K]) {
+  try {
+    const { error } = await supabase.from(col).insert(item as any);
+    if (error) console.warn(`[Supabase insert ${col}]`, error.message);
+  } catch (err) {
+    console.warn(`[Supabase error]`, err);
+  }
+}
+
+async function supabaseSyncUpdate<K extends Col>(col: K, id: string, patch: Partial<Collections[K]>) {
+  try {
+    const { error } = await supabase.from(col).update(patch as any).eq('id', id);
+    if (error) console.warn(`[Supabase update ${col}]`, error.message);
+  } catch (err) {
+    console.warn(`[Supabase error]`, err);
+  }
+}
+
+async function supabaseSyncDelete(col: Col, id: string) {
+  try {
+    const { error } = await supabase.from(col).delete().eq('id', id);
+    if (error) console.warn(`[Supabase delete ${col}]`, error.message);
+  } catch (err) {
+    console.warn(`[Supabase error]`, err);
+  }
+}
+
 // Debounced PATCHes: typing in a description sends one request, not hundreds.
 const pending = new Map<string, { col: Col; id: string; patch: Record<string, unknown>; timer: number }>();
 function schedulePatch(col: Col, id: string, patch: Record<string, unknown>) {
@@ -69,6 +98,7 @@ function schedulePatch(col: Col, id: string, patch: Record<string, unknown>) {
   entry.timer = window.setTimeout(() => {
     pending.delete(key);
     api('PATCH', `/api/${col}/${id}`, entry.patch).catch(() => {});
+    supabaseSyncUpdate(entry.col, entry.id, entry.patch).catch(() => {});
   }, 350);
   pending.set(key, entry);
 }
@@ -83,6 +113,7 @@ function flushPending() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(entry.patch),
     }).catch(() => {});
+    supabaseSyncUpdate(entry.col, entry.id, entry.patch).catch(() => {});
   }
 }
 window.addEventListener('beforeunload', flushPending);
@@ -119,9 +150,41 @@ export const useStore = create<State>((set, get) => ({
 
   load: async () => {
     try {
+      // 1. Try pulling live data directly from Supabase first
+      const collections: Col[] = ['topics', 'tasks', 'docs', 'fields', 'metrics', 'sprints', 'epics', 'content_videos'];
+      const supabaseResults: Partial<Record<Col, any[]>> = {};
+      let hasSupabaseData = false;
+
+      try {
+        const promises = collections.map(async (c) => {
+          const { data, error } = await supabase.from(c).select('*');
+          if (!error && Array.isArray(data) && data.length > 0) {
+            supabaseResults[c] = data;
+            hasSupabaseData = true;
+          }
+        });
+        await Promise.all(promises);
+      } catch (err) {
+        console.warn('Supabase initial fetch skipped/unreachable:', err);
+      }
+
+      // 2. Fetch master state from local backend
       const res = await fetch('/api/db');
       if (!res.ok) throw new Error(`Server responded ${res.status}`);
-      set({ db: (await res.json()) as DB, loadError: null });
+      const serverDb = (await res.json()) as DB;
+
+      if (hasSupabaseData) {
+        // Merge Supabase live data if available
+        const mergedDb: DB = { ...serverDb };
+        for (const c of collections) {
+          if (supabaseResults[c] && supabaseResults[c]!.length > 0) {
+            (mergedDb as any)[c] = supabaseResults[c];
+          }
+        }
+        set({ db: mergedDb, loadError: null });
+      } else {
+        set({ db: serverDb, loadError: null });
+      }
     } catch (e) {
       set({ loadError: e instanceof Error ? e.message : String(e) });
     }
@@ -132,6 +195,7 @@ export const useStore = create<State>((set, get) => ({
     const full = { ...item, id: (item as { id?: string }).id ?? uid(), createdAt: now, updatedAt: now } as Collections[typeof col];
     set((s) => (s.db ? { db: { ...s.db, [col]: [...s.db[col], full] } } : s));
     api('POST', `/api/${col}`, full).catch(() => {});
+    supabaseSyncCreate(col, full).catch(() => {});
     return full;
   },
 
@@ -152,6 +216,9 @@ export const useStore = create<State>((set, get) => ({
     if (col === 'tasks') {
       const ids = descendantIds(db, id);
       next.tasks = db.tasks.filter((t) => !ids.has(t.id));
+      for (const taskId of ids) {
+        supabaseSyncDelete('tasks', taskId).catch(() => {});
+      }
     } else {
       next = { ...next, [col]: (db[col] as Array<{ id: string }>).filter((x) => x.id !== id) } as DB;
       if (col === 'topics') {
@@ -168,6 +235,7 @@ export const useStore = create<State>((set, get) => ({
       }
       if (col === 'sprints') next.tasks = next.tasks.map((t) => (t.sprintId === id ? { ...t, sprintId: null } : t));
       if (col === 'epics') next.tasks = next.tasks.map((t) => (t.epicId === id ? { ...t, epicId: null } : t));
+      supabaseSyncDelete(col, id).catch(() => {});
     }
     set({ db: next, openTaskId: get().openTaskId === id ? null : get().openTaskId });
     api('DELETE', `/api/${col}/${id}`).catch(() => {});
@@ -176,7 +244,9 @@ export const useStore = create<State>((set, get) => ({
   updateSettings: (patch) => {
     set((s) => (s.db ? { db: { ...s.db, settings: { ...s.db.settings, ...patch } } } : s));
     api('PATCH', '/api/settings', patch).catch(() => {});
+    Promise.resolve(supabase.from('settings').upsert({ id: 'current', ...patch } as any)).catch(() => {});
   },
+
 
   replaceDb: async (db) => {
     const saved = (await api('PUT', '/api/db', db)) as DB;

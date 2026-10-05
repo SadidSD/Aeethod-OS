@@ -106,14 +106,16 @@ const STAGE_CONFIG: Record<VideoStatus, { dot: string; badge: string; text: stri
 };
 
 export const ContentManagementView: React.FC = () => {
-  const { theme } = useStore();
+  const { theme, db, create, update, remove } = useStore();
   const isLight = theme === 'light';
 
   // Navigation
   const [activeTab, setActiveTab] = useState<'strategy' | 'sadid' | 'anika' | 'matrix'>('anika');
 
-  // Video State
-  const [videos, setVideos] = useState<VideoRecord[]>(INITIAL_VIDEO_RECORDS);
+  // Video State synced with persistent store / Supabase
+  const videos: VideoRecord[] = (db && db.content_videos && db.content_videos.length > 0)
+    ? db.content_videos
+    : INITIAL_VIDEO_RECORDS;
 
   // Filters
   const [topicFilter, setTopicFilter] = useState<string>('all');
@@ -141,19 +143,18 @@ export const ContentManagementView: React.FC = () => {
   const [newVideoNotes, setNewVideoNotes] = useState('');
 
   const updateVideo = (id: string, updates: Partial<VideoRecord>) => {
-    setVideos((prev) => prev.map((v) => (v.id === id ? { ...v, ...updates } : v)));
+    update('content_videos', id, updates);
   };
 
   const deleteVideo = (id: string) => {
-    setVideos((prev) => prev.filter((v) => v.id !== id));
+    remove('content_videos', id);
   };
 
   const handleCreateVideo = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newVideoTitle.trim()) return;
 
-    const newRecord: VideoRecord = {
-      id: `vid-${Date.now()}`,
+    create('content_videos', {
       creator: newVideoCreator,
       title: newVideoTitle.trim(),
       topic: newVideoTopic,
@@ -162,15 +163,15 @@ export const ContentManagementView: React.FC = () => {
       hook: newVideoHook.trim() || 'Attention-grabbing hook...',
       publishDate: newVideoDate || undefined,
       notes: newVideoNotes || undefined
-    };
+    });
 
-    setVideos((prev) => [newRecord, ...prev]);
     setIsAddModalOpen(false);
     setNewVideoTitle('');
     setNewVideoHook('');
     setNewVideoDate('');
     setNewVideoNotes('');
   };
+
 
   // Matrix Analytics
   const analytics = useMemo(() => {
