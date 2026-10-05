@@ -335,6 +335,7 @@ export const WhiteboardView: React.FC = () => {
     initialY: number;
     initialW: number;
     initialH: number;
+    initialFontSize: number;
   } | null>(null);
 
   // Connecting via 4 Edge Anchor Points
@@ -999,6 +1000,7 @@ export const WhiteboardView: React.FC = () => {
           initialY: resizeHit.element.y,
           initialW: bounds.width,
           initialH: bounds.height,
+          initialFontSize: resizeHit.element.fontSize || 16,
         });
         return;
       }
@@ -1125,32 +1127,57 @@ export const WhiteboardView: React.FC = () => {
           let newW = resizeHandle.initialW;
           let newH = resizeHandle.initialH;
 
+          if (el.type === 'text') {
+            // Smooth text resizing using diagonal corner drag ratio against initial dimensions
+            const dragDelta =
+              resizeHandle.handle === 'br'
+                ? (dx + dy) / 2
+                : resizeHandle.handle === 'tl'
+                ? (-dx - dy) / 2
+                : resizeHandle.handle === 'tr'
+                ? (dx - dy) / 2
+                : (-dx + dy) / 2;
+
+            // Sensitivity scale factor: 1px drag = ~0.35px font change for smooth, steady control
+            const fontDelta = dragDelta * 0.35;
+            const newFontSize = Math.max(10, Math.min(180, Math.round(resizeHandle.initialFontSize + fontDelta)));
+
+            const newTextW = Math.max(30, (el.text || 'Text').length * (newFontSize * 0.62));
+            const newTextH = newFontSize * 1.35;
+
+            // Adjust X / Y anchors when dragging from left/top handles
+            if (resizeHandle.handle === 'tl') {
+              newX = resizeHandle.initialX + (resizeHandle.initialW - newTextW);
+              newY = resizeHandle.initialY + (resizeHandle.initialH - newTextH);
+            } else if (resizeHandle.handle === 'tr') {
+              newY = resizeHandle.initialY + (resizeHandle.initialH - newTextH);
+            } else if (resizeHandle.handle === 'bl') {
+              newX = resizeHandle.initialX + (resizeHandle.initialW - newTextW);
+            }
+
+            return { ...el, x: newX, y: newY, width: newTextW, height: newTextH, fontSize: newFontSize };
+          }
+
+          // Non-text shapes (sticky, rectangle, circle, etc.)
           if (resizeHandle.handle === 'br') {
-            newW = Math.max(el.type === 'text' ? 24 : 50, resizeHandle.initialW + dx);
-            newH = Math.max(el.type === 'text' ? 14 : 40, resizeHandle.initialH + dy);
+            newW = Math.max(50, resizeHandle.initialW + dx);
+            newH = Math.max(40, resizeHandle.initialH + dy);
           } else if (resizeHandle.handle === 'tr') {
-            newW = Math.max(el.type === 'text' ? 24 : 50, resizeHandle.initialW + dx);
-            newH = Math.max(el.type === 'text' ? 14 : 40, resizeHandle.initialH - dy);
+            newW = Math.max(50, resizeHandle.initialW + dx);
+            newH = Math.max(40, resizeHandle.initialH - dy);
             newY = resizeHandle.initialY + (resizeHandle.initialH - newH);
           } else if (resizeHandle.handle === 'bl') {
-            newW = Math.max(el.type === 'text' ? 24 : 50, resizeHandle.initialW - dx);
-            newH = Math.max(el.type === 'text' ? 14 : 40, resizeHandle.initialH + dy);
+            newW = Math.max(50, resizeHandle.initialW - dx);
+            newH = Math.max(40, resizeHandle.initialH + dy);
             newX = resizeHandle.initialX + (resizeHandle.initialW - newW);
           } else if (resizeHandle.handle === 'tl') {
-            newW = Math.max(el.type === 'text' ? 24 : 50, resizeHandle.initialW - dx);
-            newH = Math.max(el.type === 'text' ? 14 : 40, resizeHandle.initialH - dy);
+            newW = Math.max(50, resizeHandle.initialW - dx);
+            newH = Math.max(40, resizeHandle.initialH - dy);
             newX = resizeHandle.initialX + (resizeHandle.initialW - newW);
             newY = resizeHandle.initialY + (resizeHandle.initialH - newH);
           }
 
-          // Dynamically scale font size when dragging text box corners
-          let newFontSize = el.fontSize;
-          if (el.type === 'text' && resizeHandle.initialH > 0) {
-            const scaleRatio = newH / resizeHandle.initialH;
-            newFontSize = Math.max(10, Math.min(180, Math.round((el.fontSize || 16) * scaleRatio)));
-          }
-
-          return { ...el, x: newX, y: newY, width: newW, height: newH, fontSize: newFontSize };
+          return { ...el, x: newX, y: newY, width: newW, height: newH };
         })
       );
       return;
