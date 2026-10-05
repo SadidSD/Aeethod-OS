@@ -24,9 +24,12 @@ export const Topbar: React.FC = () => {
     setQuickAddOpen,
     sync,
     syncError,
+    source,
     theme,
     toggleTheme,
   } = useStore();
+  const isLight = theme === 'light';
+
   const db = useDb();
   const route = useRoute();
 
@@ -129,25 +132,31 @@ export const Topbar: React.FC = () => {
           </button>
         )}
 
-        {/* Disk Persistence Status */}
-        <div className="flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono text-[#787774] border border-[#2e2e2e] bg-[#202020]">
+        {/* Database / Persistence Status */}
+        <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono border ${
+          isLight
+            ? 'bg-slate-100 border-slate-200 text-slate-600'
+            : 'bg-[#202020] border-[#2e2e2e] text-[#9b9b9b]'
+        }`}>
           {sync === 'idle' && (
             <>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="hidden md:inline">db.json</span>
+              <span className={`w-1.5 h-1.5 rounded-full ${source === 'supabase' ? 'bg-emerald-500 animate-pulse' : 'bg-indigo-400'}`} />
+              <span className="hidden md:inline font-medium">
+                {source === 'supabase' ? 'Supabase Live' : source === 'local_server' ? 'Local DB' : 'Aeethod DB'}
+              </span>
             </>
           )}
           {sync === 'saving' && (
             <>
-              <RefreshCw className="w-3 h-3 text-amber-400 animate-spin" />
-              <span className="text-amber-300">Saving...</span>
+              <RefreshCw className="w-3 h-3 text-amber-500 animate-spin" />
+              <span className="text-amber-500">Syncing...</span>
             </>
           )}
           {sync === 'error' && (
             <>
-              <AlertCircle className="w-3 h-3 text-rose-400" />
-              <span className="text-rose-400" title={syncError || ''}>
-                Error
+              <AlertCircle className="w-3 h-3 text-rose-500" />
+              <span className="text-rose-500" title={syncError || ''}>
+                Sync Notice
               </span>
             </>
           )}

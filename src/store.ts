@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Col, Collections, DB, Settings } from './types';
 import { supabase } from './lib/supabase';
+import { INITIAL_DB } from './data/initialDb';
 
 type SyncState = 'idle' | 'saving' | 'error';
 
@@ -9,6 +10,7 @@ interface State {
   loadError: string | null;
   sync: SyncState;
   syncError: string | null;
+  source: 'supabase' | 'local_server' | 'seed';
 
   openTaskId: string | null;
   paletteOpen: boolean;
@@ -46,18 +48,26 @@ async function api(method: string, url: string, body?: unknown) {
       headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
-    if (!res.ok) throw new Error(`${method} ${url} → ${res.status} ${await res.text()}`);
+    if (!res.ok) {
+      // On hosted environments like Vercel, /api may not exist; don't break the client
+      console.warn(`[Local Server API] ${method} ${url} → ${res.status}`);
+      inflight--;
+      if (inflight === 0) useStore.setState({ sync: 'idle', syncError: null });
+      return null;
+    }
     inflight--;
     if (inflight === 0) useStore.setState({ sync: 'idle', syncError: null });
     return res.json();
   } catch (e) {
     inflight--;
-    useStore.setState({ sync: 'error', syncError: e instanceof Error ? e.message : String(e) });
-    throw e;
+    // Silent failover if local node server is offline
+    console.warn(`[Local Server API Offline]`, e);
+    if (inflight === 0) useStore.setState({ sync: 'idle' });
+    return null;
   }
 }
 
-// Dual-write helper for Supabase
+// Write helper for Supabase
 async function supabaseSyncCreate<K extends Col>(col: K, item: Collections[K]) {
   try {
     const { error } = await supabase.from(col).insert(item as any);
@@ -106,7 +116,6 @@ function flushPending() {
   for (const [key, entry] of pending) {
     clearTimeout(entry.timer);
     pending.delete(key);
-    // keepalive lets the request finish even while the tab is closing.
     fetch(`/api/${entry.col}/${entry.id}`, {
       method: 'PATCH',
       keepalive: true,
@@ -140,6 +149,7 @@ export const useStore = create<State>((set, get) => ({
   loadError: null,
   sync: 'idle',
   syncError: null,
+  source: 'seed',
   openTaskId: null,
   paletteOpen: false,
   quickAddOpen: false,
@@ -149,45 +159,50 @@ export const useStore = create<State>((set, get) => ({
   theme: typeof window !== 'undefined' ? ((localStorage.getItem('notion_theme') as 'dark' | 'light') || 'dark') : 'dark',
 
   load: async () => {
+    const collections: Col[] = ['topics', 'tasks', 'docs', 'fields', 'metrics', 'sprints', 'epics', 'content_videos'];
+    const supabaseResults: Partial<Record<Col, any[]>> = {};
+    let hasSupabaseData = false;
+
+    // 1. Fetch live data from Supabase
     try {
-      // 1. Try pulling live data directly from Supabase first
-      const collections: Col[] = ['topics', 'tasks', 'docs', 'fields', 'metrics', 'sprints', 'epics', 'content_videos'];
-      const supabaseResults: Partial<Record<Col, any[]>> = {};
-      let hasSupabaseData = false;
-
-      try {
-        const promises = collections.map(async (c) => {
-          const { data, error } = await supabase.from(c).select('*');
-          if (!error && Array.isArray(data) && data.length > 0) {
-            supabaseResults[c] = data;
-            hasSupabaseData = true;
-          }
-        });
-        await Promise.all(promises);
-      } catch (err) {
-        console.warn('Supabase initial fetch skipped/unreachable:', err);
-      }
-
-      // 2. Fetch master state from local backend
-      const res = await fetch('/api/db');
-      if (!res.ok) throw new Error(`Server responded ${res.status}`);
-      const serverDb = (await res.json()) as DB;
-
-      if (hasSupabaseData) {
-        // Merge Supabase live data if available
-        const mergedDb: DB = { ...serverDb };
-        for (const c of collections) {
-          if (supabaseResults[c] && supabaseResults[c]!.length > 0) {
-            (mergedDb as any)[c] = supabaseResults[c];
-          }
+      const promises = collections.map(async (c) => {
+        const { data, error } = await supabase.from(c).select('*');
+        if (!error && Array.isArray(data) && data.length > 0) {
+          supabaseResults[c] = data;
+          hasSupabaseData = true;
         }
-        set({ db: mergedDb, loadError: null });
-      } else {
-        set({ db: serverDb, loadError: null });
-      }
-    } catch (e) {
-      set({ loadError: e instanceof Error ? e.message : String(e) });
+      });
+      await Promise.all(promises);
+    } catch (err) {
+      console.warn('Supabase query error:', err);
     }
+
+    // 2. If Supabase has data, use it as primary source of truth
+    if (hasSupabaseData) {
+      const mergedDb: DB = { ...INITIAL_DB };
+      for (const c of collections) {
+        if (supabaseResults[c] && supabaseResults[c]!.length > 0) {
+          (mergedDb as any)[c] = supabaseResults[c];
+        }
+      }
+      set({ db: mergedDb, loadError: null, source: 'supabase' });
+      return;
+    }
+
+    // 3. Try local express backend if available
+    try {
+      const res = await fetch('/api/db');
+      if (res.ok) {
+        const serverDb = (await res.json()) as DB;
+        set({ db: serverDb, loadError: null, source: 'local_server' });
+        return;
+      }
+    } catch {
+      // Local server is not reachable (e.g. running statically on Vercel)
+    }
+
+    // 4. Standalone / Cloud fallback with complete INITIAL_DB
+    set({ db: INITIAL_DB, loadError: null, source: 'seed' });
   },
 
   create: (col, item) => {
@@ -247,15 +262,14 @@ export const useStore = create<State>((set, get) => ({
     Promise.resolve(supabase.from('settings').upsert({ id: 'current', ...patch } as any)).catch(() => {});
   },
 
-
   replaceDb: async (db) => {
     const saved = (await api('PUT', '/api/db', db)) as DB;
-    set({ db: saved, openTaskId: null });
+    set({ db: saved || db, openTaskId: null });
   },
 
   resetDb: async () => {
     const saved = (await api('POST', '/api/reset')) as DB;
-    set({ db: saved, openTaskId: null });
+    set({ db: saved || INITIAL_DB, openTaskId: null });
   },
 
   setOpenTask: (id) => set({ openTaskId: id }),
