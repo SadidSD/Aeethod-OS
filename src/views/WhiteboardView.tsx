@@ -18,25 +18,16 @@ import {
   Maximize2,
   Undo2,
   Redo2,
-  Sparkles,
-  Layers,
   Copy,
   Lock,
   Unlock,
   Move,
   Info,
   Frame,
-  Smile,
-  Upload,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  Bold,
-  Italic,
-  Share2,
-  Check,
   ChevronDown,
-  LayoutGrid
+  LayoutGrid,
+  Share2,
+  Check
 } from 'lucide-react';
 
 export type ToolType =
@@ -54,6 +45,9 @@ export type ToolType =
   | 'line'
   | 'eraser';
 
+export type HandleType = 'tl' | 'tr' | 'bl' | 'br';
+export type AnchorEdge = 'top' | 'right' | 'bottom' | 'left';
+
 export interface CanvasElement {
   id: string;
   type:
@@ -66,8 +60,7 @@ export interface CanvasElement {
     | 'diamond'
     | 'frame'
     | 'arrow'
-    | 'line'
-    | 'image';
+    | 'line';
   x: number;
   y: number;
   width?: number;
@@ -80,14 +73,14 @@ export interface CanvasElement {
   strokeWidth: number;
   strokeDash?: number[];
   fontSize?: number;
-  fontFamily?: string;
-  fontWeight?: string;
-  fontStyle?: string;
   textAlign?: 'left' | 'center' | 'right';
-  opacity?: number;
   locked?: boolean;
-  imageUrl?: string;
   frameTitle?: string;
+  // Connection line bindings
+  fromElementId?: string;
+  fromAnchor?: AnchorEdge;
+  toElementId?: string;
+  toAnchor?: AnchorEdge;
 }
 
 const STICKY_COLORS = [
@@ -196,22 +189,11 @@ const INITIAL_BOARD: CanvasElement[] = [
     strokeWidth: 2,
   },
   {
-    id: 'arrow-1',
-    type: 'arrow',
-    x: 330,
-    y: 380,
-    width: 90,
-    height: 0,
-    color: '#4f46e5',
-    strokeColor: '#4f46e5',
-    strokeWidth: 2.5,
-  },
-  {
     id: 'diamond-1',
     type: 'diamond',
-    x: 430,
+    x: 420,
     y: 330,
-    width: 140,
+    width: 150,
     height: 100,
     text: 'Clerk Verify?',
     color: '#ea580c',
@@ -220,20 +202,9 @@ const INITIAL_BOARD: CanvasElement[] = [
     strokeWidth: 2,
   },
   {
-    id: 'arrow-2',
-    type: 'arrow',
-    x: 580,
-    y: 380,
-    width: 90,
-    height: 0,
-    color: '#16a34a',
-    strokeColor: '#16a34a',
-    strokeWidth: 2.5,
-  },
-  {
     id: 'rect-2',
     type: 'rectangle',
-    x: 680,
+    x: 670,
     y: 340,
     width: 200,
     height: 80,
@@ -243,11 +214,52 @@ const INITIAL_BOARD: CanvasElement[] = [
     strokeColor: '#22c55e',
     strokeWidth: 2,
   },
+  {
+    id: 'arrow-1',
+    type: 'arrow',
+    x: 320,
+    y: 380,
+    width: 100,
+    height: 0,
+    color: '#4f46e5',
+    strokeColor: '#4f46e5',
+    strokeWidth: 2.5,
+    fromElementId: 'rect-1',
+    fromAnchor: 'right',
+    toElementId: 'diamond-1',
+    toAnchor: 'left',
+  },
+  {
+    id: 'arrow-2',
+    type: 'arrow',
+    x: 570,
+    y: 380,
+    width: 100,
+    height: 0,
+    color: '#16a34a',
+    strokeColor: '#16a34a',
+    strokeWidth: 2.5,
+    fromElementId: 'diamond-1',
+    fromAnchor: 'right',
+    toElementId: 'rect-2',
+    toAnchor: 'left',
+  },
 ];
+
+// Helper: Calculate 4 Anchor Points (Edges: top, right, bottom, left) of an element
+function getAnchorPoints(el: CanvasElement): Record<AnchorEdge, { x: number; y: number }> {
+  const w = el.width || 120;
+  const h = el.height || 80;
+  return {
+    top: { x: el.x + w / 2, y: el.y },
+    right: { x: el.x + w, y: el.y + h / 2 },
+    bottom: { x: el.x + w / 2, y: el.y + h },
+    left: { x: el.x, y: el.y + h / 2 },
+  };
+}
 
 export const WhiteboardView: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Viewport
   const [scale, setScale] = useState<number>(1);
@@ -255,22 +267,21 @@ export const WhiteboardView: React.FC = () => {
   const [isPanning, setIsPanning] = useState<boolean>(false);
   const [startPan, setStartPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
+  // Spacebar panning state
+  const isSpacePressed = useRef<boolean>(false);
+
   // Tools & Styling
   const [tool, setTool] = useState<ToolType>('select');
   const [selectedColor, setSelectedColor] = useState<string>('#4f46e5');
   const [selectedStickyColor, setSelectedStickyColor] = useState(STICKY_COLORS[0]);
   const [strokeWidth, setStrokeWidth] = useState<number>(2.5);
   const [strokeDashType, setStrokeDashType] = useState<'solid' | 'dashed'>('solid');
-  const [fillColorType, setFillColorType] = useState<'none' | 'light'>('light');
   const [fontSize, setFontSize] = useState<number>(15);
-  const [isBold, setIsBold] = useState<boolean>(false);
-  const [isItalic, setIsItalic] = useState<boolean>(false);
-  const [textAlign, setTextAlign] = useState<'left' | 'center' | 'right'>('center');
 
   // Elements & History
   const [elements, setElements] = useState<CanvasElement[]>(() => {
     try {
-      const saved = localStorage.getItem('aeethod_advanced_whiteboard_v2');
+      const saved = localStorage.getItem('aeethod_advanced_whiteboard_v3');
       if (saved) return JSON.parse(saved);
     } catch {}
     return INITIAL_BOARD;
@@ -279,24 +290,62 @@ export const WhiteboardView: React.FC = () => {
   const [history, setHistory] = useState<CanvasElement[][]>([]);
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
 
-  // Selection & Interactions
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Selection: MULTI-SELECT SUPPORT (Set of IDs)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState<string>('');
+
+  // Marquee Selection Box
+  const [selectionBox, setSelectionBox] = useState<{
+    startX: number;
+    startY: number;
+    currentX: number;
+    currentY: number;
+  } | null>(null);
+
+  // Active Dragging of Elements (supports multi-drag)
+  const [isDraggingElements, setIsDraggingElements] = useState<boolean>(false);
+  const [dragStartCoord, setDragStartCoord] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [elementsInitialPos, setElementsInitialPos] = useState<
+    Map<string, { x: number; y: number }>
+  >(new Map());
+
+  // Resizing Element via 4 Corner Handles
+  const [resizeHandle, setResizeHandle] = useState<{
+    elementId: string;
+    handle: HandleType;
+    startX: number;
+    startY: number;
+    initialX: number;
+    initialY: number;
+    initialW: number;
+    initialH: number;
+  } | null>(null);
+
+  // Connecting via 4 Edge Anchor Points
+  const [connectingAnchor, setConnectingAnchor] = useState<{
+    fromElementId: string;
+    fromAnchor: AnchorEdge;
+    startX: number;
+    startY: number;
+    currentX: number;
+    currentY: number;
+  } | null>(null);
+
+  // Drawing strokes & shapes
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
-  const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [currentStroke, setCurrentStroke] = useState<{ x: number; y: number }[]>([]);
   const [shapeStart, setShapeStart] = useState<{ x: number; y: number } | null>(null);
   const [tempShape, setTempShape] = useState<CanvasElement | null>(null);
 
-  // Templates Dropdown
+  // Dropdowns / UI
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [copiedLinkFeedback, setCopiedLinkFeedback] = useState(false);
 
   // Auto-save
   useEffect(() => {
     try {
-      localStorage.setItem('aeethod_advanced_whiteboard_v2', JSON.stringify(elements));
+      localStorage.setItem('aeethod_advanced_whiteboard_v3', JSON.stringify(elements));
     } catch (e) {
       console.error(e);
     }
@@ -318,11 +367,11 @@ export const WhiteboardView: React.FC = () => {
       const nextIndex = historyIndex - 1;
       setElements(history[nextIndex]);
       setHistoryIndex(nextIndex);
-      setSelectedId(null);
+      setSelectedIds(new Set());
     } else if (historyIndex === 0) {
       setElements(INITIAL_BOARD);
       setHistoryIndex(-1);
-      setSelectedId(null);
+      setSelectedIds(new Set());
     }
   };
 
@@ -331,7 +380,7 @@ export const WhiteboardView: React.FC = () => {
       const nextIndex = historyIndex + 1;
       setElements(history[nextIndex]);
       setHistoryIndex(nextIndex);
-      setSelectedId(null);
+      setSelectedIds(new Set());
     }
   };
 
@@ -347,7 +396,37 @@ export const WhiteboardView: React.FC = () => {
     [pan, scale]
   );
 
-  // Render Canvas
+  // Update connected arrows automatically when elements move or resize
+  const reconcileConnections = useCallback(
+    (currentElements: CanvasElement[]): CanvasElement[] => {
+      const elementMap = new Map<string, CanvasElement>();
+      currentElements.forEach((el) => elementMap.set(el.id, el));
+
+      return currentElements.map((el) => {
+        if ((el.type === 'arrow' || el.type === 'line') && el.fromElementId && el.toElementId) {
+          const fromEl = elementMap.get(el.fromElementId);
+          const toEl = elementMap.get(el.toElementId);
+          if (fromEl && toEl && el.fromAnchor && el.toAnchor) {
+            const fromPoints = getAnchorPoints(fromEl);
+            const toPoints = getAnchorPoints(toEl);
+            const startPt = fromPoints[el.fromAnchor];
+            const endPt = toPoints[el.toAnchor];
+            return {
+              ...el,
+              x: startPt.x,
+              y: startPt.y,
+              width: endPt.x - startPt.x,
+              height: endPt.y - startPt.y,
+            };
+          }
+        }
+        return el;
+      });
+    },
+    []
+  );
+
+  // RENDER CANVAS
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -369,14 +448,14 @@ export const WhiteboardView: React.FC = () => {
     ctx.save();
     ctx.scale(dpr, dpr);
 
-    // Pure White Miro Canvas Background
+    // Clean White Background
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
 
     ctx.translate(pan.x, pan.y);
     ctx.scale(scale, scale);
 
-    // Infinite Miro Dot Grid
+    // Dot Grid
     const gridSize = 28;
     const startX = Math.floor((-pan.x / scale) / gridSize) * gridSize - gridSize;
     const endX = startX + width / scale + gridSize * 2;
@@ -394,16 +473,16 @@ export const WhiteboardView: React.FC = () => {
 
     const allElements = tempShape ? [...elements, tempShape] : elements;
 
-    // Render elements (Frames first, then paths and shapes)
-    const sortedElements = [...allElements].sort((a, b) => {
+    // Render elements (Frames first)
+    const sorted = [...allElements].sort((a, b) => {
       if (a.type === 'frame' && b.type !== 'frame') return -1;
       if (a.type !== 'frame' && b.type === 'frame') return 1;
       return 0;
     });
 
-    sortedElements.forEach((el) => {
+    sorted.forEach((el) => {
       ctx.save();
-      const isSelected = el.id === selectedId;
+      const isSelected = selectedIds.has(el.id);
 
       switch (el.type) {
         case 'frame': {
@@ -418,7 +497,6 @@ export const WhiteboardView: React.FC = () => {
           ctx.strokeRect(el.x, el.y, w, h);
           ctx.setLineDash([]);
 
-          // Frame Title bar
           ctx.fillStyle = '#475569';
           ctx.font = '600 13px system-ui, -apple-system, sans-serif';
           ctx.fillText(el.frameTitle || 'Frame', el.x + 8, el.y - 8);
@@ -431,7 +509,7 @@ export const WhiteboardView: React.FC = () => {
           ctx.beginPath();
           ctx.strokeStyle = el.color;
           ctx.lineWidth = el.type === 'highlighter' ? el.strokeWidth * 3.5 : el.strokeWidth;
-          ctx.globalAlpha = el.type === 'highlighter' ? 0.35 : el.opacity || 1;
+          ctx.globalAlpha = el.type === 'highlighter' ? 0.35 : 1;
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
           ctx.moveTo(el.points[0].x, el.points[0].y);
@@ -446,7 +524,6 @@ export const WhiteboardView: React.FC = () => {
           const w = el.width || 210;
           const h = el.height || 160;
 
-          // Soft Miro drop shadow
           ctx.shadowColor = 'rgba(15, 23, 42, 0.08)';
           ctx.shadowBlur = 14;
           ctx.shadowOffsetY = 6;
@@ -457,14 +534,6 @@ export const WhiteboardView: React.FC = () => {
           ctx.fill();
 
           ctx.shadowColor = 'transparent';
-
-          if (isSelected) {
-            ctx.strokeStyle = '#4f46e5';
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            ctx.roundRect(el.x - 3, el.y - 3, w + 6, h + 6, 10);
-            ctx.stroke();
-          }
 
           if (el.text && editingId !== el.id) {
             ctx.fillStyle = '#1e293b';
@@ -515,15 +584,9 @@ export const WhiteboardView: React.FC = () => {
           ctx.stroke();
           ctx.setLineDash([]);
 
-          if (isSelected) {
-            ctx.strokeStyle = '#4f46e5';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(el.x - 4, el.y - 4, w + 8, h + 8);
-          }
-
           if (el.text && editingId !== el.id) {
             ctx.fillStyle = '#0f172a';
-            ctx.font = `${el.fontWeight || '600'} ${el.fontSize || 14}px system-ui, sans-serif`;
+            ctx.font = `600 ${el.fontSize || 14}px system-ui, sans-serif`;
             ctx.textAlign = el.textAlign || 'center';
             ctx.textBaseline = 'middle';
             const lines = el.text.split('\n');
@@ -559,12 +622,6 @@ export const WhiteboardView: React.FC = () => {
           ctx.lineWidth = el.strokeWidth;
           ctx.stroke();
 
-          if (isSelected) {
-            ctx.strokeStyle = '#4f46e5';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(el.x - 4, el.y - 4, (el.width || 90) + 8, (el.height || 90) + 8);
-          }
-
           if (el.text && editingId !== el.id) {
             ctx.fillStyle = '#0f172a';
             ctx.font = `600 ${el.fontSize || 13}px system-ui, sans-serif`;
@@ -598,12 +655,6 @@ export const WhiteboardView: React.FC = () => {
           ctx.strokeStyle = el.strokeColor || el.color;
           ctx.lineWidth = el.strokeWidth;
           ctx.stroke();
-
-          if (isSelected) {
-            ctx.strokeStyle = '#4f46e5';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(el.x - 4, el.y - 4, w + 8, h + 8);
-          }
 
           if (el.text && editingId !== el.id) {
             ctx.fillStyle = '#0f172a';
@@ -647,43 +698,97 @@ export const WhiteboardView: React.FC = () => {
             ctx.closePath();
             ctx.fill();
           }
-
-          if (isSelected) {
-            ctx.strokeStyle = '#4f46e5';
-            ctx.lineWidth = 1.5;
-            ctx.strokeRect(
-              Math.min(el.x, tox) - 6,
-              Math.min(el.y, toy) - 6,
-              Math.abs(el.width || 100) + 12,
-              Math.abs(el.height || 0) + 12
-            );
-          }
           break;
         }
 
         case 'text': {
           if (editingId === el.id) break;
           ctx.fillStyle = el.color || '#0f172a';
-          ctx.font = `${el.fontStyle || 'normal'} ${el.fontWeight || '500'} ${
-            el.fontSize || 16
-          }px system-ui, sans-serif`;
+          ctx.font = `500 ${el.fontSize || 16}px system-ui, sans-serif`;
           ctx.fillText(el.text || 'Text', el.x, el.y + (el.fontSize || 16));
-
-          if (isSelected) {
-            const metrics = ctx.measureText(el.text || 'Text');
-            ctx.strokeStyle = '#4f46e5';
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([3, 3]);
-            ctx.strokeRect(el.x - 4, el.y, metrics.width + 8, (el.fontSize || 16) * 1.4);
-            ctx.setLineDash([]);
-          }
           break;
         }
       }
+
+      // DRAW SELECTION BOUNDING BOX & HANDLES & ANCHORS
+      if (isSelected && el.type !== 'path' && el.type !== 'highlighter') {
+        const w = el.width || 120;
+        const h = el.height || 80;
+
+        // Selection Border
+        ctx.strokeStyle = '#4f46e5';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([3, 3]);
+        ctx.strokeRect(el.x - 4, el.y - 4, w + 8, h + 8);
+        ctx.setLineDash([]);
+
+        // 4 CORNER RESIZE HANDLES (Increase/Decrease Size)
+        const handles: { x: number; y: number }[] = [
+          { x: el.x - 5, y: el.y - 5 }, // Top-Left
+          { x: el.x + w + 5, y: el.y - 5 }, // Top-Right
+          { x: el.x - 5, y: el.y + h + 5 }, // Bottom-Left
+          { x: el.x + w + 5, y: el.y + h + 5 }, // Bottom-Right
+        ];
+
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#4f46e5';
+        ctx.lineWidth = 2;
+        handles.forEach((hPos) => {
+          ctx.beginPath();
+          ctx.rect(hPos.x - 4, hPos.y - 4, 8, 8);
+          ctx.fill();
+          ctx.stroke();
+        });
+
+        // 4 EDGE CONNECTION ANCHOR POINTS (Top, Right, Bottom, Left)
+        if (['sticky', 'rectangle', 'circle', 'diamond'].includes(el.type)) {
+          const anchors = getAnchorPoints(el);
+          Object.values(anchors).forEach((pt) => {
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#4f46e5';
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          });
+        }
+      }
+
       ctx.restore();
     });
 
-    // Active live stroke
+    // Draw active connecting line from edge anchor
+    if (connectingAnchor) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.strokeStyle = '#4f46e5';
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([4, 4]);
+      ctx.moveTo(connectingAnchor.startX, connectingAnchor.startY);
+      ctx.lineTo(connectingAnchor.currentX, connectingAnchor.currentY);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Draw active marquee selection box
+    if (selectionBox) {
+      ctx.save();
+      const x = Math.min(selectionBox.startX, selectionBox.currentX);
+      const y = Math.min(selectionBox.startY, selectionBox.currentY);
+      const w = Math.abs(selectionBox.currentX - selectionBox.startX);
+      const h = Math.abs(selectionBox.currentY - selectionBox.startY);
+
+      ctx.fillStyle = 'rgba(79, 70, 229, 0.08)';
+      ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = '#4f46e5';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([4, 4]);
+      ctx.strokeRect(x, y, w, h);
+      ctx.restore();
+    }
+
+    // Active live pen stroke
     if (currentStroke.length > 0) {
       ctx.beginPath();
       ctx.strokeStyle = selectedColor;
@@ -703,16 +808,82 @@ export const WhiteboardView: React.FC = () => {
     elements,
     pan,
     scale,
-    selectedId,
+    selectedIds,
     tempShape,
     currentStroke,
     selectedColor,
     strokeWidth,
     editingId,
     tool,
+    selectionBox,
+    connectingAnchor,
   ]);
 
-  // Click & Hit Detection
+  // Hit Test: Check if coordinate clicks on a resize handle
+  const getResizeHandleAt = (
+    x: number,
+    y: number
+  ): { element: CanvasElement; handle: HandleType } | null => {
+    for (const id of selectedIds) {
+      const el = elements.find((e) => e.id === id);
+      if (!el || el.locked) continue;
+      const w = el.width || 120;
+      const h = el.height || 80;
+      const hitDist = 9;
+
+      if (Math.abs(x - (el.x - 5)) < hitDist && Math.abs(y - (el.y - 5)) < hitDist)
+        return { element: el, handle: 'tl' };
+      if (Math.abs(x - (el.x + w + 5)) < hitDist && Math.abs(y - (el.y - 5)) < hitDist)
+        return { element: el, handle: 'tr' };
+      if (Math.abs(x - (el.x - 5)) < hitDist && Math.abs(y - (el.y + h + 5)) < hitDist)
+        return { element: el, handle: 'bl' };
+      if (Math.abs(x - (el.x + w + 5)) < hitDist && Math.abs(y - (el.y + h + 5)) < hitDist)
+        return { element: el, handle: 'br' };
+    }
+    return null;
+  };
+
+  // Hit Test: Check if coordinate clicks on one of the 4 Edge Anchors
+  const getAnchorAt = (
+    x: number,
+    y: number
+  ): { element: CanvasElement; anchor: AnchorEdge } | null => {
+    for (const id of selectedIds) {
+      const el = elements.find((e) => e.id === id);
+      if (!el || el.locked) continue;
+      if (!['sticky', 'rectangle', 'circle', 'diamond'].includes(el.type)) continue;
+
+      const anchors = getAnchorPoints(el);
+      const hitDist = 12;
+
+      for (const [edge, pt] of Object.entries(anchors)) {
+        if (Math.hypot(x - pt.x, y - pt.y) <= hitDist) {
+          return { element: el, anchor: edge as AnchorEdge };
+        }
+      }
+    }
+    return null;
+  };
+
+  // Find target anchor on ANY element when dropping a connector
+  const findDropAnchorAt = (
+    x: number,
+    y: number
+  ): { element: CanvasElement; anchor: AnchorEdge } | null => {
+    for (let i = elements.length - 1; i >= 0; i--) {
+      const el = elements[i];
+      if (!['sticky', 'rectangle', 'circle', 'diamond'].includes(el.type)) continue;
+      const anchors = getAnchorPoints(el);
+      for (const [edge, pt] of Object.entries(anchors)) {
+        if (Math.hypot(x - pt.x, y - pt.y) <= 16) {
+          return { element: el, anchor: edge as AnchorEdge };
+        }
+      }
+    }
+    return null;
+  };
+
+  // Get Element At Coordinate
   const getElementAt = (x: number, y: number): CanvasElement | null => {
     for (let i = elements.length - 1; i >= 0; i--) {
       const el = elements[i];
@@ -721,7 +892,6 @@ export const WhiteboardView: React.FC = () => {
         const w = el.width || 200;
         const h = el.height || 140;
         if (x >= el.x && x <= el.x + w && y >= el.y && y <= el.y + h) {
-          // If frame, only select if clicked near title top bar or frame is small
           if (el.type === 'frame' && y > el.y + 36 && w > 400) continue;
           return el;
         }
@@ -734,8 +904,7 @@ export const WhiteboardView: React.FC = () => {
         const ry = Math.abs(el.height || 90) / 2;
         const cx = el.x + rx;
         const cy = el.y + ry;
-        const dist = Math.pow((x - cx) / rx, 2) + Math.pow((y - cy) / ry, 2);
-        if (dist <= 1) return el;
+        if (Math.pow((x - cx) / rx, 2) + Math.pow((y - cy) / ry, 2) <= 1) return el;
       } else if (el.type === 'text') {
         const w = el.width || 200;
         const h = (el.fontSize || 16) * 1.5;
@@ -743,19 +912,22 @@ export const WhiteboardView: React.FC = () => {
       } else if (el.type === 'arrow' || el.type === 'line') {
         const tox = el.x + (el.width || 100);
         const toy = el.y + (el.height || 0);
-        const minX = Math.min(el.x, tox) - 8;
-        const maxX = Math.max(el.x, tox) + 8;
-        const minY = Math.min(el.y, toy) - 8;
-        const maxY = Math.max(el.y, toy) + 8;
-        if (x >= minX && x <= maxX && y >= minY && y <= maxY) return el;
+        if (
+          x >= Math.min(el.x, tox) - 8 &&
+          x <= Math.max(el.x, tox) + 8 &&
+          y >= Math.min(el.y, toy) - 8 &&
+          y <= Math.max(el.y, toy) + 8
+        )
+          return el;
       }
     }
     return null;
   };
 
-  // Mouse Interactions
+  // MOUSE DOWN HANDLER
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (e.button === 1 || tool === 'hand' || e.altKey || (e.button === 0 && e.shiftKey)) {
+    // 1. SPACEBAR PANNING OR MIDDLE CLICK OR HAND TOOL
+    if (isSpacePressed.current || e.button === 1 || tool === 'hand' || e.altKey) {
       setIsPanning(true);
       setStartPan({ x: e.clientX - pan.x, y: e.clientY - pan.y });
       return;
@@ -763,16 +935,72 @@ export const WhiteboardView: React.FC = () => {
 
     const { x, y } = toWorldCoords(e.clientX, e.clientY);
 
+    // 2. CHECK FOR CONNECTION ANCHORS (Establishing Arrow Connection from 4 Edges)
+    if (selectedIds.size > 0 && tool === 'select') {
+      const anchorHit = getAnchorAt(x, y);
+      if (anchorHit) {
+        const anchors = getAnchorPoints(anchorHit.element);
+        const pt = anchors[anchorHit.anchor];
+        setConnectingAnchor({
+          fromElementId: anchorHit.element.id,
+          fromAnchor: anchorHit.anchor,
+          startX: pt.x,
+          startY: pt.y,
+          currentX: x,
+          currentY: y,
+        });
+        return;
+      }
+
+      // 3. CHECK FOR CORNER RESIZE HANDLES (Resize Element Size)
+      const resizeHit = getResizeHandleAt(x, y);
+      if (resizeHit) {
+        setResizeHandle({
+          elementId: resizeHit.element.id,
+          handle: resizeHit.handle,
+          startX: x,
+          startY: y,
+          initialX: resizeHit.element.x,
+          initialY: resizeHit.element.y,
+          initialW: resizeHit.element.width || 120,
+          initialH: resizeHit.element.height || 80,
+        });
+        return;
+      }
+    }
+
+    // 4. SELECT TOOL (CLICK & MULTI-SELECT WITH SHIFT OR MARQUEE BOX)
     if (tool === 'select') {
       const clicked = getElementAt(x, y);
       if (clicked) {
-        setSelectedId(clicked.id);
-        setIsDrawing(true);
-        setDragOffset({ x: x - clicked.x, y: y - clicked.y });
+        const isShift = e.shiftKey;
+        const newSelected = new Set(selectedIds);
+
+        if (isShift) {
+          if (newSelected.has(clicked.id)) newSelected.delete(clicked.id);
+          else newSelected.add(clicked.id);
+        } else {
+          if (!newSelected.has(clicked.id)) {
+            newSelected.clear();
+            newSelected.add(clicked.id);
+          }
+        }
+        setSelectedIds(newSelected);
+
+        // Prep multi-element drag
+        setIsDraggingElements(true);
+        setDragStartCoord({ x, y });
+        const initialMap = new Map<string, { x: number; y: number }>();
+        elements.forEach((el) => {
+          if (newSelected.has(el.id)) {
+            initialMap.set(el.id, { x: el.x, y: el.y });
+          }
+        });
+        setElementsInitialPos(initialMap);
       } else {
-        setSelectedId(null);
-        setIsPanning(true);
-        setStartPan({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+        // Clicked empty space -> start drag selection box (Marquee)
+        if (!e.shiftKey) setSelectedIds(new Set());
+        setSelectionBox({ startX: x, startY: y, currentX: x, currentY: y });
       }
     } else if (tool === 'pen' || tool === 'highlighter') {
       setIsDrawing(true);
@@ -792,7 +1020,7 @@ export const WhiteboardView: React.FC = () => {
         y: y - 80,
         width: 210,
         height: 160,
-        text: 'New sticky...',
+        text: 'New thought...',
         color: selectedStickyColor.bg,
         strokeWidth: 2,
         fontSize: 14,
@@ -800,9 +1028,9 @@ export const WhiteboardView: React.FC = () => {
       const next = [...elements, newSticky];
       setElements(next);
       pushHistory(next);
-      setSelectedId(newSticky.id);
+      setSelectedIds(new Set([newSticky.id]));
       setEditingId(newSticky.id);
-      setEditingText('New sticky...');
+      setEditingText('New thought...');
       setTool('select');
     } else if (tool === 'text') {
       const newText: CanvasElement = {
@@ -812,7 +1040,7 @@ export const WhiteboardView: React.FC = () => {
         y,
         width: 200,
         height: 40,
-        text: 'Heading / Note',
+        text: 'Type heading...',
         color: selectedColor,
         strokeWidth: 1,
         fontSize: fontSize,
@@ -820,9 +1048,9 @@ export const WhiteboardView: React.FC = () => {
       const next = [...elements, newText];
       setElements(next);
       pushHistory(next);
-      setSelectedId(newText.id);
+      setSelectedIds(new Set([newText.id]));
       setEditingId(newText.id);
-      setEditingText('Heading / Note');
+      setEditingText('Type heading...');
       setTool('select');
     } else if (['rectangle', 'circle', 'diamond', 'frame', 'arrow', 'line'].includes(tool)) {
       setIsDrawing(true);
@@ -830,6 +1058,7 @@ export const WhiteboardView: React.FC = () => {
     }
   };
 
+  // MOUSE MOVE HANDLER
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (isPanning) {
       setPan({
@@ -841,36 +1070,95 @@ export const WhiteboardView: React.FC = () => {
 
     const { x, y } = toWorldCoords(e.clientX, e.clientY);
 
-    if (tool === 'select' && isDrawing && selectedId) {
+    // 1. Connection line dragging
+    if (connectingAnchor) {
+      setConnectingAnchor((prev) => (prev ? { ...prev, currentX: x, currentY: y } : null));
+      return;
+    }
+
+    // 2. Corner Resizing in progress
+    if (resizeHandle) {
+      const dx = x - resizeHandle.startX;
+      const dy = y - resizeHandle.startY;
+
       setElements((prev) =>
         prev.map((el) => {
-          if (el.id === selectedId) {
-            return {
-              ...el,
-              x: x - dragOffset.x,
-              y: y - dragOffset.y,
-            };
+          if (el.id !== resizeHandle.elementId) return el;
+          let newX = resizeHandle.initialX;
+          let newY = resizeHandle.initialY;
+          let newW = resizeHandle.initialW;
+          let newH = resizeHandle.initialH;
+
+          if (resizeHandle.handle === 'br') {
+            newW = Math.max(50, resizeHandle.initialW + dx);
+            newH = Math.max(40, resizeHandle.initialH + dy);
+          } else if (resizeHandle.handle === 'tr') {
+            newW = Math.max(50, resizeHandle.initialW + dx);
+            newH = Math.max(40, resizeHandle.initialH - dy);
+            newY = resizeHandle.initialY + (resizeHandle.initialH - newH);
+          } else if (resizeHandle.handle === 'bl') {
+            newW = Math.max(50, resizeHandle.initialW - dx);
+            newH = Math.max(40, resizeHandle.initialH + dy);
+            newX = resizeHandle.initialX + (resizeHandle.initialH - newW);
+          } else if (resizeHandle.handle === 'tl') {
+            newW = Math.max(50, resizeHandle.initialW - dx);
+            newH = Math.max(40, resizeHandle.initialH - dy);
+            newX = resizeHandle.initialX + (resizeHandle.initialW - newW);
+            newY = resizeHandle.initialY + (resizeHandle.initialH - newH);
           }
-          return el;
+          return { ...el, x: newX, y: newY, width: newW, height: newH };
         })
       );
-    } else if ((tool === 'pen' || tool === 'highlighter') && isDrawing) {
+      return;
+    }
+
+    // 3. Multi-Element dragging
+    if (isDraggingElements) {
+      const dx = x - dragStartCoord.x;
+      const dy = y - dragStartCoord.y;
+
+      setElements((prev) =>
+        reconcileConnections(
+          prev.map((el) => {
+            if (elementsInitialPos.has(el.id)) {
+              const init = elementsInitialPos.get(el.id)!;
+              return { ...el, x: init.x + dx, y: init.y + dy };
+            }
+            return el;
+          })
+        )
+      );
+      return;
+    }
+
+    // 4. Marquee Selection Box
+    if (selectionBox) {
+      setSelectionBox((prev) => (prev ? { ...prev, currentX: x, currentY: y } : null));
+
+      // Calculate enclosed elements
+      const minX = Math.min(selectionBox.startX, x);
+      const maxX = Math.max(selectionBox.startX, x);
+      const minY = Math.min(selectionBox.startY, y);
+      const maxY = Math.max(selectionBox.startY, y);
+
+      const enclosed = new Set<string>();
+      elements.forEach((el) => {
+        const w = el.width || 120;
+        const h = el.height || 80;
+        if (el.x + w >= minX && el.x <= maxX && el.y + h >= minY && el.y <= maxY) {
+          enclosed.add(el.id);
+        }
+      });
+      setSelectedIds(enclosed);
+      return;
+    }
+
+    // 5. Drawing pen or shapes
+    if ((tool === 'pen' || tool === 'highlighter') && isDrawing) {
       setCurrentStroke((prev) => [...prev, { x, y }]);
     } else if (shapeStart && isDrawing) {
       const width = x - shapeStart.x;
       const height = y - shapeStart.y;
-
-      let fill = undefined;
-      if (fillColorType === 'light') {
-        fill =
-          tool === 'rectangle'
-            ? `${selectedColor}18`
-            : tool === 'circle'
-            ? `${selectedColor}15`
-            : tool === 'diamond'
-            ? `${selectedColor}18`
-            : undefined;
-      }
 
       setTempShape({
         id: 'temp-shape',
@@ -881,24 +1169,79 @@ export const WhiteboardView: React.FC = () => {
         height,
         color: selectedColor,
         strokeColor: selectedColor,
-        fillColor: tool === 'frame' ? '#f8fafc' : fill,
-        frameTitle: tool === 'frame' ? 'New Frame' : undefined,
+        fillColor:
+          tool === 'rectangle' || tool === 'circle' || tool === 'diamond'
+            ? `${selectedColor}18`
+            : undefined,
         strokeWidth,
         strokeDash: strokeDashType === 'dashed' ? [6, 6] : undefined,
       });
     }
   };
 
-  const handleMouseUp = () => {
+  // MOUSE UP HANDLER
+  const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (isPanning) {
       setIsPanning(false);
       return;
     }
 
-    if (tool === 'select' && isDrawing) {
-      setIsDrawing(false);
+    const { x, y } = toWorldCoords(e.clientX, e.clientY);
+
+    // 1. Connection line dropped: check if dropped on an anchor of another element
+    if (connectingAnchor) {
+      const dropTarget = findDropAnchorAt(x, y);
+      if (dropTarget && dropTarget.element.id !== connectingAnchor.fromElementId) {
+        // Create an active bound connection arrow between the two elements!
+        const fromPoints = getAnchorPoints(
+          elements.find((el) => el.id === connectingAnchor.fromElementId)!
+        );
+        const toPoints = getAnchorPoints(dropTarget.element);
+        const startPt = fromPoints[connectingAnchor.fromAnchor];
+        const endPt = toPoints[dropTarget.anchor];
+
+        const newArrow: CanvasElement = {
+          id: `arrow-${Date.now()}`,
+          type: 'arrow',
+          x: startPt.x,
+          y: startPt.y,
+          width: endPt.x - startPt.x,
+          height: endPt.y - startPt.y,
+          color: selectedColor,
+          strokeColor: selectedColor,
+          strokeWidth: 2.5,
+          fromElementId: connectingAnchor.fromElementId,
+          fromAnchor: connectingAnchor.fromAnchor,
+          toElementId: dropTarget.element.id,
+          toAnchor: dropTarget.anchor,
+        };
+        const next = [...elements, newArrow];
+        setElements(next);
+        pushHistory(next);
+      }
+      setConnectingAnchor(null);
+      return;
+    }
+
+    if (resizeHandle) {
+      setResizeHandle(null);
+      setElements((prev) => reconcileConnections(prev));
       pushHistory(elements);
-    } else if ((tool === 'pen' || tool === 'highlighter') && isDrawing) {
+      return;
+    }
+
+    if (isDraggingElements) {
+      setIsDraggingElements(false);
+      pushHistory(elements);
+      return;
+    }
+
+    if (selectionBox) {
+      setSelectionBox(null);
+      return;
+    }
+
+    if (tool === 'pen' || tool === 'highlighter') {
       setIsDrawing(false);
       if (currentStroke.length > 1) {
         const newPath: CanvasElement = {
@@ -926,7 +1269,7 @@ export const WhiteboardView: React.FC = () => {
       pushHistory(next);
       setShapeStart(null);
       setTempShape(null);
-      setSelectedId(newEl.id);
+      setSelectedIds(new Set([newEl.id]));
       setTool('select');
     }
   };
@@ -957,11 +1300,10 @@ export const WhiteboardView: React.FC = () => {
     const { x, y } = toWorldCoords(e.clientX, e.clientY);
     const clicked = getElementAt(x, y);
     if (clicked && ['sticky', 'text', 'rectangle', 'circle', 'diamond'].includes(clicked.type)) {
-      setSelectedId(clicked.id);
+      setSelectedIds(new Set([clicked.id]));
       setEditingId(clicked.id);
       setEditingText(clicked.text || '');
     } else {
-      // Spawn new sticky on empty double-click
       const newSticky: CanvasElement = {
         id: `sticky-${Date.now()}`,
         type: 'sticky',
@@ -977,7 +1319,7 @@ export const WhiteboardView: React.FC = () => {
       const next = [...elements, newSticky];
       setElements(next);
       pushHistory(next);
-      setSelectedId(newSticky.id);
+      setSelectedIds(new Set([newSticky.id]));
       setEditingId(newSticky.id);
       setEditingText('');
     }
@@ -997,108 +1339,99 @@ export const WhiteboardView: React.FC = () => {
     }
   };
 
-  // Duplicate Selected Element (Ctrl+D)
+  // Duplicate Selected Elements
   const duplicateSelected = () => {
-    const active = elements.find((el) => el.id === selectedId);
-    if (!active) return;
-    const copy: CanvasElement = {
-      ...active,
-      id: `${active.type}-${Date.now()}`,
-      x: active.x + 30,
-      y: active.y + 30,
-    };
-    const next = [...elements, copy];
+    if (selectedIds.size === 0) return;
+    const newElements: CanvasElement[] = [];
+    const newSelected = new Set<string>();
+
+    elements.forEach((el) => {
+      if (selectedIds.has(el.id)) {
+        const copy: CanvasElement = {
+          ...el,
+          id: `${el.type}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          x: el.x + 30,
+          y: el.y + 30,
+        };
+        newElements.push(copy);
+        newSelected.add(copy.id);
+      }
+    });
+
+    const next = [...elements, ...newElements];
     setElements(next);
     pushHistory(next);
-    setSelectedId(copy.id);
+    setSelectedIds(newSelected);
   };
 
-  // Toggle Lock
-  const toggleLockSelected = () => {
-    if (!selectedId) return;
-    const next = elements.map((el) =>
-      el.id === selectedId ? { ...el, locked: !el.locked } : el
-    );
-    setElements(next);
-    pushHistory(next);
-  };
-
-  // Delete
+  // Delete Selected Elements
   const handleDeleteSelected = () => {
-    if (selectedId) {
-      const next = elements.filter((el) => el.id !== selectedId);
+    if (selectedIds.size > 0) {
+      const next = elements.filter((el) => !selectedIds.has(el.id));
       setElements(next);
       pushHistory(next);
-      setSelectedId(null);
+      setSelectedIds(new Set());
       setEditingId(null);
     }
   };
+
+  // Spacebar grab & keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && !editingId) {
+        isSpacePressed.current = true;
+      }
+      if (editingId) return;
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedIds.size > 0) {
+          e.preventDefault();
+          handleDeleteSelected();
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        e.preventDefault();
+        duplicateSelected();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        e.preventDefault();
+        redo();
+      }
+      if (e.key === 'v' || e.key === 'V') setTool('select');
+      if (e.key === 'h' || e.key === 'H') setTool('hand');
+      if (e.key === 'p' || e.key === 'P') setTool('pen');
+      if (e.key === 's' || e.key === 'S') setTool('sticky');
+      if (e.key === 't' || e.key === 'T') setTool('text');
+      if (e.key === 'r' || e.key === 'R') setTool('rectangle');
+      if (e.key === 'c' || e.key === 'C') setTool('circle');
+      if (e.key === 'a' || e.key === 'A') setTool('arrow');
+      if (e.key === 'e' || e.key === 'E') setTool('eraser');
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        isSpacePressed.current = false;
+        setIsPanning(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [selectedIds, editingId, elements, historyIndex]);
 
   // Load Template
   const loadTemplate = (templateId: string) => {
     if (templateId === 'user-journey') {
       setElements(INITIAL_BOARD);
       pushHistory(INITIAL_BOARD);
-    } else if (templateId === 'lean-canvas') {
-      const lean: CanvasElement[] = [
-        {
-          id: 'lean-frame',
-          type: 'frame',
-          x: 60,
-          y: 60,
-          width: 900,
-          height: 480,
-          frameTitle: '📊 Lean Strategy Canvas',
-          color: '#6366f1',
-          fillColor: '#fafaf9',
-          strokeWidth: 1.5,
-          strokeDash: [4, 4],
-        },
-        {
-          id: 'lean-col-1',
-          type: 'rectangle',
-          x: 90,
-          y: 110,
-          width: 260,
-          height: 400,
-          color: '#ef4444',
-          fillColor: '#fef2f2',
-          strokeColor: '#f87171',
-          strokeWidth: 2,
-          text: '🚨 Problems\n• 2.5% GMV commission tax\n• Manual 40m buylist intake\n• Inaccurate card pricing',
-          textAlign: 'left',
-        },
-        {
-          id: 'lean-col-2',
-          type: 'rectangle',
-          x: 380,
-          y: 110,
-          width: 260,
-          height: 400,
-          color: '#3b82f6',
-          fillColor: '#eff6ff',
-          strokeColor: '#60a5fa',
-          strokeWidth: 2,
-          text: '💡 Solutions\n• 0% GMV flat SaaS\n• Self-serve Player Kiosk\n• Real-time TCGplayer feeds',
-          textAlign: 'left',
-        },
-        {
-          id: 'lean-col-3',
-          type: 'rectangle',
-          x: 670,
-          y: 110,
-          width: 260,
-          height: 400,
-          color: '#10b981',
-          fillColor: '#ecfdf5',
-          strokeColor: '#34d399',
-          strokeWidth: 2,
-          text: '🏆 Unfair Advantage\n• <500ms Shopify sync\n• Double-entry credit ledger\n• Zero catalog desync',
-          textAlign: 'left',
-        },
-      ];
-      setElements(lean);
-      pushHistory(lean);
     } else if (templateId === 'kanban-whiteboard') {
       const kanban: CanvasElement[] = [
         {
@@ -1183,7 +1516,6 @@ export const WhiteboardView: React.FC = () => {
     setTemplatesOpen(false);
   };
 
-  // Export PNG
   const exportAsPng = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -1193,49 +1525,11 @@ export const WhiteboardView: React.FC = () => {
     link.click();
   };
 
-  // Keyboard Shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (editingId) return;
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (selectedId) {
-          e.preventDefault();
-          handleDeleteSelected();
-        }
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
-        e.preventDefault();
-        duplicateSelected();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-        e.preventDefault();
-        if (e.shiftKey) redo();
-        else undo();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
-        e.preventDefault();
-        redo();
-      }
-      if (e.key === 'v' || e.key === 'V') setTool('select');
-      if (e.key === 'h' || e.key === 'H') setTool('hand');
-      if (e.key === 'p' || e.key === 'P') setTool('pen');
-      if (e.key === 's' || e.key === 'S') setTool('sticky');
-      if (e.key === 't' || e.key === 'T') setTool('text');
-      if (e.key === 'r' || e.key === 'R') setTool('rectangle');
-      if (e.key === 'c' || e.key === 'C') setTool('circle');
-      if (e.key === 'a' || e.key === 'A') setTool('arrow');
-      if (e.key === 'e' || e.key === 'E') setTool('eraser');
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedId, editingId, elements, historyIndex]);
-
-  const activeSelected = elements.find((el) => el.id === selectedId);
+  const activeSelected = selectedIds.size === 1 ? elements.find((e) => selectedIds.has(e.id)) : null;
 
   return (
     <div className="relative w-full h-[calc(100vh-45px)] overflow-hidden bg-white select-none flex flex-col font-sans">
-      {/* 1. TOP HEADER TOOLBAR (Miro Style) */}
+      {/* 1. TOP HEADER TOOLBAR */}
       <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-white/95 backdrop-blur-md border border-slate-200/90 px-3.5 py-2 rounded-2xl shadow-xl shadow-slate-200/50">
         <div className="flex items-center gap-2.5 pr-3 border-r border-slate-200">
           <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
@@ -1248,11 +1542,13 @@ export const WhiteboardView: React.FC = () => {
                 PRO
               </span>
             </div>
-            <p className="text-[10px] text-slate-500 font-normal">Infinite Miro Canvas</p>
+            <p className="text-[10px] text-slate-500 font-normal">
+              {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Hold Space to Grab & Pan'}
+            </p>
           </div>
         </div>
 
-        {/* Templates Selector */}
+        {/* Templates */}
         <div className="relative">
           <button
             onClick={() => setTemplatesOpen(!templatesOpen)}
@@ -1265,9 +1561,6 @@ export const WhiteboardView: React.FC = () => {
 
           {templatesOpen && (
             <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-2xl p-2 z-40 space-y-1">
-              <div className="text-[10px] font-semibold text-slate-400 px-2 py-1 uppercase tracking-wider">
-                Miro Board Starters
-              </div>
               {TEMPLATES.map((tmpl) => (
                 <button
                   key={tmpl.id}
@@ -1306,7 +1599,7 @@ export const WhiteboardView: React.FC = () => {
           </button>
         </div>
 
-        {/* Zoom Controls */}
+        {/* Zoom */}
         <div className="flex items-center gap-1 px-2 border-l border-slate-200">
           <button
             onClick={() => setScale((s) => Math.max(0.2, s - 0.15))}
@@ -1337,7 +1630,7 @@ export const WhiteboardView: React.FC = () => {
           </button>
         </div>
 
-        {/* Share / Export */}
+        {/* Share & Export */}
         <div className="flex items-center gap-1.5 pl-2 border-l border-slate-200">
           <button
             onClick={exportAsPng}
@@ -1364,7 +1657,7 @@ export const WhiteboardView: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. LEFT MIRO TOOLBAR (Floating Vertical Dock) */}
+      {/* 2. LEFT MIRO TOOL DOCK */}
       <div className="absolute top-24 left-4 z-20 flex flex-col gap-1 bg-white/95 backdrop-blur-md border border-slate-200/90 p-1.5 rounded-2xl shadow-xl shadow-slate-200/50">
         <button
           onClick={() => setTool('select')}
@@ -1373,7 +1666,7 @@ export const WhiteboardView: React.FC = () => {
               ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
               : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100'
           }`}
-          title="Select & Move (V)"
+          title="Select & Multi-Select (V)"
         >
           <MousePointer className="w-4 h-4" />
         </button>
@@ -1385,7 +1678,7 @@ export const WhiteboardView: React.FC = () => {
               ? 'bg-indigo-600 text-white'
               : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100'
           }`}
-          title="Pan / Hand Tool (H)"
+          title="Pan / Hand Tool (H) or Hold Space"
         >
           <Move className="w-4 h-4" />
         </button>
@@ -1437,7 +1730,7 @@ export const WhiteboardView: React.FC = () => {
               ? 'bg-indigo-600 text-white'
               : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100'
           }`}
-          title="Pen / Pencil (P)"
+          title="Pen (P)"
         >
           <Pencil className="w-4 h-4" />
         </button>
@@ -1531,18 +1824,10 @@ export const WhiteboardView: React.FC = () => {
         </button>
       </div>
 
-      {/* 3. CONTEXTUAL FLOATING INSPECTOR (Miro Quick Bar) */}
-      {(tool === 'sticky' ||
-        tool === 'pen' ||
-        tool === 'highlighter' ||
-        tool === 'rectangle' ||
-        tool === 'circle' ||
-        tool === 'diamond' ||
-        tool === 'arrow' ||
-        tool === 'text' ||
-        activeSelected) && (
+      {/* 3. FLOATING INSPECTOR (For selected elements) */}
+      {(selectedIds.size > 0 || tool === 'sticky' || tool === 'pen') && (
         <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 bg-white/95 backdrop-blur-md border border-slate-200/90 px-4 py-2 rounded-2xl shadow-xl shadow-slate-200/60">
-          {/* Sticky Pastel Color Palette */}
+          {/* Sticky Color picker */}
           {(tool === 'sticky' || activeSelected?.type === 'sticky') && (
             <div className="flex items-center gap-1.5 pr-2.5 border-r border-slate-200">
               <span className="text-[11px] text-slate-500 font-medium">Sticky:</span>
@@ -1552,11 +1837,9 @@ export const WhiteboardView: React.FC = () => {
                     key={sc.name}
                     onClick={() => {
                       setSelectedStickyColor(sc);
-                      if (activeSelected && activeSelected.type === 'sticky') {
+                      if (activeSelected) {
                         setElements((prev) =>
-                          prev.map((el) =>
-                            el.id === activeSelected.id ? { ...el, color: sc.bg } : el
-                          )
+                          prev.map((el) => (el.id === activeSelected.id ? { ...el, color: sc.bg } : el))
                         );
                       }
                     }}
@@ -1566,14 +1849,13 @@ export const WhiteboardView: React.FC = () => {
                         ? 'border-indigo-600 scale-110 shadow-sm'
                         : 'border-slate-300'
                     }`}
-                    title={sc.name}
                   />
                 ))}
               </div>
             </div>
           )}
 
-          {/* Stroke Colors */}
+          {/* Color palette */}
           <div className="flex items-center gap-1.5">
             <span className="text-[11px] text-slate-500 font-medium">Color:</span>
             <div className="flex items-center gap-1">
@@ -1582,10 +1864,10 @@ export const WhiteboardView: React.FC = () => {
                   key={c}
                   onClick={() => {
                     setSelectedColor(c);
-                    if (activeSelected) {
+                    if (selectedIds.size > 0) {
                       setElements((prev) =>
                         prev.map((el) =>
-                          el.id === activeSelected.id
+                          selectedIds.has(el.id)
                             ? {
                                 ...el,
                                 color: c,
@@ -1611,16 +1893,16 @@ export const WhiteboardView: React.FC = () => {
 
           {/* Stroke Width */}
           <div className="flex items-center gap-1.5 pl-2.5 border-l border-slate-200">
-            <span className="text-[11px] text-slate-500 font-medium">Stroke:</span>
+            <span className="text-[11px] text-slate-500 font-medium">Width:</span>
             <div className="flex items-center gap-0.5">
               {[2, 3, 5].map((w) => (
                 <button
                   key={w}
                   onClick={() => {
                     setStrokeWidth(w);
-                    if (activeSelected) {
+                    if (selectedIds.size > 0) {
                       setElements((prev) =>
-                        prev.map((el) => (el.id === activeSelected.id ? { ...el, strokeWidth: w } : el))
+                        prev.map((el) => (selectedIds.has(el.id) ? { ...el, strokeWidth: w } : el))
                       );
                     }
                   }}
@@ -1636,57 +1918,8 @@ export const WhiteboardView: React.FC = () => {
             </div>
           </div>
 
-          {/* Stroke Dash Type */}
-          {(tool === 'rectangle' ||
-            tool === 'line' ||
-            tool === 'arrow' ||
-            activeSelected?.type === 'rectangle' ||
-            activeSelected?.type === 'line' ||
-            activeSelected?.type === 'arrow') && (
-            <div className="flex items-center gap-1 pl-2 border-l border-slate-200">
-              <button
-                onClick={() => {
-                  setStrokeDashType('solid');
-                  if (activeSelected) {
-                    setElements((prev) =>
-                      prev.map((el) =>
-                        el.id === activeSelected.id ? { ...el, strokeDash: undefined } : el
-                      )
-                    );
-                  }
-                }}
-                className={`px-2 py-0.5 rounded text-xs ${
-                  strokeDashType === 'solid'
-                    ? 'bg-slate-900 text-white font-medium'
-                    : 'text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                Solid
-              </button>
-              <button
-                onClick={() => {
-                  setStrokeDashType('dashed');
-                  if (activeSelected) {
-                    setElements((prev) =>
-                      prev.map((el) =>
-                        el.id === activeSelected.id ? { ...el, strokeDash: [6, 6] } : el
-                      )
-                    );
-                  }
-                }}
-                className={`px-2 py-0.5 rounded text-xs ${
-                  strokeDashType === 'dashed'
-                    ? 'bg-slate-900 text-white font-medium'
-                    : 'text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                Dashed
-              </button>
-            </div>
-          )}
-
-          {/* Duplicate / Lock / Delete */}
-          {activeSelected && (
+          {/* Duplicate & Delete */}
+          {selectedIds.size > 0 && (
             <div className="flex items-center gap-1 pl-2.5 border-l border-slate-200">
               <button
                 onClick={duplicateSelected}
@@ -1694,17 +1927,6 @@ export const WhiteboardView: React.FC = () => {
                 title="Duplicate (Ctrl+D)"
               >
                 <Copy className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={toggleLockSelected}
-                className="p-1 rounded text-slate-600 hover:text-amber-600 hover:bg-amber-50"
-                title={activeSelected.locked ? 'Unlock' : 'Lock element'}
-              >
-                {activeSelected.locked ? (
-                  <Lock className="w-3.5 h-3.5 text-amber-600" />
-                ) : (
-                  <Unlock className="w-3.5 h-3.5" />
-                )}
               </button>
               <button
                 onClick={handleDeleteSelected}
@@ -1718,7 +1940,7 @@ export const WhiteboardView: React.FC = () => {
         </div>
       )}
 
-      {/* 4. FLOATING TEXT / NOTE INLINE EDITOR */}
+      {/* 4. INLINE TEXT EDITOR */}
       {editingId && (
         <div
           className="absolute z-30"
@@ -1737,7 +1959,7 @@ export const WhiteboardView: React.FC = () => {
             onKeyDown={(e) => {
               if (e.key === 'Escape') handleFinishEditing();
             }}
-            placeholder="Type your notes..."
+            placeholder="Type notes..."
             className="w-full h-full p-3 bg-white/95 text-slate-900 font-medium rounded-xl border-2 border-indigo-600 shadow-2xl resize-none outline-none"
             style={{
               fontSize: `${Math.max(
@@ -1750,7 +1972,7 @@ export const WhiteboardView: React.FC = () => {
         </div>
       )}
 
-      {/* 5. MAIN WHITEBOARD CANVAS */}
+      {/* 5. MAIN INTERACTIVE CANVAS */}
       <canvas
         ref={canvasRef}
         onMouseDown={handleMouseDown}
@@ -1761,6 +1983,10 @@ export const WhiteboardView: React.FC = () => {
         className={`w-full h-full flex-1 touch-none ${
           isPanning || tool === 'hand'
             ? 'cursor-grab active:cursor-grabbing'
+            : resizeHandle
+            ? 'cursor-nwse-resize'
+            : connectingAnchor
+            ? 'cursor-crosshair'
             : tool === 'select'
             ? 'cursor-default'
             : tool === 'pen' || tool === 'highlighter'
@@ -1771,10 +1997,12 @@ export const WhiteboardView: React.FC = () => {
         }`}
       />
 
-      {/* 6. BOTTOM RIGHT MIRO STATUS BAR */}
+      {/* 6. STATUS BAR INSTRUCTIONS */}
       <div className="absolute bottom-4 right-4 z-20 flex items-center gap-2.5 bg-white/90 backdrop-blur-md border border-slate-200/80 px-3 py-1.5 rounded-xl text-[11px] text-slate-500 shadow-lg shadow-slate-200/40">
         <Info className="w-3.5 h-3.5 text-indigo-600" />
-        <span>Double-click to write • Ctrl+D to duplicate • Spacebar to pan • Mouse wheel to zoom</span>
+        <span>
+          Hold <b>Space</b> to Grab &amp; Pan • Drag <b>4 Corner Handles</b> to Resize • Drag <b>4 Blue Edge Points</b> to Connect Elements
+        </span>
       </div>
     </div>
   );
