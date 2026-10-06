@@ -56,36 +56,28 @@ export const DevArchitectureTrackerView: React.FC = () => {
   const [prodPricing, setProdPricing] = useState('$99 - $299/mo ($0 commission)');
   const [prodStatus, setProdStatus] = useState<'Concept' | 'In Discovery' | 'In Development' | 'Beta' | 'Live'>('In Discovery');
 
-  // Inline editing state for Technical Stacks on the Tech Stack page
-  const [editingStackProdId, setEditingStackProdId] = useState<string | null>(null);
-  const [editUiUx, setEditUiUx] = useState('');
-  const [editFrontend, setEditFrontend] = useState('');
-  const [editBackend, setEditBackend] = useState('');
-  const [editDatabase, setEditDatabase] = useState('');
-  const [editDevOps, setEditDevOps] = useState('');
+  // Inline editing state for Customer Problem Breakdown
+  const [editingProblemProdId, setEditingProblemProdId] = useState<string | null>(null);
+  const [editProblemText, setEditProblemText] = useState('');
+  const [editAudienceText, setEditAudienceText] = useState('');
+  const [editTaglineText, setEditTaglineText] = useState('');
 
-  // Start inline editing of a product's tech stack
-  const startEditingStack = (prod: SaaSProductPillar) => {
-    setEditingStackProdId(prod.id);
-    setEditUiUx(prod.techStack?.uiUx || '');
-    setEditFrontend(prod.techStack?.frontend || '');
-    setEditBackend(prod.techStack?.backend || '');
-    setEditDatabase(prod.techStack?.database || '');
-    setEditDevOps(prod.techStack?.devOps || '');
+  // Start inline editing of a product's problem breakdown
+  const startEditingProblem = (prod: SaaSProductPillar) => {
+    setEditingProblemProdId(prod.id);
+    setEditProblemText(prod.targetCustomerProblem || '');
+    setEditAudienceText(prod.targetAudience || '');
+    setEditTaglineText(prod.tagline || '');
   };
 
-  // Save updated tech stack to store & Supabase
-  const saveEditedStack = (prodId: string) => {
+  // Save updated customer problem to store & Supabase
+  const saveEditedProblem = (prodId: string) => {
     update('saas_products', prodId, {
-      techStack: {
-        uiUx: editUiUx.trim(),
-        frontend: editFrontend.trim(),
-        backend: editBackend.trim(),
-        database: editDatabase.trim(),
-        devOps: editDevOps.trim()
-      }
+      targetCustomerProblem: editProblemText.trim(),
+      targetAudience: editAudienceText.trim(),
+      tagline: editTaglineText.trim()
     });
-    setEditingStackProdId(null);
+    setEditingProblemProdId(null);
   };
 
   const handleCreateProduct = (e: React.FormEvent) => {
@@ -147,24 +139,30 @@ export const DevArchitectureTrackerView: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono tracking-wider uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Product & Tech Architecture
+                Product & Customer Problems
               </span>
-              <span className="text-[11px] text-slate-500 font-mono">From Customer Problem ➔ Full Technical Stack</span>
+              <span className="text-[11px] text-slate-500 font-mono">Real Seller Pain Points ➔ Friction Dimensions</span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1 ml-auto lg:ml-2">
                 <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                 <span>Supabase Database Synced</span>
               </span>
             </div>
             <h1 className={`text-2xl lg:text-3xl font-black tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
-              SaaS Products & Technical Stacks Hub
+              SaaS Products & Customer Problems Hub
             </h1>
             <p className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-              Define what SaaS products you are building, the exact customer problem they solve, and automatically manage their
-              complete full-stack technical specs (<strong>UI/UX, Frontend, Backend, Database, and DevOps</strong>).
+              Define what SaaS products you are building, the exact seller problems and pain points they solve. Technical stacks have been relocated to the dedicated <strong>Technical Stacks Page</strong>.
             </p>
           </div>
 
-          <div>
+          <div className="flex flex-wrap items-center gap-3">
+            <a
+              href="#/dev/stack"
+              className="px-3.5 py-2.5 rounded-xl border border-cyan-500/30 bg-cyan-950/40 hover:bg-cyan-900/40 text-cyan-300 text-xs font-semibold flex items-center gap-2 transition shadow-sm"
+            >
+              <Cpu className="w-4 h-4 text-cyan-400" />
+              <span>Go to Tech Stacks Page ➔</span>
+            </a>
             <button
               onClick={() => setIsProductModalOpen(true)}
               className="btn-primary text-xs px-4 py-2.5 flex items-center gap-2 shadow-md bg-emerald-600 hover:bg-emerald-500"
@@ -183,9 +181,9 @@ export const DevArchitectureTrackerView: React.FC = () => {
             <span className="font-bold text-white">{saasProducts.length}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Layers className="w-4 h-4 text-cyan-400" />
-            <span className="text-slate-400">Active Technical Stacks:</span>
-            <span className="font-bold text-white">{saasProducts.length} Configured</span>
+            <Flame className="w-4 h-4 text-amber-400" />
+            <span className="text-slate-400">Target Segment:</span>
+            <span className="font-bold text-white">Mid to High Volume Sellers</span>
           </div>
         </div>
       </div>
@@ -201,7 +199,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
           }`}
         >
           <Package className="w-4 h-4 text-emerald-400" />
-          <span>1. SaaS Products & Problem Solving ({saasProducts.length})</span>
+          <span>1. SaaS Products Overview ({saasProducts.length})</span>
         </button>
 
         <button
@@ -212,8 +210,8 @@ export const DevArchitectureTrackerView: React.FC = () => {
               : 'text-slate-400 hover:text-white hover:bg-[#25252a]'
           }`}
         >
-          <Layers className="w-4 h-4 text-cyan-400" />
-          <span>2. Full Technical Stacks (UI/UX ➔ Backend ➔ DB) ({saasProducts.length})</span>
+          <Flame className="w-4 h-4 text-amber-400" />
+          <span>2. Customer Problems & Pain Points Breakdown ({saasProducts.length})</span>
         </button>
       </div>
 
@@ -313,9 +311,9 @@ export const DevArchitectureTrackerView: React.FC = () => {
                         setSelectedProductFilter(prod.id);
                         setActiveTab('stack-matrix');
                       }}
-                      className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 group"
+                      className="text-xs font-semibold text-amber-400 hover:text-amber-300 flex items-center gap-1 group"
                     >
-                      <span>View Technical Stacks</span>
+                      <span>View Problem Breakdown</span>
                       <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                     </button>
                   </div>
@@ -384,7 +382,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
               {saasProducts
                 .filter((p) => selectedProductFilter === 'All' || p.id === selectedProductFilter)
                 .map((prod) => {
-                  const isEditing = editingStackProdId === prod.id;
+                  const isEditing = editingProblemProdId === prod.id;
 
                   return (
                     <div
@@ -404,143 +402,144 @@ export const DevArchitectureTrackerView: React.FC = () => {
                               <h3 className={`text-base font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>
                                 {prod.name}
                               </h3>
-                              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/20 text-amber-400 border border-amber-500/30">
                                 {prod.status}
                               </span>
                             </div>
-                            <p className="text-xs text-slate-400 font-mono mt-0.5">{prod.tagline}</p>
-                          </div>
-                        </div>
-
-                        <div>
-                          {isEditing ? (
-                            <button
-                              onClick={() => saveEditedStack(prod.id)}
-                              className="btn-primary text-xs px-3.5 py-1.5 flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500"
-                            >
-                              <Save className="w-3.5 h-3.5" />
-                              <span>Save Stack Updates</span>
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => startEditingStack(prod)}
-                              className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 transition"
-                            >
-                              <Edit3 className="w-3.5 h-3.5 text-indigo-400" />
-                              <span>Edit Full Technical Stack</span>
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Technical Stacks Grid: UI/UX, Frontend, Backend, Database, DevOps */}
-                      <div className="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-                        {/* 1. UI/UX Layer */}
-                        <div className="p-4 rounded-xl bg-slate-900/60 border border-purple-500/30 space-y-2">
-                          <div className="flex items-center gap-2 text-purple-400 font-bold uppercase text-[10px] tracking-wider">
-                            <Layout className="w-4 h-4" />
-                            <span>1. UI / UX Experience</span>
-                          </div>
-                          {isEditing ? (
-                            <textarea
-                              rows={4}
-                              value={editUiUx}
-                              onChange={(e) => setEditUiUx(e.target.value)}
-                              placeholder="Describe UI layout, design tokens, touch pads, theme..."
-                              className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
-                            />
-                          ) : (
-                            <p className="text-slate-300 leading-relaxed font-mono text-[11px]">
-                              {prod.techStack?.uiUx || 'No UI/UX spec defined yet. Click edit to add.'}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* 2. Frontend Layer */}
-                        <div className="p-4 rounded-xl bg-slate-900/60 border border-cyan-500/30 space-y-2">
-                          <div className="flex items-center gap-2 text-cyan-400 font-bold uppercase text-[10px] tracking-wider">
-                            <Code2 className="w-4 h-4" />
-                            <span>2. Frontend Stack</span>
-                          </div>
-                          {isEditing ? (
-                            <textarea
-                              rows={4}
-                              value={editFrontend}
-                              onChange={(e) => setEditFrontend(e.target.value)}
-                              placeholder="React 18, HTML5 Canvas, Tailwind v4, Zustand store..."
-                              className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
-                            />
-                          ) : (
-                            <p className="text-slate-300 leading-relaxed font-mono text-[11px]">
-                              {prod.techStack?.frontend || 'No Frontend spec defined yet. Click edit to add.'}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* 3. Backend Layer */}
-                        <div className="p-4 rounded-xl bg-slate-900/60 border border-amber-500/30 space-y-2">
-                          <div className="flex items-center gap-2 text-amber-400 font-bold uppercase text-[10px] tracking-wider">
-                            <Server className="w-4 h-4" />
-                            <span>3. Backend & APIs</span>
-                          </div>
-                          {isEditing ? (
-                            <textarea
-                              rows={4}
-                              value={editBackend}
-                              onChange={(e) => setEditBackend(e.target.value)}
-                              placeholder="Node.js, Express, Edge Functions, GraphQL endpoints..."
-                              className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
-                            />
-                          ) : (
-                            <p className="text-slate-300 leading-relaxed font-mono text-[11px]">
-                              {prod.techStack?.backend || 'No Backend spec defined yet. Click edit to add.'}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* 4. Database Layer */}
-                        <div className="p-4 rounded-xl bg-slate-900/60 border border-emerald-500/30 space-y-2">
-                          <div className="flex items-center gap-2 text-emerald-400 font-bold uppercase text-[10px] tracking-wider">
-                            <Database className="w-4 h-4" />
-                            <span>4. Database & Tables</span>
-                          </div>
-                          {isEditing ? (
-                            <textarea
-                              rows={4}
-                              value={editDatabase}
-                              onChange={(e) => setEditDatabase(e.target.value)}
-                              placeholder="PostgreSQL, Supabase tables, RLS policies, Redis cache..."
-                              className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
-                            />
-                          ) : (
-                            <p className="text-slate-300 leading-relaxed font-mono text-[11px]">
-                              {prod.techStack?.database || 'No Database spec defined yet. Click edit to add.'}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Optional DevOps bar */}
-                      <div className="px-5 pb-5 pt-0">
-                        <div className="p-3 rounded-xl bg-slate-900/40 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] font-mono text-slate-400">
-                          <div className="flex items-center gap-2">
-                            <Cpu className="w-3.5 h-3.5 text-indigo-400" />
-                            <span className="font-bold text-slate-300">DevOps & Hosting:</span>
                             {isEditing ? (
                               <input
                                 type="text"
-                                value={editDevOps}
-                                onChange={(e) => setEditDevOps(e.target.value)}
-                                placeholder="Vercel + Supabase + GitHub Actions CI"
-                                className="px-2 py-1 rounded bg-slate-950 border border-slate-700 text-white text-xs w-72"
+                                value={editTaglineText}
+                                onChange={(e) => setEditTaglineText(e.target.value)}
+                                className="text-xs px-2 py-1 mt-1 rounded bg-slate-950 border border-slate-700 text-white font-mono w-full sm:w-96"
+                                placeholder="Sub-headline / value proposition"
                               />
                             ) : (
-                              <span>{prod.techStack?.devOps || 'Vercel static deploy + Supabase Cloud'}</span>
+                              <p className="text-xs text-slate-400 font-mono mt-0.5">{prod.tagline}</p>
                             )}
                           </div>
-                          <span className="text-[10px] text-slate-500 font-sans">
-                            Problem being solved: {prod.targetCustomerProblem.slice(0, 50)}...
-                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <a
+                            href="#/dev/stack"
+                            className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs font-semibold text-cyan-400 flex items-center gap-1.5 transition"
+                            title="View technical stack on Tech Stack Page"
+                          >
+                            <Cpu className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>Tech Stacks Page ➔</span>
+                          </a>
+
+                          {isEditing ? (
+                            <button
+                              onClick={() => saveEditedProblem(prod.id)}
+                              className="btn-primary text-xs px-3.5 py-1.5 flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500"
+                            >
+                              <Save className="w-3.5 h-3.5" />
+                              <span>Save Problem</span>
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => startEditingProblem(prod)}
+                              className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 transition"
+                            >
+                              <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                              <span>Edit Problem Details</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Customer Problem & Friction Breakdown Layout */}
+                      <div className="p-6 space-y-6">
+                        {/* Target Audience Profile */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/20">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase font-bold tracking-wider font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                              Target Customer Profile
+                            </span>
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={editAudienceText}
+                                onChange={(e) => setEditAudienceText(e.target.value)}
+                                className="text-xs px-2 py-1 rounded bg-slate-950 border border-slate-700 text-white font-mono w-72"
+                              />
+                            ) : (
+                              <span className="text-xs font-semibold text-slate-200">
+                                {prod.targetAudience}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[11px] font-mono text-slate-400">
+                            Category: <span className="text-emerald-400 font-bold">{prod.pricingModel}</span>
+                          </div>
+                        </div>
+
+                        {/* Core Problem Statement */}
+                        <div className="p-5 rounded-xl bg-rose-500/5 border border-rose-500/20 space-y-2">
+                          <div className="flex items-center gap-2 text-rose-400 font-bold uppercase text-[11px] tracking-wider">
+                            <Flame className="w-4 h-4 text-rose-400" />
+                            <span>Core Customer Problem Statement</span>
+                          </div>
+                          {isEditing ? (
+                            <textarea
+                              rows={4}
+                              value={editProblemText}
+                              onChange={(e) => setEditProblemText(e.target.value)}
+                              placeholder="Describe the exact friction, labor waste, bottleneck, or risk the merchant faces..."
+                              className="w-full p-3 rounded-lg bg-slate-950 border border-slate-700 text-white text-xs leading-relaxed"
+                            />
+                          ) : (
+                            <p className="text-sm text-slate-200 font-medium leading-relaxed">
+                              {prod.targetCustomerProblem || 'No problem statement defined yet. Click edit to add.'}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Friction & Bottleneck Dimensions Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                          {/* Friction 1: Operational Waste */}
+                          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
+                            <div className="flex items-center gap-2 text-amber-400 font-bold uppercase text-[10px] tracking-wider">
+                              <AlertCircle className="w-3.5 h-3.5" />
+                              <span>1. Operational Bottleneck</span>
+                            </div>
+                            <p className="text-slate-400 leading-relaxed text-[11px]">
+                              {prod.id === 'prod_scanner' && 'Manual card identification, typing names, looking up card sets, manual edition tagging. Slow intake limits store catalog volume.'}
+                              {prod.id === 'prod_buylist' && 'In-person trade-ins take 15–30 minutes at counter, causing long checkout queues and clerk exhaustion.'}
+                              {prod.id === 'prod_omnichannel' && 'Double-selling when an item is sold in-store and simultaneously ordered online on eBay or TCGplayer.'}
+                              {prod.id !== 'prod_scanner' && prod.id !== 'prod_buylist' && prod.id !== 'prod_omnichannel' && 'Manual repetitive effort, labor cost, and human input latency.'}
+                            </p>
+                          </div>
+
+                          {/* Friction 2: Financial & Margin Loss */}
+                          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
+                            <div className="flex items-center gap-2 text-emerald-400 font-bold uppercase text-[10px] tracking-wider">
+                              <ShieldCheck className="w-3.5 h-3.5" />
+                              <span>2. Margin & Financial Tax</span>
+                            </div>
+                            <p className="text-slate-400 leading-relaxed text-[11px]">
+                              {prod.id === 'prod_scanner' && 'High labor cost ($15–$25/hr) spent on repetitive intake rather than selling or community events.'}
+                              {prod.id === 'prod_buylist' && 'Incumbents charge up to 2.5% GMV platform tax on every single card trade-in transaction.'}
+                              {prod.id === 'prod_omnichannel' && 'Out-of-stock cancellations result in marketplace penalties, negative reviews, and seller account bans.'}
+                              {prod.id !== 'prod_scanner' && prod.id !== 'prod_buylist' && prod.id !== 'prod_omnichannel' && 'High commission fees or revenue leakage due to unoptimized systems.'}
+                            </p>
+                          </div>
+
+                          {/* Friction 3: Seller Frustration */}
+                          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
+                            <div className="flex items-center gap-2 text-cyan-400 font-bold uppercase text-[10px] tracking-wider">
+                              <Sparkles className="w-3.5 h-3.5" />
+                              <span>3. Merchant Impact</span>
+                            </div>
+                            <p className="text-slate-400 leading-relaxed text-[11px]">
+                              {prod.id === 'prod_scanner' && 'Catalog backlogs pile up in binders while card market prices fluctuate daily.'}
+                              {prod.id === 'prod_buylist' && 'Customers leave the store without trading because of counter delays and inconsistent grading pricing.'}
+                              {prod.id === 'prod_omnichannel' && 'Seller forced to manually log in to 3 different portals multiple times per day to update inventory counts.'}
+                              {prod.id !== 'prod_scanner' && prod.id !== 'prod_buylist' && prod.id !== 'prod_omnichannel' && 'Inconsistent seller workflow hindering scale across multiple sales channels.'}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>

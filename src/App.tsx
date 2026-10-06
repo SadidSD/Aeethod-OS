@@ -23,6 +23,7 @@ import { ContentManagementView } from './views/ContentManagementView';
 import { DevArchitectureTrackerView } from './views/DevArchitectureTrackerView';
 import { UiUxStudioView } from './views/UiUxStudioView';
 import { WhiteboardView } from './views/WhiteboardView';
+import { TechStackView } from './views/TechStackView';
 
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 
@@ -150,10 +151,15 @@ export const App: React.FC = () => {
         return <ContentManagementView />;
       case 'dev':
         if (sub === 'ui-ux' || sub === 'ui' || sub === 'ux') return <UiUxStudioView />;
-        if (sub === 'architecture' || sub === 'stack' || sub === 'plan') return <DevArchitectureTrackerView />;
+        if (sub === 'stack' || sub === 'tech-stack' || sub === 'stacks') return <TechStackView />;
+        if (sub === 'architecture' || sub === 'plan' || sub === 'products') return <DevArchitectureTrackerView />;
         if (sub === 'sprints') return <DevSprintsView />;
         if (sub === 'epics') return <DevEpicsView />;
         return <DevBoardView />;
+      case 'stack':
+      case 'tech-stack':
+      case 'stacks':
+        return <TechStackView />;
       case 'ui-ux':
       case 'ui':
       case 'ux':

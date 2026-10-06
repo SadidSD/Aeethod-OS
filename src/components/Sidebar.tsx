@@ -23,6 +23,7 @@ import {
   Cpu,
   Palette,
   PenTool,
+  Package,
 } from 'lucide-react';
 
 
@@ -319,13 +320,24 @@ export const Sidebar: React.FC = () => {
                 <a
                   href="#/dev/architecture"
                   className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs transition ${
-                    currentPath === 'dev' && (currentSub === 'architecture' || currentSub === 'stack' || currentSub === 'plan')
+                    currentPath === 'dev' && (currentSub === 'architecture' || currentSub === 'products' || currentSub === 'plan')
+                      ? 'bg-[#2c2c2c] text-white font-medium'
+                      : 'text-[#9b9b9b] hover:text-white hover:bg-[#282828]'
+                  }`}
+                >
+                  <Package className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="font-semibold text-white">SaaS Products & Problems</span>
+                </a>
+                <a
+                  href="#/dev/stack"
+                  className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs transition ${
+                    (currentPath === 'dev' && currentSub === 'stack') || currentPath === 'stack'
                       ? 'bg-[#2c2c2c] text-white font-medium'
                       : 'text-[#9b9b9b] hover:text-white hover:bg-[#282828]'
                   }`}
                 >
                   <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-                  <span className="font-semibold text-white">Full-Stack Architecture & Plan</span>
+                  <span className="font-semibold text-cyan-300">Technical Stacks Page</span>
                 </a>
                 <a
                   href="#/dev/ui-ux"
