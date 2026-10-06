@@ -18,7 +18,10 @@ import {
   BarChart3,
   Tag,
   Users,
-  X
+  X,
+  Wrench,
+  Building2,
+  Layers
 } from 'lucide-react';
 import { useStore } from '../store';
 import { SaaSProductPillar } from '../data/devPlanningData';
@@ -34,12 +37,14 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
   const saasProducts: SaaSProductPillar[] = db?.saas_products || [];
   const product = saasProducts.find((p) => p.id === productId);
 
-  // Editing state for Product Details, Problems, and Solutions
+  // Editing state for Product Details, Problems, Build Obstacles, Competitors, and Solutions
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(product?.name || '');
   const [tagline, setTagline] = useState(product?.tagline || '');
   const [icon, setIcon] = useState(product?.icon || '📦');
   const [problem, setProblem] = useState(product?.targetCustomerProblem || '');
+  const [problemsToBuild, setProblemsToBuild] = useState(product?.problemsToBuild || '');
+  const [competitorAnalysis, setCompetitorAnalysis] = useState(product?.competitorAnalysis || '');
   const [solution, setSolution] = useState(product?.theAeethodSolution || '');
   const [targetAudience, setTargetAudience] = useState(product?.targetAudience || '');
   const [pricingModel, setPricingModel] = useState(product?.pricingModel || '');
@@ -72,7 +77,9 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
       tagline: tagline.trim(),
       icon: icon.trim(),
       targetCustomerProblem: problem.trim(),
-      theAeethodSolution: solution.trim(),
+      problemsToBuild: problemsToBuild.trim(),
+      competitorAnalysis: competitorAnalysis.trim(),
+      theAeethodSolution: solution.trim(), // Left empty as requested
       targetAudience: targetAudience.trim(),
       pricingModel: pricingModel.trim(),
       status: status
@@ -176,8 +183,10 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                 setName(product.name);
                 setTagline(product.tagline);
                 setIcon(product.icon);
-                setProblem(product.targetCustomerProblem);
-                setSolution(product.theAeethodSolution);
+                setProblem(product.targetCustomerProblem || '');
+                setProblemsToBuild(product.problemsToBuild || '');
+                setCompetitorAnalysis(product.competitorAnalysis || '');
+                setSolution(product.theAeethodSolution || '');
                 setTargetAudience(product.targetAudience || '');
                 setPricingModel(product.pricingModel || '');
                 setStatus(product.status);
@@ -324,147 +333,213 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
         </div>
       </div>
 
-      {/* 3. Grid: Problems vs Aeethod Solution */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Customer Problem Card */}
-        <div
-          className={`p-6 rounded-2xl border space-y-4 ${
-            isLight ? 'bg-white border-slate-200/90 shadow-xs' : 'bg-[#1a1a20] border-[#292932]'
-          }`}
-        >
-          <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-zinc-800 text-rose-500 font-bold uppercase text-xs tracking-wider">
-            <Flame className="w-4 h-4 text-rose-500" />
-            <span>The Customer Problem & Friction</span>
-          </div>
-
-          {isEditing ? (
-            <textarea
-              rows={4}
-              value={problem}
-              onChange={(e) => setProblem(e.target.value)}
-              className={`w-full p-3 rounded-xl border text-xs leading-relaxed outline-none ${
-                isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-rose-400' : 'bg-zinc-900 border-zinc-700 text-white focus:border-rose-400'
-              }`}
-            />
-          ) : (
-            <p className={`text-xs sm:text-sm leading-relaxed ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
-              {product.targetCustomerProblem || 'No problem defined yet.'}
-            </p>
-          )}
-
-          {/* Friction Breakdown Micro-cards */}
-          <div className="pt-2 space-y-2.5 text-xs">
-            <div
-              className={`p-3.5 rounded-xl border flex items-start gap-3 ${
-                isLight ? 'bg-slate-50/80 border-slate-200/80' : 'bg-[#151518] border-zinc-800/80'
-              }`}
-            >
-              <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-              <div className="space-y-0.5">
-                <span className="font-bold block text-rose-500 text-[11px] uppercase tracking-wide">
-                  1. Operational Bottleneck
-                </span>
-                <span className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
-                  {product.id === 'prod-scanning-cards'
-                    ? 'Manual card identification, sorting, and typing creates massive intake bottlenecks, grading discrepancies, and high labor cost.'
-                    : product.id === 'prod-buylist'
-                    ? 'In-store trade-ins take 15–30 minutes per customer, causing counter congestion, lost walk-in sales, and pricing disputes.'
-                    : product.id === 'prod-omnichannel-sync'
-                    ? 'Selling singles simultaneously across in-store POS, Shopify webstore, eBay, and TCGplayer causes inventory desync and out-of-stock double sales.'
-                    : 'Manual repetitive effort, labor cost, and human input latency.'}
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={`p-3.5 rounded-xl border flex items-start gap-3 ${
-                isLight ? 'bg-slate-50/80 border-slate-200/80' : 'bg-[#151518] border-zinc-800/80'
-              }`}
-            >
-              <DollarSign className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-              <div className="space-y-0.5">
-                <span className="font-bold block text-amber-500 text-[11px] uppercase tracking-wide">
-                  2. Margin Tax & Financial Waste
-                </span>
-                <span className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
-                  {product.id === 'prod-scanning-cards'
-                    ? 'High labor cost ($15–$25/hr) spent on repetitive intake rather than selling or community events.'
-                    : product.id === 'prod-buylist'
-                    ? 'Incumbent software charging up to 2.5% GMV platform tax on every single card trade-in transaction.'
-                    : product.id === 'prod-omnichannel-sync'
-                    ? 'Out-of-stock cancellations result in marketplace penalties, negative reviews, and seller account bans.'
-                    : 'High commission fees or revenue leakage due to unoptimized systems.'}
-                </span>
-              </div>
-            </div>
-          </div>
+      {/* 3. Deep Dive Section 1: Detailed Customer Problems */}
+      <div
+        className={`p-6 sm:p-7 rounded-2xl border space-y-4 ${
+          isLight ? 'bg-white border-slate-200/90 shadow-xs' : 'bg-[#1a1a20] border-[#292932]'
+        }`}
+      >
+        <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-zinc-800 text-rose-500 font-bold uppercase text-xs tracking-wider">
+          <Flame className="w-4 h-4 text-rose-500" />
+          <span>1. Detailed Customer Problems & Operational Friction</span>
         </div>
 
-        {/* Aeethod Solution Architecture Card */}
-        <div
-          className={`p-6 rounded-2xl border space-y-4 ${
-            isLight ? 'bg-white border-slate-200/90 shadow-xs' : 'bg-[#1a1a20] border-[#292932]'
-          }`}
-        >
-          <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-zinc-800 text-emerald-600 dark:text-emerald-400 font-bold uppercase text-xs tracking-wider">
-            <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            <span>The Aeethod Solution Architecture</span>
+        {isEditing ? (
+          <textarea
+            rows={6}
+            value={problem}
+            onChange={(e) => setProblem(e.target.value)}
+            className={`w-full p-3 rounded-xl border text-xs leading-relaxed outline-none font-sans ${
+              isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-rose-400' : 'bg-zinc-900 border-zinc-700 text-white focus:border-rose-400'
+            }`}
+          />
+        ) : (
+          <p className={`text-xs sm:text-sm leading-relaxed whitespace-pre-line ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
+            {product.targetCustomerProblem || 'No problem statement defined yet.'}
+          </p>
+        )}
+
+        {/* Friction Breakdown Micro-cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 text-xs">
+          <div
+            className={`p-4 rounded-xl border flex items-start gap-3 ${
+              isLight ? 'bg-rose-50/40 border-rose-200/60' : 'bg-rose-950/20 border-rose-500/20'
+            }`}
+          >
+            <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <span className="font-bold block text-rose-500 text-[11px] uppercase tracking-wide">
+                Operational Waste & Bottlenecks
+              </span>
+              <span className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
+                {product.id === 'prod-scanning-cards'
+                  ? 'Manual card identification, sorting, and typing creates massive intake backlogs, grading subjectivity, and high labor costs.'
+                  : product.id === 'prod-buylist'
+                  ? 'In-store trade-ins take 20–45 minutes per customer, causing counter congestion, lost walk-in sales, and pricing disputes.'
+                  : product.id === 'prod-omnichannel-sync'
+                  ? 'Selling singles simultaneously across in-store POS, Shopify webstore, eBay, and TCGplayer causes inventory desync and out-of-stock double sales.'
+                  : 'Manual repetitive effort, labor cost, and human input latency.'}
+              </span>
+            </div>
           </div>
 
-          {isEditing ? (
-            <textarea
-              rows={4}
-              value={solution}
-              onChange={(e) => setSolution(e.target.value)}
-              placeholder="Leave blank or describe the high-impact solution..."
-              className={`w-full p-3 rounded-xl border text-xs leading-relaxed outline-none ${
-                isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-emerald-500' : 'bg-zinc-900 border-zinc-700 text-white focus:border-emerald-500'
-              }`}
-            />
-          ) : product.theAeethodSolution ? (
-            <p className={`text-xs sm:text-sm leading-relaxed ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
-              {product.theAeethodSolution}
-            </p>
-          ) : (
-            <div
-              className={`p-6 rounded-xl border border-dashed text-center space-y-2 ${
-                isLight ? 'bg-slate-50 border-slate-200' : 'bg-zinc-900/40 border-zinc-800'
-              }`}
-            >
-              <Sparkles className="w-6 h-6 text-indigo-500 mx-auto opacity-70" />
-              <p className="text-xs text-slate-400 italic">
-                Solution specification in discovery. No spec finalized yet.
-              </p>
-              <button
-                onClick={() => setIsEditing(true)}
-                className="text-xs text-indigo-500 font-semibold hover:underline"
-              >
-                + Define Solution Spec Now
-              </button>
-            </div>
-          )}
-
-          <div className="pt-2">
-            <div
-              className={`p-3.5 rounded-xl border flex items-start gap-3 ${
-                isLight ? 'bg-emerald-50/50 border-emerald-200/70' : 'bg-emerald-950/20 border-emerald-500/20'
-              }`}
-            >
-              <TrendingUp className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-              <div className="space-y-0.5">
-                <span className="font-bold block text-emerald-600 dark:text-emerald-400 text-[11px] uppercase tracking-wide">
-                  Competitive Advantage
-                </span>
-                <span className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-emerald-100/80'}`}>
-                  Flat monthly pricing with 0% GMV commission, sub-second inventory synchronization, and local-first reliability.
-                </span>
-              </div>
+          <div
+            className={`p-4 rounded-xl border flex items-start gap-3 ${
+              isLight ? 'bg-amber-50/40 border-amber-200/60' : 'bg-amber-950/20 border-amber-500/20'
+            }`}
+          >
+            <DollarSign className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <span className="font-bold block text-amber-500 text-[11px] uppercase tracking-wide">
+                Margin Tax & Revenue Leakage
+              </span>
+              <span className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
+                {product.id === 'prod-scanning-cards'
+                  ? 'High labor cost ($15–$25/hr) spent on repetitive intake; unsorted inventory sits in binders for weeks while market prices crash.'
+                  : product.id === 'prod-buylist'
+                  ? 'Incumbent platforms charge up to 2.5% GMV commission on every single card traded in, siphoning thousands monthly.'
+                  : product.id === 'prod-omnichannel-sync'
+                  ? 'Out-of-stock cancellations result in marketplace penalties, downgraded search visibility, and seller account bans.'
+                  : 'High commission fees or revenue leakage due to unoptimized systems.'}
+              </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 4. Link to Tech Stack Page */}
+      {/* 4. Deep Dive Section 2: Problems to Build This & Competitor Flaws */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Pillar 2: Problems to Build This */}
+        <div
+          className={`p-6 sm:p-7 rounded-2xl border space-y-4 ${
+            isLight ? 'bg-white border-slate-200/90 shadow-xs' : 'bg-[#1a1a20] border-[#292932]'
+          }`}
+        >
+          <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-zinc-800 text-amber-600 dark:text-amber-400 font-bold uppercase text-xs tracking-wider">
+            <Wrench className="w-4 h-4 text-amber-500" />
+            <span>2. Problems to Build This (Engineering Obstacles)</span>
+          </div>
+
+          {isEditing ? (
+            <textarea
+              rows={8}
+              value={problemsToBuild}
+              onChange={(e) => setProblemsToBuild(e.target.value)}
+              placeholder="What makes this difficult to build? (e.g. CV models, edge inference, rate limits, race conditions)..."
+              className={`w-full p-3 rounded-xl border text-xs leading-relaxed outline-none font-sans ${
+                isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-amber-400' : 'bg-zinc-900 border-zinc-700 text-white focus:border-amber-400'
+              }`}
+            />
+          ) : (
+            <p className={`text-xs sm:text-sm leading-relaxed whitespace-pre-line ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
+              {product.problemsToBuild || 'Engineering hurdles & implementation obstacles to be defined.'}
+            </p>
+          )}
+
+          <div
+            className={`p-3.5 rounded-xl border flex items-center gap-2 text-xs ${
+              isLight ? 'bg-amber-50/30 border-amber-200/50 text-amber-900' : 'bg-amber-950/20 border-amber-500/20 text-amber-300'
+            }`}
+          >
+            <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+            <span>Hard engineering trade-offs between local edge execution speed, sensor glare, and multi-channel concurrency.</span>
+          </div>
+        </div>
+
+        {/* Pillar 3: How Competitors Made This & Their Flaws */}
+        <div
+          className={`p-6 sm:p-7 rounded-2xl border space-y-4 ${
+            isLight ? 'bg-white border-slate-200/90 shadow-xs' : 'bg-[#1a1a20] border-[#292932]'
+          }`}
+        >
+          <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-zinc-800 text-sky-600 dark:text-sky-400 font-bold uppercase text-xs tracking-wider">
+            <Building2 className="w-4 h-4 text-sky-500" />
+            <span>3. How Competitors Made This & Why They Fail</span>
+          </div>
+
+          {isEditing ? (
+            <textarea
+              rows={8}
+              value={competitorAnalysis}
+              onChange={(e) => setCompetitorAnalysis(e.target.value)}
+              placeholder="How did competitors (BinderPOS, CardCastle, Decktradr) build this and what are their fatal flaws?..."
+              className={`w-full p-3 rounded-xl border text-xs leading-relaxed outline-none font-sans ${
+                isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-sky-400' : 'bg-zinc-900 border-zinc-700 text-white focus:border-sky-400'
+              }`}
+            />
+          ) : (
+            <p className={`text-xs sm:text-sm leading-relaxed whitespace-pre-line ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
+              {product.competitorAnalysis || 'Incumbent competitor landscape and shortcomings to be analyzed.'}
+            </p>
+          )}
+
+          <div
+            className={`p-3.5 rounded-xl border flex items-center gap-2 text-xs ${
+              isLight ? 'bg-sky-50/30 border-sky-200/50 text-sky-900' : 'bg-sky-950/20 border-sky-500/20 text-sky-300'
+            }`}
+          >
+            <Layers className="w-4 h-4 text-sky-500 shrink-0" />
+            <span>Incumbents suffer from heavy commission cuts, slow batch sync, mechanical hardware jams, and vendor lock-in.</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. Deep Dive Section 3: The Aeethod Solution (Left Empty as Requested) */}
+      <div
+        className={`p-6 sm:p-7 rounded-2xl border space-y-4 ${
+          isLight ? 'bg-white border-slate-200/90 shadow-xs' : 'bg-[#1a1a20] border-[#292932]'
+        }`}
+      >
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
+          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold uppercase text-xs tracking-wider">
+            <ShieldCheck className="w-4 h-4 text-emerald-500" />
+            <span>4. The Aeethod Solution Architecture</span>
+          </div>
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+            In Discovery
+          </span>
+        </div>
+
+        {isEditing ? (
+          <textarea
+            rows={4}
+            value={solution}
+            onChange={(e) => setSolution(e.target.value)}
+            placeholder="Solution specification is currently left empty for discovery. Enter details when ready..."
+            className={`w-full p-3 rounded-xl border text-xs leading-relaxed outline-none ${
+              isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-emerald-500' : 'bg-zinc-900 border-zinc-700 text-white focus:border-emerald-500'
+            }`}
+          />
+        ) : product.theAeethodSolution ? (
+          <p className={`text-xs sm:text-sm leading-relaxed ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
+            {product.theAeethodSolution}
+          </p>
+        ) : (
+          <div
+            className={`p-8 rounded-xl border border-dashed text-center space-y-2.5 ${
+              isLight ? 'bg-slate-50/50 border-slate-200' : 'bg-zinc-900/30 border-zinc-800'
+            }`}
+          >
+            <Sparkles className="w-7 h-7 text-indigo-400 mx-auto opacity-70" />
+            <div className="space-y-1">
+              <p className={`text-xs font-semibold ${isLight ? 'text-slate-800' : 'text-zinc-200'}`}>
+                Solution Specification Left Blank
+              </p>
+              <p className="text-xs text-slate-400 dark:text-zinc-500 italic max-w-md mx-auto">
+                As specified, the Aeethod software solution for this product is currently in discovery and left unfinalized.
+              </p>
+            </div>
+            <button
+              onClick={() => setIsEditing(true)}
+              className="text-xs text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 font-semibold hover:underline pt-1 inline-block"
+            >
+              + Define Solution When Ready
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 6. Link to Tech Stack Page */}
       <div
         className={`p-4 sm:p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs ${
           isLight ? 'bg-cyan-50/60 border-cyan-200/80 text-slate-700' : 'bg-cyan-950/20 border-cyan-500/30 text-slate-300'
@@ -479,7 +554,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
               Looking for Engineering & Technical Architecture?
             </span>
             <span className="text-slate-500 dark:text-slate-400 text-[11px]">
-              Full UI/UX, Frontend, Backend, Database, and DevOps layers are managed separately.
+              Full UI/UX, Frontend, Backend, Database, and DevOps layers are managed separately on the Tech Stack page.
             </span>
           </div>
         </div>

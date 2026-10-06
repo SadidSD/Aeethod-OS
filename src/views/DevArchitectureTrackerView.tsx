@@ -17,7 +17,10 @@ import {
   Users,
   X,
   Layers,
-  ChevronRight
+  ChevronRight,
+  Wrench,
+  AlertTriangle,
+  Building2
 } from 'lucide-react';
 import { useStore } from '../store';
 import { SaaSProductPillar } from '../data/devPlanningData';
@@ -39,7 +42,9 @@ export const DevArchitectureTrackerView: React.FC = () => {
   const [prodTagline, setProdTagline] = useState('');
   const [prodIcon, setProdIcon] = useState('📦');
   const [prodProblem, setProdProblem] = useState('');
-  const [prodSolution, setProdSolution] = useState('');
+  const [prodProblemsToBuild, setProdProblemsToBuild] = useState('');
+  const [prodCompetitorAnalysis, setProdCompetitorAnalysis] = useState('');
+  const [prodSolution, setProdSolution] = useState(''); // left empty by default
   const [prodAudience, setProdAudience] = useState('Mid to high volume seller');
   const [prodPricing, setProdPricing] = useState('$99 - $299/mo (0% GMV fee)');
   const [prodStatus, setProdStatus] = useState<'Concept' | 'In Discovery' | 'In Development' | 'Beta' | 'Live'>('In Discovery');
@@ -53,7 +58,9 @@ export const DevArchitectureTrackerView: React.FC = () => {
       tagline: prodTagline.trim() || 'High-impact TCG SaaS solution',
       icon: prodIcon.trim() || '📦',
       targetCustomerProblem: prodProblem.trim(),
-      theAeethodSolution: prodSolution.trim(),
+      problemsToBuild: prodProblemsToBuild.trim(),
+      competitorAnalysis: prodCompetitorAnalysis.trim(),
+      theAeethodSolution: prodSolution.trim(), // Empty as requested
       targetAudience: prodAudience.trim() || 'Mid to high volume seller',
       pricingModel: prodPricing.trim() || '$99 - $299/mo',
       status: prodStatus,
@@ -70,6 +77,8 @@ export const DevArchitectureTrackerView: React.FC = () => {
     setProdName('');
     setProdTagline('');
     setProdProblem('');
+    setProdProblemsToBuild('');
+    setProdCompetitorAnalysis('');
     setProdSolution('');
   };
 
@@ -86,7 +95,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
       all: saasProducts.length,
       inDev: saasProducts.filter((p) => p.status === 'In Development').length,
       inDisc: saasProducts.filter((p) => p.status === 'In Discovery').length,
-      live: saasProducts.filter((p) => p.status === 'Live' || p.status === 'Beta').length
+      live: saasProducts.filter((p) => p.status === 'Live' || p.status === 'Beta')
     };
   }, [saasProducts]);
 
@@ -96,7 +105,8 @@ export const DevArchitectureTrackerView: React.FC = () => {
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (p.targetCustomerProblem && p.targetCustomerProblem.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (p.theAeethodSolution && p.theAeethodSolution.toLowerCase().includes(searchQuery.toLowerCase()));
+        (p.problemsToBuild && p.problemsToBuild.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (p.competitorAnalysis && p.competitorAnalysis.toLowerCase().includes(searchQuery.toLowerCase()));
 
       const matchStatus =
         statusFilter === 'All'
@@ -169,7 +179,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
                 <Package className="w-3.5 h-3.5 text-indigo-500" />
                 <span>SaaS Portfolio</span>
               </span>
-              <span className="text-xs text-slate-400 dark:text-zinc-500 font-medium">Customer Problems ➔ Solutions</span>
+              <span className="text-xs text-slate-400 dark:text-zinc-500 font-medium">Customer Problems · Build Obstacles · Competitor Flaws</span>
               <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                 <span>Supabase Synced</span>
@@ -180,8 +190,8 @@ export const DevArchitectureTrackerView: React.FC = () => {
               SaaS Products
             </h1>
             <p className={`text-xs sm:text-sm leading-relaxed ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
-              Explore our core software products, deep-dive into customer problems, friction bottlenecks, and high-impact solutions.
-              Technical engineering stacks are maintained on the dedicated <strong className={isLight ? 'text-slate-800' : 'text-zinc-200'}>Tech Stack Page</strong>.
+              Detailed breakdown of customer problems, technical hurdles to build each product, and competitor architectural flaws. Solutions remain in discovery.
+              Technical engineering stacks are managed on the dedicated <strong className={isLight ? 'text-slate-800' : 'text-zinc-200'}>Tech Stack Page</strong>.
             </p>
           </div>
 
@@ -217,7 +227,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
           <div className="space-y-0.5">
             <div className="text-[11px] font-medium text-slate-400 dark:text-zinc-500 flex items-center gap-1.5">
               <Package className="w-3.5 h-3.5 text-indigo-500" />
-              <span>Total SaaS Products</span>
+              <span>Total Products</span>
             </div>
             <div className={`text-lg font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>
               {saasProducts.length}
@@ -237,20 +247,20 @@ export const DevArchitectureTrackerView: React.FC = () => {
           <div className="space-y-0.5">
             <div className="text-[11px] font-medium text-slate-400 dark:text-zinc-500 flex items-center gap-1.5">
               <DollarSign className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Monetization Model</span>
+              <span>Pricing Model</span>
             </div>
             <div className={`text-xs font-bold truncate ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>
-              0% GMV Fee · Flat SaaS
+              Flat SaaS · 0% GMV Cut
             </div>
           </div>
 
           <div className="space-y-0.5">
             <div className="text-[11px] font-medium text-slate-400 dark:text-zinc-500 flex items-center gap-1.5">
-              <TrendingUp className="w-3.5 h-3.5 text-cyan-500" />
-              <span>Active Pipeline</span>
+              <Sparkles className="w-3.5 h-3.5 text-cyan-500" />
+              <span>Solution Status</span>
             </div>
             <div className={`text-xs font-bold truncate ${isLight ? 'text-slate-800' : 'text-zinc-200'}`}>
-              {counts.inDev} Dev · {counts.inDisc} Discovery
+              In Discovery (Empty Specs)
             </div>
           </div>
         </div>
@@ -268,8 +278,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
             [
               { id: 'All', label: 'All Products', count: counts.all },
               { id: 'In Development', label: 'In Dev', count: counts.inDev },
-              { id: 'In Discovery', label: 'In Discovery', count: counts.inDisc },
-              { id: 'Live', label: 'Live', count: counts.live }
+              { id: 'In Discovery', label: 'In Discovery', count: counts.inDisc }
             ] as const
           ).map((tab) => {
             const isActive = statusFilter === tab.id;
@@ -311,7 +320,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search products, problems, solutions..."
+            placeholder="Search problems, build challenges, competitors..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={`w-full pl-9 pr-8 py-2 rounded-xl text-xs border transition outline-none ${
@@ -348,29 +357,21 @@ export const DevArchitectureTrackerView: React.FC = () => {
               </h3>
               <p className="text-xs text-slate-400 dark:text-zinc-500">
                 {searchQuery
-                  ? `No products match "${searchQuery}". Try a different keyword.`
+                  ? `No products match "${searchQuery}". Try a different search keyword.`
                   : 'Get started by creating your first SaaS product specification!'}
               </p>
             </div>
-            {searchQuery ? (
+            {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
                 className="text-xs text-indigo-500 font-semibold hover:underline"
               >
                 Clear Search Query
               </button>
-            ) : (
-              <button
-                onClick={() => setIsProductModalOpen(true)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white inline-flex items-center gap-1.5 shadow-sm"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add Your First SaaS Product</span>
-              </button>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 gap-6">
             {filteredProducts.map((prod) => {
               const badgeStyle = getStatusBadge(prod.status);
 
@@ -378,18 +379,18 @@ export const DevArchitectureTrackerView: React.FC = () => {
                 <div
                   key={prod.id}
                   onClick={() => (window.location.hash = `/product/${prod.id}`)}
-                  className={`group relative p-6 rounded-2xl border transition-all duration-300 cursor-pointer flex flex-col justify-between hover:-translate-y-1 hover:shadow-xl ${
+                  className={`group relative p-6 sm:p-7 rounded-2xl border transition-all duration-300 cursor-pointer flex flex-col justify-between hover:shadow-xl ${
                     isLight
                       ? 'bg-white border-slate-200/90 hover:border-indigo-300/80 hover:shadow-indigo-500/5'
                       : 'bg-[#1a1a20] border-[#292932] hover:border-indigo-500/40 hover:shadow-black/40'
                   }`}
                 >
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     {/* Header: Icon, Title, Status & Actions */}
                     <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3.5">
+                      <div className="flex items-start gap-4">
                         <div
-                          className={`w-12 h-12 rounded-xl border flex items-center justify-center text-2xl shrink-0 transition-transform duration-300 group-hover:scale-105 shadow-xs ${
+                          className={`w-14 h-14 rounded-2xl border flex items-center justify-center text-3xl shrink-0 transition-transform duration-300 group-hover:scale-105 shadow-xs ${
                             isLight
                               ? 'bg-gradient-to-br from-indigo-50 to-slate-50 border-slate-200'
                               : 'bg-gradient-to-br from-indigo-950/30 to-zinc-900 border-zinc-700/60'
@@ -398,25 +399,25 @@ export const DevArchitectureTrackerView: React.FC = () => {
                           {getProductIcon(prod.icon, prod.name)}
                         </div>
 
-                        <div className="space-y-0.5">
+                        <div className="space-y-1">
                           <h3
-                            className={`text-base font-bold flex items-center gap-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors ${
+                            className={`text-lg font-bold flex items-center gap-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors ${
                               isLight ? 'text-slate-900' : 'text-white'
                             }`}
                           >
                             <span>{prod.name}</span>
-                            <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-indigo-500" />
+                            <ArrowRight className="w-4 h-4 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-indigo-500" />
                           </h3>
-                          <p className={`text-xs leading-relaxed ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
+                          <p className={`text-xs sm:text-sm leading-relaxed ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
                             {prod.tagline}
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-2.5 shrink-0" onClick={(e) => e.stopPropagation()}>
                         {/* Status Badge */}
                         <div
-                          className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border flex items-center gap-1.5 ${badgeStyle.bgColor} ${badgeStyle.textColor}`}
+                          className={`px-3 py-1 rounded-full text-[11px] font-semibold border flex items-center gap-1.5 ${badgeStyle.bgColor} ${badgeStyle.textColor}`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${badgeStyle.dotColor} animate-pulse`} />
                           <span>{prod.status}</span>
@@ -428,81 +429,106 @@ export const DevArchitectureTrackerView: React.FC = () => {
                           className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition"
                           title="Delete product"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
 
-                    {/* Customer Problem Section (Smooth Notion-Style Insight Container) */}
-                    <div
-                      className={`p-4 rounded-xl border space-y-1.5 transition-colors ${
-                        isLight
-                          ? 'bg-slate-50/70 border-slate-200/70'
-                          : 'bg-[#151518] border-zinc-800/80'
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-rose-500">
-                        <Flame className="w-3.5 h-3.5 shrink-0" />
-                        <span>The Customer Problem</span>
-                      </div>
-                      <p
-                        className={`text-xs leading-relaxed line-clamp-3 ${
-                          isLight ? 'text-slate-700' : 'text-zinc-300'
-                        }`}
-                      >
-                        {prod.targetCustomerProblem || 'No problem statement defined yet.'}
-                      </p>
-                    </div>
-
-                    {/* The Aeethod Solution Section */}
-                    {prod.theAeethodSolution ? (
+                    {/* 3 Pillars Grid: Customer Problems, Problems To Build, How Competitors Made This */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                      {/* Column 1: Customer Problems */}
                       <div
-                        className={`p-4 rounded-xl border space-y-1.5 transition-colors ${
+                        className={`p-4 rounded-xl border space-y-2 transition-colors ${
                           isLight
-                            ? 'bg-emerald-50/40 border-emerald-200/60'
-                            : 'bg-emerald-950/20 border-emerald-500/20'
+                            ? 'bg-rose-50/30 border-rose-200/60'
+                            : 'bg-rose-950/10 border-rose-500/20'
                         }`}
                       >
-                        <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                          <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-                          <span>The Aeethod Solution</span>
+                        <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-rose-500">
+                          <Flame className="w-3.5 h-3.5 shrink-0" />
+                          <span>Customer Problems & Friction</span>
                         </div>
                         <p
-                          className={`text-xs leading-relaxed line-clamp-2 ${
-                            isLight ? 'text-slate-800' : 'text-emerald-100'
+                          className={`text-xs leading-relaxed whitespace-pre-line line-clamp-6 ${
+                            isLight ? 'text-slate-700' : 'text-zinc-300'
                           }`}
                         >
-                          {prod.theAeethodSolution}
+                          {prod.targetCustomerProblem || 'No problem statement defined yet.'}
                         </p>
                       </div>
-                    ) : (
+
+                      {/* Column 2: Problems To Build This (Engineering Hurdles) */}
                       <div
-                        className={`p-3.5 rounded-xl border border-dashed flex items-center justify-between gap-3 text-xs ${
+                        className={`p-4 rounded-xl border space-y-2 transition-colors ${
                           isLight
-                            ? 'bg-slate-50/40 border-slate-200/80 text-slate-500'
-                            : 'bg-zinc-900/40 border-zinc-800 text-zinc-400'
+                            ? 'bg-amber-50/30 border-amber-200/60'
+                            : 'bg-amber-950/10 border-amber-500/20'
                         }`}
                       >
-                        <div className="flex items-center gap-2">
-                          <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                          <span className="italic">Solution in discovery · Click to define specification</span>
+                        <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                          <Wrench className="w-3.5 h-3.5 shrink-0" />
+                          <span>Problems to Build This</span>
                         </div>
-                        <span className="text-[11px] font-semibold text-indigo-500 group-hover:underline shrink-0">
-                          + Define
+                        <p
+                          className={`text-xs leading-relaxed whitespace-pre-line line-clamp-6 ${
+                            isLight ? 'text-slate-700' : 'text-zinc-300'
+                          }`}
+                        >
+                          {prod.problemsToBuild || 'Engineering hurdles & build obstacles to be specified.'}
+                        </p>
+                      </div>
+
+                      {/* Column 3: How Competitors Made This & Their Flaws */}
+                      <div
+                        className={`p-4 rounded-xl border space-y-2 transition-colors ${
+                          isLight
+                            ? 'bg-sky-50/30 border-sky-200/60'
+                            : 'bg-sky-950/10 border-sky-500/20'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+                          <Building2 className="w-3.5 h-3.5 shrink-0" />
+                          <span>How Competitors Made This</span>
+                        </div>
+                        <p
+                          className={`text-xs leading-relaxed whitespace-pre-line line-clamp-6 ${
+                            isLight ? 'text-slate-700' : 'text-zinc-300'
+                          }`}
+                        >
+                          {prod.competitorAnalysis || 'Incumbent competitor flaws to be analyzed.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* The Aeethod Solution: Displayed as Empty / In Discovery */}
+                    <div
+                      className={`p-3.5 rounded-xl border border-dashed flex items-center justify-between gap-3 text-xs ${
+                        isLight
+                          ? 'bg-slate-50/50 border-slate-200/80 text-slate-500'
+                          : 'bg-zinc-900/40 border-zinc-800 text-zinc-400'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                        <span className="font-medium text-slate-600 dark:text-zinc-300">
+                          The Aeethod Solution: <span className="italic text-slate-400 dark:text-zinc-500">In discovery (specification intentionally left empty).</span>
                         </span>
                       </div>
-                    )}
+                      <span className="text-[11px] font-semibold text-indigo-500 group-hover:underline shrink-0">
+                        View Product Details ➔
+                      </span>
+                    </div>
                   </div>
 
                   {/* Card Bottom: Metadata Badges & CTA */}
                   <div
-                    className={`mt-4 pt-4 border-t flex flex-wrap items-center justify-between gap-3 text-xs ${
+                    className={`mt-5 pt-4 border-t flex flex-wrap items-center justify-between gap-3 text-xs ${
                       isLight ? 'border-slate-100' : 'border-zinc-800/80'
                     }`}
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       <span
-                        className={`px-2 py-0.5 rounded-md text-[11px] font-medium border flex items-center gap-1 ${
+                        className={`px-2.5 py-1 rounded-md text-[11px] font-medium border flex items-center gap-1.5 ${
                           isLight
                             ? 'bg-slate-100 text-slate-700 border-slate-200'
                             : 'bg-zinc-800/80 text-zinc-300 border-zinc-700/60'
@@ -514,7 +540,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
 
                       {prod.pricingModel && (
                         <span
-                          className={`px-2 py-0.5 rounded-md text-[11px] font-medium border flex items-center gap-1 ${
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-medium border flex items-center gap-1.5 ${
                             isLight
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                               : 'bg-emerald-950/40 text-emerald-300 border-emerald-500/20'
@@ -527,7 +553,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-1.5 font-semibold text-xs text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors ml-auto">
-                      <span>Open Product Details</span>
+                      <span>Open Product Detail Page</span>
                       <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
@@ -542,7 +568,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
       {isProductModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
           <div
-            className={`w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 sm:p-7 rounded-2xl border shadow-2xl space-y-5 ${
+            className={`w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-7 rounded-2xl border shadow-2xl space-y-5 ${
               isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-[#1c1c22] border-zinc-700 text-white'
             }`}
           >
@@ -554,7 +580,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
                 <div>
                   <h3 className="text-base font-bold">Add New SaaS Product</h3>
                   <p className="text-xs text-slate-400 dark:text-zinc-500">
-                    Define problem statement, target customer, and value proposition.
+                    Define problem statements, technical build obstacles, and competitor approaches.
                   </p>
                 </div>
               </div>
@@ -621,11 +647,11 @@ export const DevArchitectureTrackerView: React.FC = () => {
 
               <div>
                 <label className="text-[11px] font-semibold text-rose-500 block mb-1 flex items-center gap-1.5">
-                  <Flame className="w-3.5 h-3.5" /> Customer Problem Being Solved *
+                  <Flame className="w-3.5 h-3.5" /> Customer Problems & Friction *
                 </label>
                 <textarea
                   rows={3}
-                  placeholder="Describe the exact bottleneck, labor cost, or friction the seller currently experiences..."
+                  placeholder="Describe the bottlenecks, labor burn, or financial margin tax merchants face..."
                   value={prodProblem}
                   onChange={(e) => setProdProblem(e.target.value)}
                   className={`w-full p-3 rounded-xl border outline-none leading-relaxed ${
@@ -638,18 +664,35 @@ export const DevArchitectureTrackerView: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-emerald-500 block mb-1 flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5" /> The Aeethod Solution (Optional - Leave blank if in discovery)
+                <label className="text-[11px] font-semibold text-amber-500 block mb-1 flex items-center gap-1.5">
+                  <Wrench className="w-3.5 h-3.5" /> Problems to Build This (Engineering Hurdles)
                 </label>
                 <textarea
                   rows={3}
-                  placeholder="Leave blank or describe how our software uniquely solves this problem..."
-                  value={prodSolution}
-                  onChange={(e) => setProdSolution(e.target.value)}
+                  placeholder="What makes this difficult to build? (e.g. CV glare, API limits, race conditions, hardware jams)..."
+                  value={prodProblemsToBuild}
+                  onChange={(e) => setProdProblemsToBuild(e.target.value)}
                   className={`w-full p-3 rounded-xl border outline-none leading-relaxed ${
                     isLight
-                      ? 'bg-slate-50 border-slate-200 text-slate-900 focus:border-emerald-500'
-                      : 'bg-zinc-900 border-zinc-700 text-white focus:border-emerald-500'
+                      ? 'bg-slate-50 border-slate-200 text-slate-900 focus:border-amber-400'
+                      : 'bg-zinc-900 border-zinc-700 text-white focus:border-amber-400'
+                  }`}
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-semibold text-sky-500 block mb-1 flex items-center gap-1.5">
+                  <Building2 className="w-3.5 h-3.5" /> How Competitors Made This & Their Flaws
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="How did competitors (BinderPOS, CardCastle, Decktradr) build this and why do they fail?..."
+                  value={prodCompetitorAnalysis}
+                  onChange={(e) => setProdCompetitorAnalysis(e.target.value)}
+                  className={`w-full p-3 rounded-xl border outline-none leading-relaxed ${
+                    isLight
+                      ? 'bg-slate-50 border-slate-200 text-slate-900 focus:border-sky-400'
+                      : 'bg-zinc-900 border-zinc-700 text-white focus:border-sky-400'
                   }`}
                 />
               </div>
