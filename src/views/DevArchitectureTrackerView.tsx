@@ -157,12 +157,16 @@ export const DevArchitectureTrackerView: React.FC = () => {
       }`}>
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono tracking-wider uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Product & Tech Architecture
               </span>
               <span className="text-[11px] text-slate-500 font-mono">From Customer Problem ➔ Full Technical Stack</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1 ml-auto lg:ml-2">
+                <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                <span>Supabase Database Synced</span>
+              </span>
             </div>
             <h1 className={`text-2xl lg:text-3xl font-black tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
               SaaS Products & Technical Stacks Hub

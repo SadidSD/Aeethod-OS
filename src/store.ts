@@ -127,6 +127,58 @@ function flushPending() {
 }
 window.addEventListener('beforeunload', flushPending);
 
+// Collections that don't have dedicated tables in Supabase public schema:
+// We persist them to the Supabase 'docs' table as a robust JSON document.
+const docSyncTimers = new Map<string, number>();
+
+export function syncCollectionToSupabaseDoc(col: Col, list: unknown[]) {
+  // 1. Immediately cache in localStorage for instant retrieval across browser reloads
+  try {
+    localStorage.setItem(`aeethod_col_${col}`, JSON.stringify(list));
+  } catch {}
+
+  // 2. Debounced save to Supabase docs table
+  const existingTimer = docSyncTimers.get(col);
+  if (existingTimer) clearTimeout(existingTimer);
+
+  const timer = window.setTimeout(async () => {
+    docSyncTimers.delete(col);
+    try {
+      await supabase.from('docs').upsert({
+        id: `collection_${col}`,
+        topicId: 'internal_system_storage',
+        title: `Internal DB: ${col}`,
+        content: JSON.stringify(list),
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.warn(`[Supabase doc sync error for ${col}]:`, err);
+    }
+  }, 200);
+
+  docSyncTimers.set(col, timer);
+}
+
+function flushPendingDocSyncs() {
+  for (const [col, timer] of docSyncTimers) {
+    clearTimeout(timer);
+    docSyncTimers.delete(col);
+    const db = useStore.getState().db;
+    if (db && db[col as Col]) {
+      Promise.resolve(
+        supabase.from('docs').upsert({
+          id: `collection_${col}`,
+          topicId: 'internal_system_storage',
+          title: `Internal DB: ${col}`,
+          content: JSON.stringify(db[col as Col]),
+          updatedAt: new Date().toISOString(),
+        })
+      ).catch(() => {});
+    }
+  }
+}
+window.addEventListener('beforeunload', flushPendingDocSyncs);
+
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36));
 
 function descendantIds(db: DB, rootId: string) {
@@ -190,10 +242,47 @@ export const useStore = create<State>((set, get) => ({
     // 1. Fetch live data from Supabase
     try {
       const promises = collections.map(async (c) => {
+        // A. Try direct Supabase table first
         const { data, error } = await supabase.from(c).select('*');
         if (!error && Array.isArray(data) && data.length > 0) {
           supabaseResults[c] = data;
           hasSupabaseData = true;
+          try {
+            localStorage.setItem(`aeethod_col_${c}`, JSON.stringify(data));
+          } catch {}
+        } else {
+          // B. If direct table does not exist or returned no rows, check Supabase 'docs' table storage
+          try {
+            const docRes = await supabase
+              .from('docs')
+              .select('content')
+              .eq('id', `collection_${c}`)
+              .single();
+            if (!docRes.error && docRes.data?.content) {
+              const parsed = JSON.parse(docRes.data.content);
+              if (Array.isArray(parsed)) {
+                supabaseResults[c] = parsed;
+                hasSupabaseData = true;
+                try {
+                  localStorage.setItem(`aeethod_col_${c}`, JSON.stringify(parsed));
+                } catch {}
+                return;
+              }
+            }
+          } catch {}
+
+          // C. Also check browser localStorage fallback cache
+          try {
+            const cached = localStorage.getItem(`aeethod_col_${c}`);
+            if (cached) {
+              const parsed = JSON.parse(cached);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                supabaseResults[c] = parsed;
+                hasSupabaseData = true;
+                syncCollectionToSupabaseDoc(c, parsed);
+              }
+            }
+          } catch {}
         }
       });
       await Promise.all(promises);
@@ -201,11 +290,21 @@ export const useStore = create<State>((set, get) => ({
       console.warn('Supabase query error:', err);
     }
 
+    // Filter out internal system documents from general strategy/docs views
+    if (supabaseResults.docs) {
+      supabaseResults.docs = supabaseResults.docs.filter(
+        (d) =>
+          d.topicId !== 'internal_system_storage' &&
+          !d.id.startsWith('collection_') &&
+          d.id !== 'whiteboard_state'
+      );
+    }
+
     // 2. If Supabase has data, use it as primary source of truth
     if (hasSupabaseData) {
       const mergedDb: DB = { ...INITIAL_DB };
       for (const c of collections) {
-        if (supabaseResults[c] && supabaseResults[c]!.length > 0) {
+        if (supabaseResults[c] !== undefined) {
           (mergedDb as any)[c] = supabaseResults[c];
         }
       }
@@ -232,7 +331,12 @@ export const useStore = create<State>((set, get) => ({
   create: (col, item) => {
     const now = new Date().toISOString();
     const full = { ...item, id: (item as { id?: string }).id ?? uid(), createdAt: now, updatedAt: now } as Collections[typeof col];
-    set((s) => (s.db ? { db: { ...s.db, [col]: [...s.db[col], full] } } : s));
+    set((s) => {
+      if (!s.db) return s;
+      const updatedList = [...s.db[col], full];
+      syncCollectionToSupabaseDoc(col, updatedList);
+      return { db: { ...s.db, [col]: updatedList } };
+    });
     api('POST', `/api/${col}`, full).catch(() => {});
     supabaseSyncCreate(col, full).catch(() => {});
     return full;
@@ -243,7 +347,9 @@ export const useStore = create<State>((set, get) => ({
     set((s) => {
       if (!s.db) return s;
       const list = s.db[col] as Array<{ id: string }>;
-      return { db: { ...s.db, [col]: list.map((x) => (x.id === id ? { ...x, ...patch, updatedAt: now } : x)) } };
+      const updatedList = list.map((x) => (x.id === id ? { ...x, ...patch, updatedAt: now } : x));
+      syncCollectionToSupabaseDoc(col, updatedList);
+      return { db: { ...s.db, [col]: updatedList } };
     });
     schedulePatch(col, id, patch as Record<string, unknown>);
   },
@@ -259,7 +365,9 @@ export const useStore = create<State>((set, get) => ({
         supabaseSyncDelete('tasks', taskId).catch(() => {});
       }
     } else {
-      next = { ...next, [col]: (db[col] as Array<{ id: string }>).filter((x) => x.id !== id) } as DB;
+      const updatedList = (db[col] as Array<{ id: string }>).filter((x) => x.id !== id);
+      next = { ...next, [col]: updatedList } as DB;
+      syncCollectionToSupabaseDoc(col, updatedList);
       if (col === 'topics') {
         next.tasks = next.tasks.filter((t) => t.topicId !== id);
         next.docs = next.docs.filter((d) => d.topicId !== id);
