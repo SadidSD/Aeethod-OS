@@ -56,14 +56,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
   const [prodPricing, setProdPricing] = useState('$99 - $299/mo ($0 commission)');
   const [prodStatus, setProdStatus] = useState<'Concept' | 'In Discovery' | 'In Development' | 'Beta' | 'Live'>('In Discovery');
 
-  // Initial tech stack inputs in creation modal
-  const [stackUiUx, setStackUiUx] = useState('');
-  const [stackFrontend, setStackFrontend] = useState('');
-  const [stackBackend, setStackBackend] = useState('');
-  const [stackDatabase, setStackDatabase] = useState('');
-  const [stackDevOps, setStackDevOps] = useState('');
-
-  // Inline editing state for Technical Stacks
+  // Inline editing state for Technical Stacks on the Tech Stack page
   const [editingStackProdId, setEditingStackProdId] = useState<string | null>(null);
   const [editUiUx, setEditUiUx] = useState('');
   const [editFrontend, setEditFrontend] = useState('');
@@ -109,11 +102,11 @@ export const DevArchitectureTrackerView: React.FC = () => {
       pricingModel: prodPricing.trim() || '$99 - $299/mo',
       status: prodStatus,
       techStack: {
-        uiUx: stackUiUx.trim() || 'Ergonomic touch-friendly UI tokens, high contrast',
-        frontend: stackFrontend.trim() || 'React 18 + Vite + Tailwind v4 + Zustand',
-        backend: stackBackend.trim() || 'Node.js / Express or Edge API endpoints',
-        database: stackDatabase.trim() || 'PostgreSQL / Supabase with real-time sync',
-        devOps: stackDevOps.trim() || 'Vercel static deploy + GitHub CI'
+        uiUx: '',
+        frontend: '',
+        backend: '',
+        database: '',
+        devOps: ''
       }
     });
 
@@ -122,14 +115,8 @@ export const DevArchitectureTrackerView: React.FC = () => {
     setProdTagline('');
     setProdProblem('');
     setProdSolution('');
-    setStackUiUx('');
-    setStackFrontend('');
-    setStackBackend('');
-    setStackDatabase('');
-    setStackDevOps('');
 
-    // Automatically switch to technical stack page to view the new product's full stack
-    setActiveTab('stack-matrix');
+    setActiveTab('saas-products');
   };
 
   const handleDeleteProduct = (id: string) => {
@@ -183,7 +170,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
               className="btn-primary text-xs px-4 py-2.5 flex items-center gap-2 shadow-md bg-emerald-600 hover:bg-emerald-500"
             >
               <Plus className="w-4 h-4" />
-              <span>+ Add SaaS Product & Stack</span>
+              <span>+ Add SaaS Product</span>
             </button>
           </div>
         </div>
@@ -563,7 +550,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="card w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-4 bg-[#1b1b20] border border-emerald-500/40 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-white">Add New SaaS Product & Technical Specs</h3>
+              <h3 className="text-base font-bold text-white">Add New SaaS Product</h3>
               <button onClick={() => setIsProductModalOpen(false)} className="text-slate-400 hover:text-white">✕</button>
             </div>
 
@@ -626,59 +613,6 @@ export const DevArchitectureTrackerView: React.FC = () => {
                 />
               </div>
 
-              {/* Technical Stack Section inside Modal */}
-              <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-3">
-                <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wide block font-mono">
-                  Initial Technical Stack Specs:
-                </span>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[10px] text-purple-400 uppercase font-semibold block mb-1">UI / UX Spec</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 1-tap touch pads, dark/ivory tokens"
-                      value={stackUiUx}
-                      onChange={(e) => setStackUiUx(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-[11px]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[10px] text-cyan-400 uppercase font-semibold block mb-1">Frontend Stack</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. React 18, WebRTC Canvas, Tailwind v4"
-                      value={stackFrontend}
-                      onChange={(e) => setStackFrontend(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-[11px]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[10px] text-amber-400 uppercase font-semibold block mb-1">Backend Stack</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Node.js Edge workers, GraphQL sync"
-                      value={stackBackend}
-                      onChange={(e) => setStackBackend(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-[11px]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[10px] text-emerald-400 uppercase font-semibold block mb-1">Database Layer</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. PostgreSQL, Supabase RLS tables"
-                      value={stackDatabase}
-                      onChange={(e) => setStackDatabase(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-[11px]"
-                    />
-                  </div>
-                </div>
-              </div>
-
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
                 <button
                   type="button"
@@ -688,7 +622,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
                   Cancel
                 </button>
                 <button type="submit" className="btn-primary px-5 py-2 bg-emerald-600 hover:bg-emerald-500">
-                  Save Product & Stack
+                  Save SaaS Product
                 </button>
               </div>
             </form>
