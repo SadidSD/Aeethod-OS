@@ -137,21 +137,21 @@ export const DevArchitectureTrackerView: React.FC = () => {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono tracking-wider uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Product & Customer Problems
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono tracking-wider uppercase bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                Technical Architecture
               </span>
-              <span className="text-[11px] text-slate-500 font-mono">Real Seller Pain Points ➔ Friction Dimensions</span>
+              <span className="text-[11px] text-slate-500 font-mono">UI/UX ➔ Frontend ➔ Backend ➔ Database</span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1 ml-auto lg:ml-2">
                 <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                 <span>Supabase Database Synced</span>
               </span>
             </div>
             <h1 className={`text-2xl lg:text-3xl font-black tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
-              SaaS Products & Customer Problems Hub
+              SaaS Products & Technical Stacks Hub
             </h1>
             <p className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-              Define what SaaS products you are building, the exact seller problems and pain points they solve. Technical stacks have been relocated to the dedicated <strong>Technical Stacks Page</strong>.
+              Review the technical stacks (UI/UX, Frontend, Backend, Database, and DevOps) engineered for each SaaS product.
             </p>
           </div>
 
@@ -161,7 +161,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
               className="px-3.5 py-2.5 rounded-xl border border-cyan-500/30 bg-cyan-950/40 hover:bg-cyan-900/40 text-cyan-300 text-xs font-semibold flex items-center gap-2 transition shadow-sm"
             >
               <Cpu className="w-4 h-4 text-cyan-400" />
-              <span>Go to Tech Stacks Page ➔</span>
+              <span>Full Tech Stacks Editor ➔</span>
             </a>
             <button
               onClick={() => setIsProductModalOpen(true)}
@@ -181,9 +181,9 @@ export const DevArchitectureTrackerView: React.FC = () => {
             <span className="font-bold text-white">{saasProducts.length}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Flame className="w-4 h-4 text-amber-400" />
-            <span className="text-slate-400">Target Segment:</span>
-            <span className="font-bold text-white">Mid to High Volume Sellers</span>
+            <Layers className="w-4 h-4 text-cyan-400" />
+            <span className="text-slate-400">Active Tech Stacks:</span>
+            <span className="font-bold text-white">{saasProducts.length} Configured</span>
           </div>
         </div>
       </div>
@@ -198,8 +198,8 @@ export const DevArchitectureTrackerView: React.FC = () => {
               : 'text-slate-400 hover:text-white hover:bg-[#25252a]'
           }`}
         >
-          <Package className="w-4 h-4 text-emerald-400" />
-          <span>1. SaaS Products Overview ({saasProducts.length})</span>
+          <Code2 className="w-4 h-4 text-cyan-400" />
+          <span>1. Technical Stacks Overview ({saasProducts.length})</span>
         </button>
 
         <button
@@ -211,7 +211,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
           }`}
         >
           <Flame className="w-4 h-4 text-amber-400" />
-          <span>2. Customer Problems & Pain Points Breakdown ({saasProducts.length})</span>
+          <span>2. Customer Problems & Pain Points ({saasProducts.length})</span>
         </button>
       </div>
 
@@ -279,43 +279,61 @@ export const DevArchitectureTrackerView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-2.5 text-xs">
-                    <div className="p-3 rounded-xl bg-rose-950/20 border border-rose-500/30 space-y-1">
-                      <span className="text-[10px] uppercase font-bold text-rose-400 block flex items-center gap-1.5">
-                        <Flame className="w-3 h-3" /> The Customer Problem:
-                      </span>
-                      <p className="text-rose-200/90 leading-relaxed">{prod.targetCustomerProblem}</p>
+                  {/* Technical Stack Grid for the Product */}
+                  <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
+                    <div className="p-2.5 rounded-xl bg-purple-950/20 border border-purple-500/25 space-y-1">
+                      <div className="flex items-center gap-1.5 text-purple-400 font-bold uppercase text-[9px] tracking-wider">
+                        <Layout className="w-3 h-3" />
+                        <span>UI / UX Experience</span>
+                      </div>
+                      <p className="text-slate-300 leading-snug line-clamp-2">
+                        {prod.techStack?.uiUx || 'Modern dark glassmorphism, rapid action bar, responsive kiosk/mobile layouts'}
+                      </p>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30 space-y-1">
-                      <span className="text-[10px] uppercase font-bold text-emerald-400 block flex items-center gap-1.5">
-                        <ShieldCheck className="w-3 h-3" /> How We Solve It:
-                      </span>
-                      <p className="text-emerald-200/90 leading-relaxed">
-                        {prod.theAeethodSolution ? (
-                          prod.theAeethodSolution
-                        ) : (
-                          <span className="text-slate-500 italic">Solution spec left blank / to be defined.</span>
-                        )}
+                    <div className="p-2.5 rounded-xl bg-cyan-950/20 border border-cyan-500/25 space-y-1">
+                      <div className="flex items-center gap-1.5 text-cyan-400 font-bold uppercase text-[9px] tracking-wider">
+                        <Code2 className="w-3 h-3" />
+                        <span>Frontend Stack</span>
+                      </div>
+                      <p className="text-slate-300 leading-snug line-clamp-2">
+                        {prod.techStack?.frontend || 'React 18, TypeScript, Tailwind CSS, Vite, HTML5 Canvas'}
+                      </p>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-amber-950/20 border border-amber-500/25 space-y-1">
+                      <div className="flex items-center gap-1.5 text-amber-400 font-bold uppercase text-[9px] tracking-wider">
+                        <Server className="w-3 h-3" />
+                        <span>Backend & APIs</span>
+                      </div>
+                      <p className="text-slate-300 leading-snug line-clamp-2">
+                        {prod.techStack?.backend || 'Node.js, Edge Functions, WebSocket Live Engine, GraphQL REST Gateway'}
+                      </p>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-emerald-950/20 border border-emerald-500/25 space-y-1">
+                      <div className="flex items-center gap-1.5 text-emerald-400 font-bold uppercase text-[9px] tracking-wider">
+                        <Database className="w-3 h-3" />
+                        <span>Database & Cache</span>
+                      </div>
+                      <p className="text-slate-300 leading-snug line-clamp-2">
+                        {prod.techStack?.database || 'Supabase PostgreSQL, RLS Policies, Redis Realtime Cache'}
                       </p>
                     </div>
                   </div>
 
                   <div className="pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs">
                     <div className="font-mono text-slate-400">
-                      Pricing: <span className="text-emerald-400 font-bold">{prod.pricingModel}</span>
+                      DevOps: <span className="text-indigo-400 font-semibold">{prod.techStack?.devOps || 'Vercel + Supabase + GitHub CI'}</span>
                     </div>
 
-                    <button
-                      onClick={() => {
-                        setSelectedProductFilter(prod.id);
-                        setActiveTab('stack-matrix');
-                      }}
-                      className="text-xs font-semibold text-amber-400 hover:text-amber-300 flex items-center gap-1 group"
+                    <a
+                      href="#/dev/stack"
+                      className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 group"
                     >
-                      <span>View Problem Breakdown</span>
+                      <span>Manage Full Tech Stack</span>
                       <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                    </button>
+                    </a>
                   </div>
                 </div>
               ))}
