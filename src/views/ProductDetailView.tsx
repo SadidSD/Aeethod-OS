@@ -15,7 +15,10 @@ import {
   AlertTriangle,
   Lightbulb,
   Target,
-  BarChart3
+  BarChart3,
+  Tag,
+  Users,
+  X
 } from 'lucide-react';
 import { useStore } from '../store';
 import { SaaSProductPillar } from '../data/devPlanningData';
@@ -54,7 +57,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
         </p>
         <a
           href="#/dev/products"
-          className="btn-primary text-xs px-4 py-2 inline-flex items-center gap-2"
+          className="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white inline-flex items-center gap-2 shadow-sm"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to SaaS Products</span>
@@ -77,43 +80,96 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
     setIsEditing(false);
   };
 
+  const getStatusBadge = (st: string) => {
+    switch (st) {
+      case 'In Development':
+        return {
+          dotColor: 'bg-amber-400',
+          textColor: isLight ? 'text-amber-700' : 'text-amber-300',
+          bgColor: isLight ? 'bg-amber-50 border-amber-200' : 'bg-amber-500/10 border-amber-500/20'
+        };
+      case 'In Discovery':
+        return {
+          dotColor: 'bg-sky-400',
+          textColor: isLight ? 'text-sky-700' : 'text-sky-300',
+          bgColor: isLight ? 'bg-sky-50 border-sky-200' : 'bg-sky-500/10 border-sky-500/20'
+        };
+      case 'Live':
+      case 'Beta':
+        return {
+          dotColor: 'bg-emerald-400',
+          textColor: isLight ? 'text-emerald-700' : 'text-emerald-300',
+          bgColor: isLight ? 'bg-emerald-50 border-emerald-200' : 'bg-emerald-500/10 border-emerald-500/20'
+        };
+      default:
+        return {
+          dotColor: 'bg-slate-400',
+          textColor: isLight ? 'text-slate-700' : 'text-slate-300',
+          bgColor: isLight ? 'bg-slate-100 border-slate-200' : 'bg-slate-800 border-slate-700'
+        };
+    }
+  };
+
+  const getProductIcon = (ic?: string, nm?: string) => {
+    if (ic && !ic.includes('ð') && ic.trim() !== '') {
+      return ic;
+    }
+    const n = (nm || '').toLowerCase();
+    if (n.includes('scan') || n.includes('vision') || n.includes('camera')) return '📸';
+    if (n.includes('buy') || n.includes('trade') || n.includes('kiosk')) return '📋';
+    if (n.includes('omni') || n.includes('sync') || n.includes('channel')) return '🔄';
+    return '📦';
+  };
+
+  const badgeStyle = getStatusBadge(product.status);
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 animate-slide-in">
-      {/* Top Breadcrumb & Actions Bar */}
+      {/* 1. Top Breadcrumb & Action Toolbar */}
       <div className="flex items-center justify-between gap-4">
         <a
           href="#/dev/products"
-          className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg border transition ${
+          className={`flex items-center gap-2 text-xs font-semibold px-3.5 py-2 rounded-xl border transition ${
             isLight
-              ? 'border-slate-200 bg-white hover:bg-slate-100 text-slate-700 shadow-xs'
-              : 'border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200'
+              ? 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-xs'
+              : 'border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 text-zinc-200'
           }`}
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>← Back to SaaS Products</span>
+          <span>Back to SaaS Products</span>
         </a>
 
         <div className="flex items-center gap-3">
           <a
             href="#/dev/stack"
-            className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition ${
+            className={`flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-xl border transition ${
               isLight
-                ? 'border-cyan-200 bg-cyan-50 hover:bg-cyan-100 text-cyan-800'
+                ? 'border-cyan-200 bg-cyan-50/70 hover:bg-cyan-100 text-cyan-800'
                 : 'border-cyan-500/30 bg-cyan-950/40 hover:bg-cyan-900/40 text-cyan-300'
             }`}
           >
-            <Cpu className="w-3.5 h-3.5" />
-            <span>View Technical Stack on Tech Stack Page ➔</span>
+            <Cpu className="w-3.5 h-3.5 text-cyan-500" />
+            <span>View Technical Stack ➔</span>
           </a>
 
           {isEditing ? (
-            <button
-              onClick={handleSave}
-              className="btn-primary text-xs px-4 py-1.5 flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm"
-            >
-              <Save className="w-3.5 h-3.5" />
-              <span>Save Changes</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsEditing(false)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium border ${
+                  isLight ? 'border-slate-200 text-slate-600 hover:bg-slate-100' : 'border-zinc-700 text-zinc-300 hover:bg-zinc-800'
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>Save Changes</span>
+              </button>
+            </div>
           ) : (
             <button
               onClick={() => {
@@ -127,32 +183,34 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                 setStatus(product.status);
                 setIsEditing(true);
               }}
-              className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition ${
+              className={`flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-xl border transition ${
                 isLight
-                  ? 'border-slate-300 bg-white hover:bg-slate-100 text-slate-800 shadow-xs'
-                  : 'border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200'
+                  ? 'border-slate-200 bg-white hover:bg-slate-50 text-slate-800 shadow-xs'
+                  : 'border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 text-zinc-200'
               }`}
             >
-              <Edit3 className="w-3.5 h-3.5 text-amber-500" />
-              <span>Edit Product Details</span>
+              <Edit3 className="w-3.5 h-3.5 text-indigo-500" />
+              <span>Edit Details</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Main Hero Header */}
+      {/* 2. Hero Header Banner */}
       <div
-        className={`p-6 sm:p-8 rounded-2xl border transition-all ${
+        className={`p-6 sm:p-8 rounded-2xl border transition-all duration-300 ${
           isLight
-            ? 'bg-gradient-to-br from-white via-slate-50 to-indigo-50/30 border-slate-200 shadow-sm'
-            : 'bg-gradient-to-br from-[#1c1c22] via-[#17171d] to-[#121216] border-[#2e2e38]'
+            ? 'bg-gradient-to-br from-white via-slate-50/50 to-indigo-50/20 border-slate-200/80 shadow-xs'
+            : 'bg-gradient-to-br from-[#1c1c22] via-[#17171d] to-[#121216] border-[#292932] shadow-xl'
         }`}
       >
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
           <div className="flex items-start gap-4">
             <span
-              className={`text-4xl p-3.5 rounded-2xl border ${
-                isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-slate-800/80 border-slate-700 text-white'
+              className={`text-3xl sm:text-4xl p-3 sm:p-4 rounded-2xl border shrink-0 ${
+                isLight
+                  ? 'bg-gradient-to-br from-indigo-50 to-slate-50 border-slate-200 text-slate-900'
+                  : 'bg-gradient-to-br from-indigo-950/40 to-zinc-900 border-zinc-700/60 text-white'
               }`}
             >
               {isEditing ? (
@@ -160,12 +218,13 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                   type="text"
                   value={icon}
                   onChange={(e) => setIcon(e.target.value)}
-                  className="w-12 text-center bg-transparent border-b border-indigo-400"
+                  className="w-12 text-center bg-transparent border-b border-indigo-400 outline-none"
                 />
               ) : (
-                product.icon
+                getProductIcon(product.icon, product.name)
               )}
             </span>
+
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2.5">
                 {isEditing ? (
@@ -173,26 +232,24 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className={`text-2xl font-black px-2 py-0.5 rounded border ${
-                      isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-900 border-slate-700 text-white'
+                    className={`text-xl sm:text-2xl font-bold px-2.5 py-1 rounded-xl border outline-none ${
+                      isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-zinc-900 border-zinc-700 text-white'
                     }`}
                   />
                 ) : (
-                  <h1 className={`text-2xl sm:text-3xl font-black tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                  <h1 className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
                     {product.name}
                   </h1>
                 )}
 
-                <span
-                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono border font-bold ${
-                    isLight
-                      ? 'bg-amber-50 text-amber-800 border-amber-300'
-                      : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-                  }`}
+                <div
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border flex items-center gap-1.5 ${badgeStyle.bgColor} ${badgeStyle.textColor}`}
                 >
-                  {product.status}
-                </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                  <span className={`w-1.5 h-1.5 rounded-full ${badgeStyle.dotColor} animate-pulse`} />
+                  <span>{product.status}</span>
+                </div>
+
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                   <span>Synced in Supabase</span>
                 </span>
@@ -203,47 +260,63 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                   type="text"
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
-                  className={`text-xs font-mono w-full px-2 py-1 rounded border mt-1 ${
-                    isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-900 border-slate-700 text-white'
+                  className={`text-xs w-full px-2.5 py-1.5 rounded-xl border mt-1 outline-none ${
+                    isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-zinc-900 border-zinc-700 text-white'
                   }`}
                   placeholder="Tagline / positioning statement"
                 />
               ) : (
-                <p className={`text-xs font-mono ${isLight ? 'text-indigo-600 font-semibold' : 'text-indigo-400'}`}>
+                <p className={`text-xs sm:text-sm font-medium ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
                   {product.tagline}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="flex flex-wrap sm:flex-col items-start sm:items-end gap-2 text-xs font-mono">
-            <div className={`px-3 py-1.5 rounded-lg border ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900/60 border-slate-800'}`}>
-              <span className="text-slate-400">Target Audience: </span>
+          {/* Audience & Pricing Badges */}
+          <div className="flex flex-wrap sm:flex-col items-start sm:items-end gap-2 text-xs">
+            <div
+              className={`px-3 py-1.5 rounded-xl border flex items-center gap-1.5 ${
+                isLight ? 'bg-white border-slate-200' : 'bg-zinc-900/60 border-zinc-800'
+              }`}
+            >
+              <Users className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-slate-400">Target: </span>
               {isEditing ? (
                 <input
                   type="text"
                   value={targetAudience}
                   onChange={(e) => setTargetAudience(e.target.value)}
-                  className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-700 text-white text-xs font-bold"
+                  className={`px-1.5 py-0.5 rounded text-xs border outline-none ${
+                    isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-zinc-950 border-zinc-700 text-white'
+                  }`}
                 />
               ) : (
-                <span className={`font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                <span className={`font-semibold ${isLight ? 'text-slate-800' : 'text-zinc-200'}`}>
                   {product.targetAudience || 'Mid to high volume seller'}
                 </span>
               )}
             </div>
-            <div className={`px-3 py-1.5 rounded-lg border ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900/60 border-slate-800'}`}>
-              <span className="text-slate-400">Pricing / Monetization: </span>
+
+            <div
+              className={`px-3 py-1.5 rounded-xl border flex items-center gap-1.5 ${
+                isLight ? 'bg-white border-slate-200' : 'bg-zinc-900/60 border-zinc-800'
+              }`}
+            >
+              <DollarSign className="w-3.5 h-3.5 text-emerald-500" />
+              <span className="text-slate-400">Pricing: </span>
               {isEditing ? (
                 <input
                   type="text"
                   value={pricingModel}
                   onChange={(e) => setPricingModel(e.target.value)}
-                  className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-700 text-white text-xs font-bold"
+                  className={`px-1.5 py-0.5 rounded text-xs border outline-none ${
+                    isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-zinc-950 border-zinc-700 text-white'
+                  }`}
                 />
               ) : (
-                <span className="font-bold text-emerald-500">
-                  {product.pricingModel || 'SaaS Subscription'}
+                <span className={`font-semibold ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>
+                  {product.pricingModel || '$99 - $299/mo'}
                 </span>
               )}
             </div>
@@ -251,47 +324,51 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
         </div>
       </div>
 
-      {/* Grid: Problems & Pain Points vs Aeethod Solution */}
+      {/* 3. Grid: Problems vs Aeethod Solution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Card 1: Customer Problem */}
+        {/* Customer Problem Card */}
         <div
           className={`p-6 rounded-2xl border space-y-4 ${
-            isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#1b1b20] border-[#2e2e34]'
+            isLight ? 'bg-white border-slate-200/90 shadow-xs' : 'bg-[#1a1a20] border-[#292932]'
           }`}
         >
-          <div className="flex items-center gap-2 pb-3 border-b border-rose-500/20 text-rose-500 font-bold uppercase text-xs tracking-wider">
+          <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-zinc-800 text-rose-500 font-bold uppercase text-xs tracking-wider">
             <Flame className="w-4 h-4 text-rose-500" />
             <span>The Customer Problem & Friction</span>
           </div>
 
           {isEditing ? (
             <textarea
-              rows={5}
+              rows={4}
               value={problem}
               onChange={(e) => setProblem(e.target.value)}
-              className={`w-full p-3 rounded-xl border text-xs leading-relaxed font-sans ${
-                isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-700 text-white'
+              className={`w-full p-3 rounded-xl border text-xs leading-relaxed outline-none ${
+                isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-rose-400' : 'bg-zinc-900 border-zinc-700 text-white focus:border-rose-400'
               }`}
             />
           ) : (
-            <p className={`text-sm leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
+            <p className={`text-xs sm:text-sm leading-relaxed ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
               {product.targetCustomerProblem || 'No problem defined yet.'}
             </p>
           )}
 
-          {/* Friction breakdown pillars */}
-          <div className="pt-2 space-y-2 text-xs">
-            <div className={`p-3.5 rounded-xl border flex items-start gap-2.5 ${
-              isLight ? 'bg-rose-50/50 border-rose-200 text-slate-700' : 'bg-rose-950/20 border-rose-500/20 text-slate-300'
-            }`}>
+          {/* Friction Breakdown Micro-cards */}
+          <div className="pt-2 space-y-2.5 text-xs">
+            <div
+              className={`p-3.5 rounded-xl border flex items-start gap-3 ${
+                isLight ? 'bg-slate-50/80 border-slate-200/80' : 'bg-[#151518] border-zinc-800/80'
+              }`}
+            >
               <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold block text-rose-500 text-[11px] uppercase">1. Operational Bottleneck</span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+              <div className="space-y-0.5">
+                <span className="font-bold block text-rose-500 text-[11px] uppercase tracking-wide">
+                  1. Operational Bottleneck
+                </span>
+                <span className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
                   {product.id === 'prod-scanning-cards'
-                    ? 'Manual card identification, sorting, and typing creates massive intake bottlenecks and high labor costs.'
+                    ? 'Manual card identification, sorting, and typing creates massive intake bottlenecks, grading discrepancies, and high labor cost.'
                     : product.id === 'prod-buylist'
-                    ? 'In-store trade-ins take 15–30 minutes per customer, causing counter congestion and lost walk-in sales.'
+                    ? 'In-store trade-ins take 15–30 minutes per customer, causing counter congestion, lost walk-in sales, and pricing disputes.'
                     : product.id === 'prod-omnichannel-sync'
                     ? 'Selling singles simultaneously across in-store POS, Shopify webstore, eBay, and TCGplayer causes inventory desync and out-of-stock double sales.'
                     : 'Manual repetitive effort, labor cost, and human input latency.'}
@@ -299,19 +376,23 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
               </div>
             </div>
 
-            <div className={`p-3.5 rounded-xl border flex items-start gap-2.5 ${
-              isLight ? 'bg-amber-50/50 border-amber-200 text-slate-700' : 'bg-amber-950/20 border-amber-500/20 text-slate-300'
-            }`}>
+            <div
+              className={`p-3.5 rounded-xl border flex items-start gap-3 ${
+                isLight ? 'bg-slate-50/80 border-slate-200/80' : 'bg-[#151518] border-zinc-800/80'
+              }`}
+            >
               <DollarSign className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold block text-amber-500 text-[11px] uppercase">2. Margin Tax & Financial Waste</span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+              <div className="space-y-0.5">
+                <span className="font-bold block text-amber-500 text-[11px] uppercase tracking-wide">
+                  2. Margin Tax & Financial Waste
+                </span>
+                <span className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
                   {product.id === 'prod-scanning-cards'
-                    ? 'High labor cost ($15–$25/hr) spent on repetitive intake rather than selling or high-margin activities.'
+                    ? 'High labor cost ($15–$25/hr) spent on repetitive intake rather than selling or community events.'
                     : product.id === 'prod-buylist'
                     ? 'Incumbent software charging up to 2.5% GMV platform tax on every single card trade-in transaction.'
                     : product.id === 'prod-omnichannel-sync'
-                    ? 'Out-of-stock cancellations result in marketplace penalties, negative seller ratings, and account suspensions.'
+                    ? 'Out-of-stock cancellations result in marketplace penalties, negative reviews, and seller account bans.'
                     : 'High commission fees or revenue leakage due to unoptimized systems.'}
                 </span>
               </div>
@@ -319,42 +400,44 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
           </div>
         </div>
 
-        {/* Card 2: Aeethod Solution Spec */}
+        {/* Aeethod Solution Architecture Card */}
         <div
           className={`p-6 rounded-2xl border space-y-4 ${
-            isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#1b1b20] border-[#2e2e34]'
+            isLight ? 'bg-white border-slate-200/90 shadow-xs' : 'bg-[#1a1a20] border-[#292932]'
           }`}
         >
-          <div className="flex items-center gap-2 pb-3 border-b border-emerald-500/20 text-emerald-500 font-bold uppercase text-xs tracking-wider">
+          <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-zinc-800 text-emerald-600 dark:text-emerald-400 font-bold uppercase text-xs tracking-wider">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
             <span>The Aeethod Solution Architecture</span>
           </div>
 
           {isEditing ? (
             <textarea
-              rows={5}
+              rows={4}
               value={solution}
               onChange={(e) => setSolution(e.target.value)}
               placeholder="Leave blank or describe the high-impact solution..."
-              className={`w-full p-3 rounded-xl border text-xs leading-relaxed font-sans ${
-                isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-700 text-white'
+              className={`w-full p-3 rounded-xl border text-xs leading-relaxed outline-none ${
+                isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-emerald-500' : 'bg-zinc-900 border-zinc-700 text-white focus:border-emerald-500'
               }`}
             />
           ) : product.theAeethodSolution ? (
-            <p className={`text-sm leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
+            <p className={`text-xs sm:text-sm leading-relaxed ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
               {product.theAeethodSolution}
             </p>
           ) : (
-            <div className={`p-6 rounded-xl border border-dashed text-center space-y-2 ${
-              isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-900/40 border-slate-800'
-            }`}>
-              <Sparkles className="w-6 h-6 text-emerald-500 mx-auto opacity-70" />
+            <div
+              className={`p-6 rounded-xl border border-dashed text-center space-y-2 ${
+                isLight ? 'bg-slate-50 border-slate-200' : 'bg-zinc-900/40 border-zinc-800'
+              }`}
+            >
+              <Sparkles className="w-6 h-6 text-indigo-500 mx-auto opacity-70" />
               <p className="text-xs text-slate-400 italic">
-                Solution specification intentionally left blank / in discovery.
+                Solution specification in discovery. No spec finalized yet.
               </p>
               <button
                 onClick={() => setIsEditing(true)}
-                className="text-xs text-emerald-500 font-semibold hover:underline"
+                className="text-xs text-indigo-500 font-semibold hover:underline"
               >
                 + Define Solution Spec Now
               </button>
@@ -362,14 +445,18 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
           )}
 
           <div className="pt-2">
-            <div className={`p-3.5 rounded-xl border flex items-start gap-2.5 ${
-              isLight ? 'bg-emerald-50/50 border-emerald-200 text-slate-700' : 'bg-emerald-950/20 border-emerald-500/20 text-slate-300'
-            }`}>
+            <div
+              className={`p-3.5 rounded-xl border flex items-start gap-3 ${
+                isLight ? 'bg-emerald-50/50 border-emerald-200/70' : 'bg-emerald-950/20 border-emerald-500/20'
+              }`}
+            >
               <TrendingUp className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold block text-emerald-500 text-[11px] uppercase">Competitive Advantage</span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Flat monthly pricing with 0% GMV commission, millisecond synchronization, and local-first execution.
+              <div className="space-y-0.5">
+                <span className="font-bold block text-emerald-600 dark:text-emerald-400 text-[11px] uppercase tracking-wide">
+                  Competitive Advantage
+                </span>
+                <span className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-emerald-100/80'}`}>
+                  Flat monthly pricing with 0% GMV commission, sub-second inventory synchronization, and local-first reliability.
                 </span>
               </div>
             </div>
@@ -377,24 +464,31 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
         </div>
       </div>
 
-      {/* Quick link banner to Technical Stack Page */}
+      {/* 4. Link to Tech Stack Page */}
       <div
-        className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${
-          isLight ? 'bg-cyan-50/70 border-cyan-200 text-slate-700' : 'bg-cyan-950/20 border-cyan-500/30 text-slate-300'
+        className={`p-4 sm:p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs ${
+          isLight ? 'bg-cyan-50/60 border-cyan-200/80 text-slate-700' : 'bg-cyan-950/20 border-cyan-500/30 text-slate-300'
         }`}
       >
-        <div className="flex items-center gap-2">
-          <Cpu className="w-4 h-4 text-cyan-500" />
-          <span>
-            Looking for this product's engineering architecture (UI/UX, Frontend, Backend, Database)?
-          </span>
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-500">
+            <Cpu className="w-4 h-4" />
+          </div>
+          <div>
+            <span className="font-semibold block text-slate-900 dark:text-white">
+              Looking for Engineering & Technical Architecture?
+            </span>
+            <span className="text-slate-500 dark:text-slate-400 text-[11px]">
+              Full UI/UX, Frontend, Backend, Database, and DevOps layers are managed separately.
+            </span>
+          </div>
         </div>
 
         <a
           href="#/dev/stack"
-          className="font-bold text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1 shrink-0"
+          className="font-bold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 flex items-center gap-1.5 shrink-0"
         >
-          <span>Open Full Tech Stack Page</span>
+          <span>Open Full Tech Stack</span>
           <ChevronRight className="w-3.5 h-3.5" />
         </a>
       </div>

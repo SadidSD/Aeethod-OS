@@ -3737,11 +3737,11 @@
       "id": "prod-scanning-cards",
       "name": "Scanning Cards",
       "tagline": "High-speed AI computer-vision card scanning & bulk identification",
-      "icon": "📷",
+      "icon": "📸",
       "targetAudience": "Mid to high volume seller",
       "targetCustomerProblem": "Manual card identification, sorting, and typing creates massive intake bottlenecks, condition grading discrepancies, and high labor costs for high-volume inventory.",
       "theAeethodSolution": "",
-      "pricingModel": " - /mo",
+      "pricingModel": "$99 - $299/mo ($0 commission)",
       "status": "In Development",
       "techStack": {
         "uiUx": "",
@@ -3761,7 +3761,7 @@
       "targetAudience": "Mid to high volume seller",
       "targetCustomerProblem": "In-store trade-ins take 15–30 minutes per customer, causing counter congestion, lost walk-in sales, pricing disputes, and incumbent software charging 2.5% GMV commission taxes.",
       "theAeethodSolution": "",
-      "pricingModel": " - /mo ( commission)",
+      "pricingModel": "$99 - $299/mo (0% GMV fee)",
       "status": "In Development",
       "techStack": {
         "uiUx": "",
@@ -3781,7 +3781,7 @@
       "targetAudience": "Mid to high volume seller",
       "targetCustomerProblem": "Selling singles simultaneously across in-store POS, Shopify webstore, eBay, and TCGplayer causes inventory desync, out-of-stock double sales, and harsh marketplace penalties.",
       "theAeethodSolution": "",
-      "pricingModel": " - /mo",
+      "pricingModel": "$99 - $299/mo ($0 commission)",
       "status": "In Discovery",
       "techStack": {
         "uiUx": "",
