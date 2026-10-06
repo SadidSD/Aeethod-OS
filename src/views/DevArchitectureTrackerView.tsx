@@ -248,8 +248,11 @@ export const DevArchitectureTrackerView: React.FC = () => {
               {filteredProducts.map((prod) => (
                 <div
                   key={prod.id}
-                  className={`p-6 rounded-2xl border space-y-4 ${
-                    isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#1b1b20] border-[#2e2e34]'
+                  onClick={() => window.location.hash = `/product/${prod.id}`}
+                  className={`p-6 rounded-2xl border space-y-4 cursor-pointer transition-all hover:scale-[1.01] hover:shadow-lg ${
+                    isLight
+                      ? 'bg-white border-slate-200 shadow-sm hover:border-indigo-300'
+                      : 'bg-[#1b1b20] border-[#2e2e34] hover:border-indigo-500/50'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -260,14 +263,17 @@ export const DevArchitectureTrackerView: React.FC = () => {
                         {prod.icon}
                       </span>
                       <div>
-                        <h3 className={`text-base font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                          {prod.name}
+                        <h3 className={`text-base font-bold flex items-center gap-1.5 group-hover:text-indigo-400 ${
+                          isLight ? 'text-slate-900' : 'text-white'
+                        }`}>
+                          <span>{prod.name}</span>
+                          <span className="text-xs text-indigo-400 opacity-60">➔</span>
                         </h3>
                         <p className={`text-xs font-mono ${isLight ? 'text-indigo-600 font-semibold' : 'text-indigo-400'}`}>{prod.tagline}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                       <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
                         isLight
                           ? 'bg-indigo-50 text-indigo-700 border-indigo-200 font-semibold'
@@ -276,7 +282,10 @@ export const DevArchitectureTrackerView: React.FC = () => {
                         {prod.status}
                       </span>
                       <button
-                        onClick={() => handleDeleteProduct(prod.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteProduct(prod.id);
+                        }}
                         className="p-1 text-slate-400 hover:text-rose-500 transition"
                         title="Delete product"
                       >
@@ -353,15 +362,29 @@ export const DevArchitectureTrackerView: React.FC = () => {
                       </span>
                     </div>
 
-                    <a
-                      href="#/dev/stack"
-                      className={`text-xs font-semibold flex items-center gap-1 group ${
-                        isLight ? 'text-cyan-700 hover:text-cyan-800' : 'text-cyan-400 hover:text-cyan-300'
-                      }`}
-                    >
-                      <span>Manage Full Tech Stack</span>
-                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                    </a>
+                    <div className="flex items-center gap-3">
+                      <a
+                        href={`#/product/${prod.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className={`text-xs font-semibold flex items-center gap-1 group ${
+                          isLight ? 'text-indigo-600 hover:text-indigo-800' : 'text-indigo-400 hover:text-indigo-300'
+                        }`}
+                      >
+                        <span>Product Details</span>
+                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                      </a>
+
+                      <a
+                        href="#/dev/stack"
+                        onClick={(e) => e.stopPropagation()}
+                        className={`text-xs font-semibold flex items-center gap-1 group ${
+                          isLight ? 'text-cyan-700 hover:text-cyan-800' : 'text-cyan-400 hover:text-cyan-300'
+                        }`}
+                      >
+                        <span>Tech Stack</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -453,9 +476,14 @@ export const DevArchitectureTrackerView: React.FC = () => {
                           </span>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h3 className={`text-base font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                                {prod.name}
-                              </h3>
+                              <a
+                                href={`#/product/${prod.id}`}
+                                className={`text-base font-bold hover:underline flex items-center gap-1.5 ${
+                                  isLight ? 'text-slate-900 hover:text-indigo-600' : 'text-white hover:text-indigo-400'
+                                }`}
+                              >
+                                <span>{prod.name}</span>
+                              </a>
                               <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
                                 isLight
                                   ? 'bg-amber-50 text-amber-800 border-amber-300 font-semibold'
@@ -483,6 +511,18 @@ export const DevArchitectureTrackerView: React.FC = () => {
                         </div>
 
                         <div className="flex items-center gap-2">
+                          <a
+                            href={`#/product/${prod.id}`}
+                            className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition ${
+                              isLight
+                                ? 'border-indigo-300 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 shadow-xs'
+                                : 'border-indigo-500/40 bg-indigo-950/40 hover:bg-indigo-900/40 text-indigo-300'
+                            }`}
+                            title="Open dedicated Product Detail Page"
+                          >
+                            <span>Open Details ➔</span>
+                          </a>
+
                           <a
                             href="#/dev/stack"
                             className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition ${
