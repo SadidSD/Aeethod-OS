@@ -3732,7 +3732,68 @@
       "toAnchor": "left"
     }
   ],
-  "saas_products": [],
+  "saas_products": [
+    {
+      "id": "prod-scanning-cards",
+      "name": "Scanning Cards",
+      "tagline": "High-speed AI computer-vision card scanning & bulk identification",
+      "icon": "📷",
+      "targetAudience": "Mid to high volume seller",
+      "targetCustomerProblem": "Manual card identification, sorting, and typing creates massive intake bottlenecks, condition grading discrepancies, and high labor costs for high-volume inventory.",
+      "theAeethodSolution": "",
+      "pricingModel": " - /mo",
+      "status": "In Development",
+      "techStack": {
+        "uiUx": "",
+        "frontend": "",
+        "backend": "",
+        "database": "",
+        "devOps": ""
+      },
+      "createdAt": "2026-10-06T15:10:59.184Z",
+      "updatedAt": "2026-10-06T15:10:59.184Z"
+    },
+    {
+      "id": "prod-buylist",
+      "name": "Buylist",
+      "tagline": "Automated self-service counter trade-in & valuation engine (0% GMV fee)",
+      "icon": "📋",
+      "targetAudience": "Mid to high volume seller",
+      "targetCustomerProblem": "In-store trade-ins take 15–30 minutes per customer, causing counter congestion, lost walk-in sales, pricing disputes, and incumbent software charging 2.5% GMV commission taxes.",
+      "theAeethodSolution": "",
+      "pricingModel": " - /mo ( commission)",
+      "status": "In Development",
+      "techStack": {
+        "uiUx": "",
+        "frontend": "",
+        "backend": "",
+        "database": "",
+        "devOps": ""
+      },
+      "createdAt": "2026-10-06T15:10:59.184Z",
+      "updatedAt": "2026-10-06T15:10:59.184Z"
+    },
+    {
+      "id": "prod-omnichannel-sync",
+      "name": "Omnichannel Sync",
+      "tagline": "Real-time multi-channel inventory sync across Shopify, eBay, TCGplayer & POS",
+      "icon": "🔄",
+      "targetAudience": "Mid to high volume seller",
+      "targetCustomerProblem": "Selling singles simultaneously across in-store POS, Shopify webstore, eBay, and TCGplayer causes inventory desync, out-of-stock double sales, and harsh marketplace penalties.",
+      "theAeethodSolution": "",
+      "pricingModel": " - /mo",
+      "status": "In Discovery",
+      "techStack": {
+        "uiUx": "",
+        "frontend": "",
+        "backend": "",
+        "database": "",
+        "devOps": ""
+      },
+      "createdAt": "2026-10-06T15:10:59.184Z",
+      "updatedAt": "2026-10-06T15:10:59.184Z"
+    }
+  ],
   "dev_items": [],
   "ui_ux_items": []
 }

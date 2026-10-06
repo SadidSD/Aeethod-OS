@@ -293,7 +293,13 @@ export const DevArchitectureTrackerView: React.FC = () => {
                       <span className="text-[10px] uppercase font-bold text-emerald-400 block flex items-center gap-1.5">
                         <ShieldCheck className="w-3 h-3" /> How We Solve It:
                       </span>
-                      <p className="text-emerald-200/90 leading-relaxed">{prod.theAeethodSolution}</p>
+                      <p className="text-emerald-200/90 leading-relaxed">
+                        {prod.theAeethodSolution ? (
+                          prod.theAeethodSolution
+                        ) : (
+                          <span className="text-slate-500 italic">Solution spec left blank / to be defined.</span>
+                        )}
+                      </p>
                     </div>
                   </div>
 
@@ -602,14 +608,13 @@ export const DevArchitectureTrackerView: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-[10px] text-slate-400 uppercase font-semibold block mb-1">How Will We Solve It?</label>
+                <label className="text-[10px] text-slate-400 uppercase font-semibold block mb-1">How Will We Solve It? (Optional)</label>
                 <textarea
                   rows={2}
                   value={prodSolution}
                   onChange={(e) => setProdSolution(e.target.value)}
-                  placeholder="Describe how our software feature solves this pain point..."
+                  placeholder="Describe how our software feature solves this pain point (or leave blank)..."
                   className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white"
-                  required
                 />
               </div>
 
