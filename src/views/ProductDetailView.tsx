@@ -4,23 +4,18 @@ import {
   Flame,
   ShieldCheck,
   Cpu,
-  Layers,
-  Code2,
-  Database,
-  Server,
-  Layout,
   CheckCircle2,
   Save,
   Edit3,
-  Calendar,
-  Tag,
   DollarSign,
-  Users,
   Sparkles,
   ExternalLink,
   ChevronRight,
   TrendingUp,
-  AlertTriangle
+  AlertTriangle,
+  Lightbulb,
+  Target,
+  BarChart3
 } from 'lucide-react';
 import { useStore } from '../store';
 import { SaaSProductPillar } from '../data/devPlanningData';
@@ -36,7 +31,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
   const saasProducts: SaaSProductPillar[] = db?.saas_products || [];
   const product = saasProducts.find((p) => p.id === productId);
 
-  // Editing state
+  // Editing state for Product Details, Problems, and Solutions
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(product?.name || '');
   const [tagline, setTagline] = useState(product?.tagline || '');
@@ -46,13 +41,6 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
   const [targetAudience, setTargetAudience] = useState(product?.targetAudience || '');
   const [pricingModel, setPricingModel] = useState(product?.pricingModel || '');
   const [status, setStatus] = useState(product?.status || 'In Discovery');
-
-  // Tech stack editing
-  const [uiUx, setUiUx] = useState(product?.techStack?.uiUx || '');
-  const [frontend, setFrontend] = useState(product?.techStack?.frontend || '');
-  const [backend, setBackend] = useState(product?.techStack?.backend || '');
-  const [database, setDatabase] = useState(product?.techStack?.database || '');
-  const [devOps, setDevOps] = useState(product?.techStack?.devOps || '');
 
   if (!product) {
     return (
@@ -65,11 +53,11 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
           We could not find the SaaS product with ID <code className="font-mono text-cyan-400">{productId}</code>.
         </p>
         <a
-          href="#/dev/architecture"
+          href="#/dev/products"
           className="btn-primary text-xs px-4 py-2 inline-flex items-center gap-2"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Products</span>
+          <span>Back to SaaS Products</span>
         </a>
       </div>
     );
@@ -84,14 +72,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
       theAeethodSolution: solution.trim(),
       targetAudience: targetAudience.trim(),
       pricingModel: pricingModel.trim(),
-      status: status,
-      techStack: {
-        uiUx: uiUx.trim(),
-        frontend: frontend.trim(),
-        backend: backend.trim(),
-        database: database.trim(),
-        devOps: devOps.trim()
-      }
+      status: status
     });
     setIsEditing(false);
   };
@@ -101,7 +82,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
       {/* Top Breadcrumb & Actions Bar */}
       <div className="flex items-center justify-between gap-4">
         <a
-          href="#/dev/architecture"
+          href="#/dev/products"
           className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg border transition ${
             isLight
               ? 'border-slate-200 bg-white hover:bg-slate-100 text-slate-700 shadow-xs'
@@ -109,7 +90,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
           }`}
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Products & Hub</span>
+          <span>← Back to SaaS Products</span>
         </a>
 
         <div className="flex items-center gap-3">
@@ -122,7 +103,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
             }`}
           >
             <Cpu className="w-3.5 h-3.5" />
-            <span>Open in Tech Stacks Page</span>
+            <span>View Technical Stack on Tech Stack Page ➔</span>
           </a>
 
           {isEditing ? (
@@ -144,11 +125,6 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                 setTargetAudience(product.targetAudience || '');
                 setPricingModel(product.pricingModel || '');
                 setStatus(product.status);
-                setUiUx(product.techStack?.uiUx || '');
-                setFrontend(product.techStack?.frontend || '');
-                setBackend(product.techStack?.backend || '');
-                setDatabase(product.techStack?.database || '');
-                setDevOps(product.techStack?.devOps || '');
                 setIsEditing(true);
               }}
               className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition ${
@@ -218,7 +194,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                 </span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                  <span>Synced in DB</span>
+                  <span>Synced in Supabase</span>
                 </span>
               </div>
 
@@ -243,15 +219,33 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
           <div className="flex flex-wrap sm:flex-col items-start sm:items-end gap-2 text-xs font-mono">
             <div className={`px-3 py-1.5 rounded-lg border ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900/60 border-slate-800'}`}>
               <span className="text-slate-400">Target Audience: </span>
-              <span className={`font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>
-                {product.targetAudience || 'Mid to high volume seller'}
-              </span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={targetAudience}
+                  onChange={(e) => setTargetAudience(e.target.value)}
+                  className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-700 text-white text-xs font-bold"
+                />
+              ) : (
+                <span className={`font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                  {product.targetAudience || 'Mid to high volume seller'}
+                </span>
+              )}
             </div>
             <div className={`px-3 py-1.5 rounded-lg border ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900/60 border-slate-800'}`}>
               <span className="text-slate-400">Pricing / Monetization: </span>
-              <span className="font-bold text-emerald-500">
-                {product.pricingModel || 'SaaS Subscription'}
-              </span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={pricingModel}
+                  onChange={(e) => setPricingModel(e.target.value)}
+                  className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-700 text-white text-xs font-bold"
+                />
+              ) : (
+                <span className="font-bold text-emerald-500">
+                  {product.pricingModel || 'SaaS Subscription'}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -287,26 +281,38 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
 
           {/* Friction breakdown pillars */}
           <div className="pt-2 space-y-2 text-xs">
-            <div className={`p-3 rounded-xl border flex items-start gap-2.5 ${
+            <div className={`p-3.5 rounded-xl border flex items-start gap-2.5 ${
               isLight ? 'bg-rose-50/50 border-rose-200 text-slate-700' : 'bg-rose-950/20 border-rose-500/20 text-slate-300'
             }`}>
               <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
               <div>
-                <span className="font-bold block text-rose-500 text-[11px] uppercase">Bottleneck</span>
+                <span className="font-bold block text-rose-500 text-[11px] uppercase">1. Operational Bottleneck</span>
                 <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Manual human typing, grading delays, catalog backlogs, and inventory inaccuracies.
+                  {product.id === 'prod-scanning-cards'
+                    ? 'Manual card identification, sorting, and typing creates massive intake bottlenecks and high labor costs.'
+                    : product.id === 'prod-buylist'
+                    ? 'In-store trade-ins take 15–30 minutes per customer, causing counter congestion and lost walk-in sales.'
+                    : product.id === 'prod-omnichannel-sync'
+                    ? 'Selling singles simultaneously across in-store POS, Shopify webstore, eBay, and TCGplayer causes inventory desync and out-of-stock double sales.'
+                    : 'Manual repetitive effort, labor cost, and human input latency.'}
                 </span>
               </div>
             </div>
 
-            <div className={`p-3 rounded-xl border flex items-start gap-2.5 ${
+            <div className={`p-3.5 rounded-xl border flex items-start gap-2.5 ${
               isLight ? 'bg-amber-50/50 border-amber-200 text-slate-700' : 'bg-amber-950/20 border-amber-500/20 text-slate-300'
             }`}>
               <DollarSign className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
               <div>
-                <span className="font-bold block text-amber-500 text-[11px] uppercase">Margin Tax</span>
+                <span className="font-bold block text-amber-500 text-[11px] uppercase">2. Margin Tax & Financial Waste</span>
                 <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Excessive labor wages spent on repetitive tasks or 2.5% GMV commission fees taken by incumbents.
+                  {product.id === 'prod-scanning-cards'
+                    ? 'High labor cost ($15–$25/hr) spent on repetitive intake rather than selling or high-margin activities.'
+                    : product.id === 'prod-buylist'
+                    ? 'Incumbent software charging up to 2.5% GMV platform tax on every single card trade-in transaction.'
+                    : product.id === 'prod-omnichannel-sync'
+                    ? 'Out-of-stock cancellations result in marketplace penalties, negative seller ratings, and account suspensions.'
+                    : 'High commission fees or revenue leakage due to unoptimized systems.'}
                 </span>
               </div>
             </div>
@@ -356,7 +362,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
           )}
 
           <div className="pt-2">
-            <div className={`p-3 rounded-xl border flex items-start gap-2.5 ${
+            <div className={`p-3.5 rounded-xl border flex items-start gap-2.5 ${
               isLight ? 'bg-emerald-50/50 border-emerald-200 text-slate-700' : 'bg-emerald-950/20 border-emerald-500/20 text-slate-300'
             }`}>
               <TrendingUp className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
@@ -371,152 +377,26 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
         </div>
       </div>
 
-      {/* Full 4-Layer Technical Stack */}
+      {/* Quick link banner to Technical Stack Page */}
       <div
-        className={`p-6 rounded-2xl border space-y-5 ${
-          isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#1b1b20] border-[#2e2e34]'
+        className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${
+          isLight ? 'bg-cyan-50/70 border-cyan-200 text-slate-700' : 'bg-cyan-950/20 border-cyan-500/30 text-slate-300'
         }`}
       >
-        <div className="flex items-center justify-between border-b pb-3 border-slate-800/40">
-          <div className="flex items-center gap-2 text-cyan-400 font-bold uppercase text-xs tracking-wider">
-            <Layers className="w-4 h-4" />
-            <span>Full Technical Stack Architecture</span>
-          </div>
-
-          <a
-            href="#/dev/stack"
-            className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
-          >
-            <span>Edit in Global Tech Stacks Page</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </a>
+        <div className="flex items-center gap-2">
+          <Cpu className="w-4 h-4 text-cyan-500" />
+          <span>
+            Looking for this product's engineering architecture (UI/UX, Frontend, Backend, Database)?
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-mono">
-          {/* Layer 1: UI/UX */}
-          <div className={`p-4 rounded-xl border space-y-2 ${
-            isLight ? 'bg-purple-50/50 border-purple-200 text-slate-800' : 'bg-slate-900/60 border-purple-500/30 text-slate-300'
-          }`}>
-            <div className="flex items-center gap-2 text-purple-500 font-bold uppercase text-[10px] tracking-wider">
-              <Layout className="w-4 h-4" />
-              <span>1. UI / UX Experience</span>
-            </div>
-            {isEditing ? (
-              <textarea
-                rows={3}
-                value={uiUx}
-                onChange={(e) => setUiUx(e.target.value)}
-                className={`w-full p-2 rounded border text-[11px] ${
-                  isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-700 text-white'
-                }`}
-              />
-            ) : (
-              <p className="leading-relaxed text-[11px]">
-                {product.techStack?.uiUx || 'Modern dark glassmorphism, responsive kiosk/mobile layouts, high-speed input.'}
-              </p>
-            )}
-          </div>
-
-          {/* Layer 2: Frontend */}
-          <div className={`p-4 rounded-xl border space-y-2 ${
-            isLight ? 'bg-cyan-50/50 border-cyan-200 text-slate-800' : 'bg-slate-900/60 border-cyan-500/30 text-slate-300'
-          }`}>
-            <div className="flex items-center gap-2 text-cyan-500 font-bold uppercase text-[10px] tracking-wider">
-              <Code2 className="w-4 h-4" />
-              <span>2. Frontend Stack</span>
-            </div>
-            {isEditing ? (
-              <textarea
-                rows={3}
-                value={frontend}
-                onChange={(e) => setFrontend(e.target.value)}
-                className={`w-full p-2 rounded border text-[11px] ${
-                  isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-700 text-white'
-                }`}
-              />
-            ) : (
-              <p className="leading-relaxed text-[11px]">
-                {product.techStack?.frontend || 'React 18, TypeScript, Tailwind CSS, Vite, HTML5 Canvas.'}
-              </p>
-            )}
-          </div>
-
-          {/* Layer 3: Backend */}
-          <div className={`p-4 rounded-xl border space-y-2 ${
-            isLight ? 'bg-amber-50/50 border-amber-200 text-slate-800' : 'bg-slate-900/60 border-amber-500/30 text-slate-300'
-          }`}>
-            <div className="flex items-center gap-2 text-amber-500 font-bold uppercase text-[10px] tracking-wider">
-              <Server className="w-4 h-4" />
-              <span>3. Backend & APIs</span>
-            </div>
-            {isEditing ? (
-              <textarea
-                rows={3}
-                value={backend}
-                onChange={(e) => setBackend(e.target.value)}
-                className={`w-full p-2 rounded border text-[11px] ${
-                  isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-700 text-white'
-                }`}
-              />
-            ) : (
-              <p className="leading-relaxed text-[11px]">
-                {product.techStack?.backend || 'Node.js, Edge Functions, WebSocket Live Engine, GraphQL endpoints.'}
-              </p>
-            )}
-          </div>
-
-          {/* Layer 4: Database */}
-          <div className={`p-4 rounded-xl border space-y-2 ${
-            isLight ? 'bg-emerald-50/50 border-emerald-200 text-slate-800' : 'bg-slate-900/60 border-emerald-500/30 text-slate-300'
-          }`}>
-            <div className="flex items-center gap-2 text-emerald-500 font-bold uppercase text-[10px] tracking-wider">
-              <Database className="w-4 h-4" />
-              <span>4. Database & Tables</span>
-            </div>
-            {isEditing ? (
-              <textarea
-                rows={3}
-                value={database}
-                onChange={(e) => setDatabase(e.target.value)}
-                className={`w-full p-2 rounded border text-[11px] ${
-                  isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-700 text-white'
-                }`}
-              />
-            ) : (
-              <p className="leading-relaxed text-[11px]">
-                {product.techStack?.database || 'Supabase PostgreSQL, RLS Policies, Redis Realtime Cache.'}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* DevOps Layer */}
-        <div className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono ${
-          isLight ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-slate-900/40 border-slate-800 text-slate-400'
-        }`}>
-          <div className="flex items-center gap-2">
-            <Cpu className="w-4 h-4 text-indigo-400" />
-            <span className="font-bold">DevOps & Hosting:</span>
-            {isEditing ? (
-              <input
-                type="text"
-                value={devOps}
-                onChange={(e) => setDevOps(e.target.value)}
-                className={`px-2 py-1 rounded border text-xs w-72 ${
-                  isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-700 text-white'
-                }`}
-              />
-            ) : (
-              <span className={isLight ? 'text-slate-800 font-semibold' : 'text-slate-200'}>
-                {product.techStack?.devOps || 'Vercel static deploy + Supabase Cloud + GitHub CI/CD'}
-              </span>
-            )}
-          </div>
-
-          <div className="text-[11px] text-slate-400">
-            Product ID: <span className="font-mono text-cyan-400">{product.id}</span>
-          </div>
-        </div>
+        <a
+          href="#/dev/stack"
+          className="font-bold text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1 shrink-0"
+        >
+          <span>Open Full Tech Stack Page</span>
+          <ChevronRight className="w-3.5 h-3.5" />
+        </a>
       </div>
     </div>
   );

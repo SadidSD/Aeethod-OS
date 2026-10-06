@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   Layers,
   Code2,
@@ -9,11 +9,9 @@ import {
   Edit3,
   Save,
   CheckCircle2,
-  ExternalLink,
   ArrowRight,
-  Flame,
-  Terminal,
-  Boxes
+  Boxes,
+  Package
 } from 'lucide-react';
 import { useStore } from '../store';
 import { SaaSProductPillar } from '../data/devPlanningData';
@@ -62,7 +60,7 @@ export const TechStackView: React.FC = () => {
       <div
         className={`p-6 rounded-2xl border transition-all ${
           isLight
-            ? 'bg-gradient-to-br from-white to-slate-50 border-slate-200 shadow-sm'
+            ? 'bg-gradient-to-br from-white via-cyan-50/20 to-slate-50 border-slate-200 shadow-sm'
             : 'bg-gradient-to-br from-[#1a1a24] via-[#16161d] to-[#121216] border-[#2e2e38]'
         }`}
       >
@@ -88,10 +86,15 @@ export const TechStackView: React.FC = () => {
 
           <div className="flex items-center gap-3">
             <a
-              href="#/dev/architecture"
-              className="px-3.5 py-2 rounded-xl text-xs font-semibold border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200 flex items-center gap-1.5 transition"
+              href="#/dev/products"
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold border flex items-center gap-1.5 transition ${
+                isLight
+                  ? 'border-slate-300 bg-white hover:bg-slate-100 text-slate-800 shadow-xs'
+                  : 'border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200'
+              }`}
             >
-              <span>← Back to SaaS Products & Problems</span>
+              <Package className="w-4 h-4 text-emerald-500" />
+              <span>← Back to SaaS Products</span>
             </a>
           </div>
         </div>
@@ -101,12 +104,12 @@ export const TechStackView: React.FC = () => {
           <div className="flex items-center gap-2">
             <Boxes className="w-4 h-4 text-emerald-400" />
             <span className="text-slate-400">Total Products:</span>
-            <span className="font-bold text-white">{saasProducts.length}</span>
+            <span className={isLight ? 'font-bold text-slate-900' : 'font-bold text-white'}>{saasProducts.length}</span>
           </div>
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4 text-cyan-400" />
             <span className="text-slate-400">Technical Stacks Configured:</span>
-            <span className="font-bold text-white">{saasProducts.length}</span>
+            <span className={isLight ? 'font-bold text-slate-900' : 'font-bold text-white'}>{saasProducts.length}</span>
           </div>
         </div>
       </div>
@@ -114,12 +117,14 @@ export const TechStackView: React.FC = () => {
       {/* Product Filter Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-          <span className="text-[11px] text-slate-500 font-semibold uppercase">Product Filter:</span>
+          <span className={`text-[11px] font-semibold uppercase ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Product Filter:</span>
           <button
             onClick={() => setSelectedProductFilter('All')}
             className={`px-2.5 py-1 rounded-md text-xs font-semibold transition shrink-0 ${
               selectedProductFilter === 'All'
-                ? 'bg-cyan-600 text-white'
+                ? 'bg-cyan-600 text-white shadow-sm'
+                : isLight
+                ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                 : 'bg-slate-800 text-slate-400 hover:text-white'
             }`}
           >
@@ -129,9 +134,11 @@ export const TechStackView: React.FC = () => {
             <button
               key={p.id}
               onClick={() => setSelectedProductFilter(p.id)}
-              className={`px-2.5 py-1 rounded-md text-xs font-semibold transition shrink-0 flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-md text-xs font-semibold transition shrink-0 flex items-center gap-1.5 ${
                 selectedProductFilter === p.id
-                  ? 'bg-cyan-600 text-white'
+                  ? 'bg-cyan-600 text-white shadow-sm'
+                  : isLight
+                  ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                   : 'bg-slate-800 text-slate-400 hover:text-white'
               }`}
             >
@@ -157,29 +164,59 @@ export const TechStackView: React.FC = () => {
                 }`}
               >
                 {/* Product Header Row */}
-                <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/40">
+                <div
+                  className={`p-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                    isLight ? 'bg-slate-50/80 border-slate-200' : 'bg-slate-900/40 border-slate-800'
+                  }`}
+                >
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl p-2 rounded-xl bg-slate-800 border border-slate-700">
+                    <span
+                      className={`text-2xl p-2 rounded-xl border ${
+                        isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-800 border-slate-700 text-white'
+                      }`}
+                    >
                       {prod.icon}
                     </span>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className={`text-base font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                        <a
+                          href={`#/product/${prod.id}`}
+                          className={`text-base font-bold hover:underline ${isLight ? 'text-slate-900' : 'text-white'}`}
+                        >
                           {prod.name}
-                        </h3>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+                        </a>
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                            isLight
+                              ? 'bg-cyan-50 text-cyan-800 border-cyan-300 font-semibold'
+                              : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
+                          }`}
+                        >
                           {prod.status}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 font-mono mt-0.5">{prod.tagline}</p>
+                      <p className={`text-xs font-mono mt-0.5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                        {prod.tagline}
+                      </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
+                    <a
+                      href={`#/product/${prod.id}`}
+                      className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition ${
+                        isLight
+                          ? 'border-indigo-300 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 shadow-xs'
+                          : 'border-indigo-500/40 bg-indigo-950/40 hover:bg-indigo-900/40 text-indigo-300'
+                      }`}
+                    >
+                      <span>Product Details ➔</span>
+                    </a>
+
                     {isEditing ? (
                       <button
                         onClick={() => saveEditedStack(prod.id)}
-                        className="btn-primary text-xs px-3.5 py-1.5 flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500"
+                        className="btn-primary text-xs px-3.5 py-1.5 flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white"
                       >
                         <Save className="w-3.5 h-3.5" />
                         <span>Save Stack Updates</span>
@@ -187,9 +224,13 @@ export const TechStackView: React.FC = () => {
                     ) : (
                       <button
                         onClick={() => startEditingStack(prod)}
-                        className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 transition"
+                        className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition ${
+                          isLight
+                            ? 'border-slate-300 bg-white hover:bg-slate-100 text-slate-700 shadow-xs'
+                            : 'border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200'
+                        }`}
                       >
-                        <Edit3 className="w-3.5 h-3.5 text-cyan-400" />
+                        <Edit3 className="w-3.5 h-3.5 text-cyan-500" />
                         <span>Edit Technical Stack</span>
                       </button>
                     )}
@@ -197,10 +238,16 @@ export const TechStackView: React.FC = () => {
                 </div>
 
                 {/* Technical Stacks Grid: UI/UX, Frontend, Backend, Database */}
-                <div className="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                <div className="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-mono">
                   {/* 1. UI/UX Layer */}
-                  <div className="p-4 rounded-xl bg-slate-900/60 border border-purple-500/30 space-y-2">
-                    <div className="flex items-center gap-2 text-purple-400 font-bold uppercase text-[10px] tracking-wider">
+                  <div
+                    className={`p-4 rounded-xl border space-y-2 ${
+                      isLight
+                        ? 'bg-purple-50/50 border-purple-200 text-slate-800'
+                        : 'bg-slate-900/60 border-purple-500/30 text-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 text-purple-500 font-bold uppercase text-[10px] tracking-wider">
                       <Layout className="w-4 h-4" />
                       <span>1. UI / UX Experience</span>
                     </div>
@@ -210,18 +257,26 @@ export const TechStackView: React.FC = () => {
                         value={editUiUx}
                         onChange={(e) => setEditUiUx(e.target.value)}
                         placeholder="Describe UI layout, design tokens, touch pads, theme..."
-                        className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
+                        className={`w-full p-2.5 rounded-lg border text-[11px] font-mono ${
+                          isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-700 text-white'
+                        }`}
                       />
                     ) : (
-                      <p className="text-slate-300 leading-relaxed font-mono text-[11px]">
-                        {prod.techStack?.uiUx || 'No UI/UX spec defined yet. Click edit to add.'}
+                      <p className="leading-relaxed text-[11px]">
+                        {prod.techStack?.uiUx || 'Modern dark glassmorphism, rapid action bar, responsive kiosk/mobile layouts'}
                       </p>
                     )}
                   </div>
 
                   {/* 2. Frontend Layer */}
-                  <div className="p-4 rounded-xl bg-slate-900/60 border border-cyan-500/30 space-y-2">
-                    <div className="flex items-center gap-2 text-cyan-400 font-bold uppercase text-[10px] tracking-wider">
+                  <div
+                    className={`p-4 rounded-xl border space-y-2 ${
+                      isLight
+                        ? 'bg-cyan-50/50 border-cyan-200 text-slate-800'
+                        : 'bg-slate-900/60 border-cyan-500/30 text-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 text-cyan-500 font-bold uppercase text-[10px] tracking-wider">
                       <Code2 className="w-4 h-4" />
                       <span>2. Frontend Stack</span>
                     </div>
@@ -231,18 +286,26 @@ export const TechStackView: React.FC = () => {
                         value={editFrontend}
                         onChange={(e) => setEditFrontend(e.target.value)}
                         placeholder="React 18, HTML5 Canvas, Tailwind v4, Zustand store..."
-                        className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
+                        className={`w-full p-2.5 rounded-lg border text-[11px] font-mono ${
+                          isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-700 text-white'
+                        }`}
                       />
                     ) : (
-                      <p className="text-slate-300 leading-relaxed font-mono text-[11px]">
-                        {prod.techStack?.frontend || 'No Frontend spec defined yet. Click edit to add.'}
+                      <p className="leading-relaxed text-[11px]">
+                        {prod.techStack?.frontend || 'React 18, TypeScript, Tailwind CSS, Vite, HTML5 Canvas'}
                       </p>
                     )}
                   </div>
 
                   {/* 3. Backend Layer */}
-                  <div className="p-4 rounded-xl bg-slate-900/60 border border-amber-500/30 space-y-2">
-                    <div className="flex items-center gap-2 text-amber-400 font-bold uppercase text-[10px] tracking-wider">
+                  <div
+                    className={`p-4 rounded-xl border space-y-2 ${
+                      isLight
+                        ? 'bg-amber-50/50 border-amber-200 text-slate-800'
+                        : 'bg-slate-900/60 border-amber-500/30 text-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 text-amber-500 font-bold uppercase text-[10px] tracking-wider">
                       <Server className="w-4 h-4" />
                       <span>3. Backend & APIs</span>
                     </div>
@@ -252,18 +315,26 @@ export const TechStackView: React.FC = () => {
                         value={editBackend}
                         onChange={(e) => setEditBackend(e.target.value)}
                         placeholder="Node.js, Express, Edge Functions, GraphQL endpoints..."
-                        className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
+                        className={`w-full p-2.5 rounded-lg border text-[11px] font-mono ${
+                          isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-700 text-white'
+                        }`}
                       />
                     ) : (
-                      <p className="text-slate-300 leading-relaxed font-mono text-[11px]">
-                        {prod.techStack?.backend || 'No Backend spec defined yet. Click edit to add.'}
+                      <p className="leading-relaxed text-[11px]">
+                        {prod.techStack?.backend || 'Node.js, Edge Functions, WebSocket Live Engine, GraphQL REST Gateway'}
                       </p>
                     )}
                   </div>
 
                   {/* 4. Database Layer */}
-                  <div className="p-4 rounded-xl bg-slate-900/60 border border-emerald-500/30 space-y-2">
-                    <div className="flex items-center gap-2 text-emerald-400 font-bold uppercase text-[10px] tracking-wider">
+                  <div
+                    className={`p-4 rounded-xl border space-y-2 ${
+                      isLight
+                        ? 'bg-emerald-50/50 border-emerald-200 text-slate-800'
+                        : 'bg-slate-900/60 border-emerald-500/30 text-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 text-emerald-500 font-bold uppercase text-[10px] tracking-wider">
                       <Database className="w-4 h-4" />
                       <span>4. Database & Tables</span>
                     </div>
@@ -273,11 +344,13 @@ export const TechStackView: React.FC = () => {
                         value={editDatabase}
                         onChange={(e) => setEditDatabase(e.target.value)}
                         placeholder="PostgreSQL, Supabase tables, RLS policies, Redis cache..."
-                        className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
+                        className={`w-full p-2.5 rounded-lg border text-[11px] font-mono ${
+                          isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-700 text-white'
+                        }`}
                       />
                     ) : (
-                      <p className="text-slate-300 leading-relaxed font-mono text-[11px]">
-                        {prod.techStack?.database || 'No Database spec defined yet. Click edit to add.'}
+                      <p className="leading-relaxed text-[11px]">
+                        {prod.techStack?.database || 'Supabase PostgreSQL, RLS Policies, Redis Realtime Cache'}
                       </p>
                     )}
                   </div>
@@ -285,17 +358,23 @@ export const TechStackView: React.FC = () => {
 
                 {/* DevOps bar */}
                 <div className="px-5 pb-5 pt-0">
-                  <div className="p-3 rounded-xl bg-slate-900/40 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] font-mono text-slate-400">
+                  <div
+                    className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] font-mono ${
+                      isLight ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-slate-900/40 border-slate-800 text-slate-400'
+                    }`}
+                  >
                     <div className="flex items-center gap-2">
                       <Cpu className="w-3.5 h-3.5 text-indigo-400" />
-                      <span className="font-bold text-slate-300">DevOps & Hosting:</span>
+                      <span className={`font-bold ${isLight ? 'text-slate-800' : 'text-slate-300'}`}>DevOps & Hosting:</span>
                       {isEditing ? (
                         <input
                           type="text"
                           value={editDevOps}
                           onChange={(e) => setEditDevOps(e.target.value)}
                           placeholder="Vercel + Supabase + GitHub Actions CI"
-                          className="px-2 py-1 rounded bg-slate-950 border border-slate-700 text-white text-xs w-72"
+                          className={`px-2 py-1 rounded border text-xs w-72 ${
+                            isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-700 text-white'
+                          }`}
                         />
                       ) : (
                         <span>{prod.techStack?.devOps || 'Vercel static deploy + Supabase Cloud'}</span>

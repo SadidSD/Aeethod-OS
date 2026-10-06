@@ -152,6 +152,9 @@ export const App: React.FC = () => {
         return <ContentManagementView />;
       case 'product':
       case 'saas-product':
+        if (sub) return <ProductDetailView productId={sub} />;
+        return <DevArchitectureTrackerView />;
+      case 'products':
       case 'saas-products':
         if (sub) return <ProductDetailView productId={sub} />;
         return <DevArchitectureTrackerView />;
@@ -159,7 +162,7 @@ export const App: React.FC = () => {
         if (sub === 'ui-ux' || sub === 'ui' || sub === 'ux') return <UiUxStudioView />;
         if (sub === 'stack' || sub === 'tech-stack' || sub === 'stacks') return <TechStackView />;
         if (sub === 'product' && route[2]) return <ProductDetailView productId={route[2]} />;
-        if (sub === 'architecture' || sub === 'plan' || sub === 'products') return <DevArchitectureTrackerView />;
+        if (sub === 'products' || sub === 'architecture' || sub === 'plan') return <DevArchitectureTrackerView />;
         if (sub === 'sprints') return <DevSprintsView />;
         if (sub === 'epics') return <DevEpicsView />;
         return <DevBoardView />;

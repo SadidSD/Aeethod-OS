@@ -318,26 +318,30 @@ export const Sidebar: React.FC = () => {
             {devOpen && (
               <div className="space-y-0.5 pl-2 pt-0.5 border-l border-[#2e2e2e] ml-2.5">
                 <a
-                  href="#/dev/architecture"
+                  href="#/dev/products"
                   className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs transition ${
-                    currentPath === 'dev' && (currentSub === 'architecture' || currentSub === 'products' || currentSub === 'plan')
+                    (currentPath === 'dev' && (currentSub === 'products' || currentSub === 'architecture' || currentSub === 'plan')) ||
+                    currentPath === 'products' ||
+                    currentPath === 'saas-products'
                       ? 'bg-[#2c2c2c] text-white font-medium'
                       : 'text-[#9b9b9b] hover:text-white hover:bg-[#282828]'
                   }`}
                 >
                   <Package className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="font-semibold text-white">SaaS Products & Problems</span>
+                  <span className="font-semibold text-white">SaaS Products</span>
                 </a>
                 <a
                   href="#/dev/stack"
                   className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs transition ${
-                    (currentPath === 'dev' && currentSub === 'stack') || currentPath === 'stack'
+                    (currentPath === 'dev' && (currentSub === 'stack' || currentSub === 'tech-stack')) ||
+                    currentPath === 'stack' ||
+                    currentPath === 'tech-stack'
                       ? 'bg-[#2c2c2c] text-white font-medium'
                       : 'text-[#9b9b9b] hover:text-white hover:bg-[#282828]'
                   }`}
                 >
                   <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-                  <span className="font-semibold text-cyan-300">Technical Stacks Page</span>
+                  <span className="font-semibold text-cyan-300">Tech Stack</span>
                 </a>
                 <a
                   href="#/dev/ui-ux"
