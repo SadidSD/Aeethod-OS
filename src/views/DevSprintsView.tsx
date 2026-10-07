@@ -34,6 +34,22 @@ export const DevSprintsView: React.FC = () => {
   const [status, setStatus] = useState<Sprint['status']>('planned');
 
   const devTasks = db.tasks.filter((t) => t.topicId === 'dev' && !t.parentId);
+  const [quickTaskTitle, setQuickTaskTitle] = useState<Record<string, string>>({});
+
+  const handleQuickAddTaskToSprint = (sprintId: string) => {
+    const title = (quickTaskTitle[sprintId] || '').trim();
+    if (!title) return;
+    create('tasks', {
+      topicId: 'dev',
+      sprintId: sprintId,
+      title: title,
+      status: 'ready',
+      type: 'feature',
+      priority: 'normal',
+      assignee: db.settings.team[0] || '',
+    });
+    setQuickTaskTitle((prev) => ({ ...prev, [sprintId]: '' }));
+  };
 
   const openCreateModal = () => {
     setEditingSprint(null);
@@ -247,13 +263,42 @@ export const DevSprintsView: React.FC = () => {
 
                 {/* Tasks in this Sprint */}
                 <div className="pt-3">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                    Committed Tasks ({sprintTasks.length})
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                      Committed Tasks ({sprintTasks.length})
+                    </div>
                   </div>
+
+                  {/* Inline Quick Task Creator for this Sprint */}
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleQuickAddTaskToSprint(sprint.id);
+                    }}
+                    className="flex items-center gap-2 mb-3"
+                  >
+                    <input
+                      type="text"
+                      value={quickTaskTitle[sprint.id] || ''}
+                      onChange={(e) =>
+                        setQuickTaskTitle((prev) => ({ ...prev, [sprint.id]: e.target.value }))
+                      }
+                      placeholder={`+ Add a task directly to ${sprint.name} (press Enter)...`}
+                      className="flex-1 input text-xs py-1.5 px-3 bg-ink-950/70 border-ink-800 focus:border-amber-500/50"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!quickTaskTitle[sprint.id]?.trim()}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 hover:bg-amber-500 hover:text-black border border-amber-500/30 transition disabled:opacity-40 disabled:pointer-events-none flex items-center gap-1 shrink-0"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add to Sprint</span>
+                    </button>
+                  </form>
 
                   {sprintTasks.length === 0 ? (
                     <div className="text-xs text-slate-500 italic py-2">
-                      No tasks assigned to this sprint yet. Assign tasks from the Sprint Kanban Board or Backlog.
+                      No tasks assigned to this sprint yet. Use the field above or assign tasks from the Kanban board.
                     </div>
                   ) : (
                     <div className="divide-y divide-ink-800/60">

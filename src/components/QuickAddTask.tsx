@@ -1,21 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Plus, Calendar, Tag, User, Layers } from 'lucide-react';
 import { useStore, useDb } from '../store';
 import { Priority, DevType } from '../types';
 import { PRIORITIES, DEV_TYPES } from '../lib/constants';
+import { useRoute } from '../lib/router';
 
 export const QuickAddTask: React.FC = () => {
   const { quickAddOpen, setQuickAddOpen, create, setOpenTask } = useStore();
   const db = useDb();
+  const route = useRoute();
+  const isDevRoute = route[0] === 'dev';
 
   const [title, setTitle] = useState('');
-  const [topicId, setTopicId] = useState(db.topics[0]?.id || 'strategy');
+  const [topicId, setTopicId] = useState(isDevRoute ? 'dev' : (db.topics[0]?.id || 'strategy'));
   const [priority, setPriority] = useState<Priority>('normal');
   const [assignee, setAssignee] = useState(db.settings.team[0] || '');
   const [dueDate, setDueDate] = useState('');
   const [description, setDescription] = useState('');
   const [devType, setDevType] = useState<DevType>('feature');
   const [points, setPoints] = useState<number | null>(null);
+  const [sprintId, setSprintId] = useState<string>('');
+  const [epicId, setEpicId] = useState<string>('');
+
+  useEffect(() => {
+    if (quickAddOpen && isDevRoute) {
+      setTopicId('dev');
+    }
+  }, [quickAddOpen, isDevRoute]);
 
   if (!quickAddOpen) return null;
 
@@ -33,13 +44,15 @@ export const QuickAddTask: React.FC = () => {
       priority,
       assignee,
       dueDate: dueDate || null,
-      ...(isDev ? { type: devType, points } : {}),
+      ...(isDev ? { type: devType, points, sprintId: sprintId || null, epicId: epicId || null } : {}),
     });
 
     setQuickAddOpen(false);
     setTitle('');
     setDescription('');
     setDueDate('');
+    setSprintId('');
+    setEpicId('');
     if (newTask && newTask.id) {
       setOpenTask(newTask.id);
     }
@@ -139,36 +152,72 @@ export const QuickAddTask: React.FC = () => {
           </div>
 
           {isDev && (
-            <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-ink-950 border border-ink-800">
-              <div>
-                <label className="text-xs text-cyan-400 font-semibold block mb-1">Type</label>
-                <select
-                  value={devType}
-                  onChange={(e) => setDevType(e.target.value as DevType)}
-                  className="w-full input text-xs py-1.5 capitalize"
-                >
-                  {DEV_TYPES.map((dt) => (
-                    <option key={dt.id} value={dt.id}>
-                      {dt.label}
-                    </option>
-                  ))}
-                </select>
+            <div className="space-y-3 p-3 rounded-xl bg-ink-950 border border-ink-800">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-cyan-400 font-semibold block mb-1">Type</label>
+                  <select
+                    value={devType}
+                    onChange={(e) => setDevType(e.target.value as DevType)}
+                    className="w-full input text-xs py-1.5 capitalize"
+                  >
+                    {DEV_TYPES.map((dt) => (
+                      <option key={dt.id} value={dt.id}>
+                        {dt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-cyan-400 font-semibold block mb-1">Story Points</label>
+                  <select
+                    value={points ?? ''}
+                    onChange={(e) => setPoints(e.target.value ? Number(e.target.value) : null)}
+                    className="w-full input text-xs py-1.5"
+                  >
+                    <option value="">Unestimated</option>
+                    {[1, 2, 3, 5, 8, 13].map((pt) => (
+                      <option key={pt} value={pt}>
+                        {pt} Points
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label className="text-xs text-cyan-400 font-semibold block mb-1">Story Points</label>
-                <select
-                  value={points ?? ''}
-                  onChange={(e) => setPoints(e.target.value ? Number(e.target.value) : null)}
-                  className="w-full input text-xs py-1.5"
-                >
-                  <option value="">Unestimated</option>
-                  {[1, 2, 3, 5, 8, 13].map((pt) => (
-                    <option key={pt} value={pt}>
-                      {pt} Points
-                    </option>
-                  ))}
-                </select>
+              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-ink-800/80">
+                <div>
+                  <label className="text-xs text-amber-400 font-semibold block mb-1">Sprint</label>
+                  <select
+                    value={sprintId}
+                    onChange={(e) => setSprintId(e.target.value)}
+                    className="w-full input text-xs py-1.5"
+                  >
+                    <option value="">No Sprint (Backlog)</option>
+                    {db.sprints.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name} ({s.status})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-purple-400 font-semibold block mb-1">Roadmap Epic</label>
+                  <select
+                    value={epicId}
+                    onChange={(e) => setEpicId(e.target.value)}
+                    className="w-full input text-xs py-1.5"
+                  >
+                    <option value="">No Epic</option>
+                    {db.epics.map((ep) => (
+                      <option key={ep.id} value={ep.id}>
+                        {ep.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
           )}
