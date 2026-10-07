@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { Col, Collections, DB, Settings } from './types';
 import { supabase } from './lib/supabase';
 import { INITIAL_DB } from './data/initialDb';
+import { INITIAL_SAAS_PRODUCTS } from './data/devPlanningData';
 
 type SyncState = 'idle' | 'saving' | 'error';
 
@@ -307,6 +308,26 @@ export const useStore = create<State>((set, get) => ({
         if (supabaseResults[c] !== undefined) {
           (mergedDb as any)[c] = supabaseResults[c];
         }
+      }
+      // Ensure saas_products has all detailed pillars populated if empty or from legacy cache
+      if (mergedDb.saas_products && Array.isArray(mergedDb.saas_products)) {
+        mergedDb.saas_products = mergedDb.saas_products.map((p: any) => {
+          const fallback = INITIAL_SAAS_PRODUCTS.find((init) => init.id === p.id);
+          if (!fallback) return p;
+          return {
+            ...fallback,
+            ...p,
+            targetCustomerProblem:
+              p.targetCustomerProblem && p.targetCustomerProblem.length > 150
+                ? p.targetCustomerProblem
+                : fallback.targetCustomerProblem,
+            problemsToBuild: p.problemsToBuild || fallback.problemsToBuild,
+            competitorAnalysis: p.competitorAnalysis || fallback.competitorAnalysis,
+            targetAudience: p.targetAudience || fallback.targetAudience,
+            pricingModel: p.pricingModel || fallback.pricingModel,
+            theAeethodSolution: p.theAeethodSolution ?? fallback.theAeethodSolution,
+          };
+        });
       }
       set({ db: mergedDb, loadError: null, source: 'supabase' });
       return;

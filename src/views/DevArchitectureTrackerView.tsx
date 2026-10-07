@@ -26,14 +26,36 @@ import {
   Columns
 } from 'lucide-react';
 import { useStore } from '../store';
-import { SaaSProductPillar } from '../data/devPlanningData';
+import { SaaSProductPillar, INITIAL_SAAS_PRODUCTS } from '../data/devPlanningData';
 
 export const DevArchitectureTrackerView: React.FC = () => {
   const { theme, db, create, remove } = useStore();
   const isLight = theme === 'light';
 
-  // Products from store / Supabase
-  const saasProducts: SaaSProductPillar[] = db?.saas_products || [];
+  // Products from store / Supabase with comprehensive pillar fallbacks
+  const saasProducts: SaaSProductPillar[] = useMemo(() => {
+    const rawList: SaaSProductPillar[] = (db?.saas_products && db.saas_products.length > 0)
+      ? db.saas_products
+      : INITIAL_SAAS_PRODUCTS;
+
+    return rawList.map((p) => {
+      const fallback = INITIAL_SAAS_PRODUCTS.find((init) => init.id === p.id);
+      if (!fallback) return p;
+      return {
+        ...fallback,
+        ...p,
+        targetCustomerProblem:
+          p.targetCustomerProblem && p.targetCustomerProblem.length > 150
+            ? p.targetCustomerProblem
+            : fallback.targetCustomerProblem,
+        problemsToBuild: p.problemsToBuild || fallback.problemsToBuild,
+        competitorAnalysis: p.competitorAnalysis || fallback.competitorAnalysis,
+        targetAudience: p.targetAudience || fallback.targetAudience,
+        pricingModel: p.pricingModel || fallback.pricingModel,
+        theAeethodSolution: p.theAeethodSolution ?? fallback.theAeethodSolution,
+      };
+    });
+  }, [db?.saas_products]);
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');

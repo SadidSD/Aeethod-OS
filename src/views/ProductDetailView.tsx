@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ArrowLeft,
   Flame,
@@ -24,7 +24,7 @@ import {
   Layers
 } from 'lucide-react';
 import { useStore } from '../store';
-import { SaaSProductPillar } from '../data/devPlanningData';
+import { SaaSProductPillar, INITIAL_SAAS_PRODUCTS } from '../data/devPlanningData';
 
 interface ProductDetailViewProps {
   productId: string;
@@ -35,7 +35,39 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
   const isLight = theme === 'light';
 
   const saasProducts: SaaSProductPillar[] = db?.saas_products || [];
-  const product = saasProducts.find((p) => p.id === productId);
+  const rawProduct = saasProducts.find((p) => p.id === productId);
+  const fallbackProduct = INITIAL_SAAS_PRODUCTS.find((p) => p.id === productId);
+
+  const product: SaaSProductPillar | undefined = rawProduct
+    ? ({
+        ...fallbackProduct,
+        ...rawProduct,
+        targetCustomerProblem:
+          rawProduct.targetCustomerProblem && rawProduct.targetCustomerProblem.length > 150
+            ? rawProduct.targetCustomerProblem
+            : fallbackProduct?.targetCustomerProblem || rawProduct.targetCustomerProblem || '',
+        problemsToBuild:
+          rawProduct.problemsToBuild && rawProduct.problemsToBuild.trim() !== ''
+            ? rawProduct.problemsToBuild
+            : fallbackProduct?.problemsToBuild || '',
+        competitorAnalysis:
+          rawProduct.competitorAnalysis && rawProduct.competitorAnalysis.trim() !== ''
+            ? rawProduct.competitorAnalysis
+            : fallbackProduct?.competitorAnalysis || '',
+        targetAudience:
+          rawProduct.targetAudience && rawProduct.targetAudience.trim() !== ''
+            ? rawProduct.targetAudience
+            : fallbackProduct?.targetAudience || '',
+        pricingModel:
+          rawProduct.pricingModel && rawProduct.pricingModel.trim() !== ''
+            ? rawProduct.pricingModel
+            : fallbackProduct?.pricingModel || '',
+        theAeethodSolution:
+          rawProduct.theAeethodSolution !== undefined
+            ? rawProduct.theAeethodSolution
+            : fallbackProduct?.theAeethodSolution || '',
+      } as SaaSProductPillar)
+    : fallbackProduct;
 
   // Editing state for Product Details, Problems, Build Obstacles, Competitors, and Solutions
   const [isEditing, setIsEditing] = useState(false);
@@ -49,6 +81,21 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
   const [targetAudience, setTargetAudience] = useState(product?.targetAudience || '');
   const [pricingModel, setPricingModel] = useState(product?.pricingModel || '');
   const [status, setStatus] = useState(product?.status || 'In Discovery');
+
+  useEffect(() => {
+    if (!isEditing && product) {
+      setName(product.name || '');
+      setTagline(product.tagline || '');
+      setIcon(product.icon || '📦');
+      setProblem(product.targetCustomerProblem || '');
+      setProblemsToBuild(product.problemsToBuild || '');
+      setCompetitorAnalysis(product.competitorAnalysis || '');
+      setSolution(product.theAeethodSolution || '');
+      setTargetAudience(product.targetAudience || '');
+      setPricingModel(product.pricingModel || '');
+      setStatus(product.status || 'In Discovery');
+    }
+  }, [product, isEditing]);
 
   if (!product) {
     return (

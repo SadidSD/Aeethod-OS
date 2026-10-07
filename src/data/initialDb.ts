@@ -1,4 +1,5 @@
 import type { DB } from '../types';
+import { INITIAL_SAAS_PRODUCTS } from './devPlanningData';
 
 export const INITIAL_DB: DB = {
   "version": 1,
@@ -3610,7 +3611,7 @@ export const INITIAL_DB: DB = {
       "notes": "Seamless loop script crafted for 90%+ replay rate."
     }
   ],
-  "saas_products": [],
+  "saas_products": INITIAL_SAAS_PRODUCTS,
   "dev_items": [
     {
       "id": "dev-fe-1",
