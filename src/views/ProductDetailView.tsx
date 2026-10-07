@@ -130,6 +130,71 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
 
   const badgeStyle = getStatusBadge(product.status);
 
+  // Helper to render structured numbered items into clear, distinct cards
+  const renderStructuredPoints = (text?: string, accent: 'rose' | 'amber' | 'sky' = 'rose') => {
+    if (!text) {
+      return <p className="text-xs text-slate-400 italic">No details defined yet.</p>;
+    }
+
+    const items = text.split(/(?=\d+\.\s)/g).filter(Boolean);
+
+    if (items.length <= 1) {
+      return (
+        <p className={`text-xs leading-relaxed whitespace-pre-line ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
+          {text}
+        </p>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {items.map((item, idx) => {
+          const lines = item.trim().split('\n');
+          const header = lines[0];
+          const body = lines.slice(1).join('\n');
+
+          return (
+            <div
+              key={idx}
+              className={`p-4 sm:p-5 rounded-2xl border text-xs transition-colors ${
+                accent === 'rose'
+                  ? isLight
+                    ? 'bg-rose-50/40 border-rose-200/60 text-slate-800'
+                    : 'bg-rose-950/20 border-rose-500/25 text-zinc-200'
+                  : accent === 'amber'
+                  ? isLight
+                    ? 'bg-amber-50/40 border-amber-200/60 text-slate-800'
+                    : 'bg-amber-950/20 border-amber-500/25 text-zinc-200'
+                  : isLight
+                  ? 'bg-sky-50/40 border-sky-200/60 text-slate-800'
+                  : 'bg-sky-950/20 border-sky-500/25 text-zinc-200'
+              }`}
+            >
+              <div
+                className={`text-sm font-bold mb-2 flex items-start gap-2 ${
+                  accent === 'rose'
+                    ? 'text-rose-600 dark:text-rose-400'
+                    : accent === 'amber'
+                    ? 'text-amber-600 dark:text-amber-400'
+                    : 'text-sky-600 dark:text-sky-400'
+                }`}
+              >
+                <span>{header}</span>
+              </div>
+              {body && (
+                <p className={`text-xs sm:text-sm leading-relaxed whitespace-pre-line font-normal ${
+                  isLight ? 'text-slate-600' : 'text-zinc-300'
+                }`}>
+                  {body}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 animate-slide-in">
       {/* 1. Top Breadcrumb & Action Toolbar */}
@@ -335,178 +400,119 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
 
       {/* 3. Deep Dive Section 1: Detailed Customer Problems */}
       <div
-        className={`p-6 sm:p-7 rounded-2xl border space-y-4 ${
+        className={`p-6 sm:p-8 rounded-2xl border space-y-5 ${
           isLight ? 'bg-white border-slate-200/90 shadow-xs' : 'bg-[#1a1a20] border-[#292932]'
         }`}
       >
-        <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-zinc-800 text-rose-500 font-bold uppercase text-xs tracking-wider">
-          <Flame className="w-4 h-4 text-rose-500" />
-          <span>1. Detailed Customer Problems & Operational Friction</span>
-        </div>
-
-        {isEditing ? (
-          <textarea
-            rows={6}
-            value={problem}
-            onChange={(e) => setProblem(e.target.value)}
-            className={`w-full p-3 rounded-xl border text-xs leading-relaxed outline-none font-sans ${
-              isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-rose-400' : 'bg-zinc-900 border-zinc-700 text-white focus:border-rose-400'
-            }`}
-          />
-        ) : (
-          <p className={`text-xs sm:text-sm leading-relaxed whitespace-pre-line ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
-            {product.targetCustomerProblem || 'No problem statement defined yet.'}
-          </p>
-        )}
-
-        {/* Friction Breakdown Micro-cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 text-xs">
-          <div
-            className={`p-4 rounded-xl border flex items-start gap-3 ${
-              isLight ? 'bg-rose-50/40 border-rose-200/60' : 'bg-rose-950/20 border-rose-500/20'
-            }`}
-          >
-            <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <span className="font-bold block text-rose-500 text-[11px] uppercase tracking-wide">
-                Operational Waste & Bottlenecks
-              </span>
-              <span className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
-                {product.id === 'prod-scanning-cards'
-                  ? 'Manual card identification, sorting, and typing creates massive intake backlogs, grading subjectivity, and high labor costs.'
-                  : product.id === 'prod-buylist'
-                  ? 'In-store trade-ins take 20–45 minutes per customer, causing counter congestion, lost walk-in sales, and pricing disputes.'
-                  : product.id === 'prod-omnichannel-sync'
-                  ? 'Selling singles simultaneously across in-store POS, Shopify webstore, eBay, and TCGplayer causes inventory desync and out-of-stock double sales.'
-                  : 'Manual repetitive effort, labor cost, and human input latency.'}
-              </span>
-            </div>
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800">
+          <div className="flex items-center gap-2 text-rose-500 font-bold uppercase text-xs sm:text-sm tracking-wider">
+            <Flame className="w-5 h-5 text-rose-500" />
+            <span>1. Detailed Customer Problems & Operational Friction</span>
           </div>
-
-          <div
-            className={`p-4 rounded-xl border flex items-start gap-3 ${
-              isLight ? 'bg-amber-50/40 border-amber-200/60' : 'bg-amber-950/20 border-amber-500/20'
-            }`}
-          >
-            <DollarSign className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <span className="font-bold block text-amber-500 text-[11px] uppercase tracking-wide">
-                Margin Tax & Revenue Leakage
-              </span>
-              <span className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
-                {product.id === 'prod-scanning-cards'
-                  ? 'High labor cost ($15–$25/hr) spent on repetitive intake; unsorted inventory sits in binders for weeks while market prices crash.'
-                  : product.id === 'prod-buylist'
-                  ? 'Incumbent platforms charge up to 2.5% GMV commission on every single card traded in, siphoning thousands monthly.'
-                  : product.id === 'prod-omnichannel-sync'
-                  ? 'Out-of-stock cancellations result in marketplace penalties, downgraded search visibility, and seller account bans.'
-                  : 'High commission fees or revenue leakage due to unoptimized systems.'}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 4. Deep Dive Section 2: Problems to Build This & Competitor Flaws */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Pillar 2: Problems to Build This */}
-        <div
-          className={`p-6 sm:p-7 rounded-2xl border space-y-4 ${
-            isLight ? 'bg-white border-slate-200/90 shadow-xs' : 'bg-[#1a1a20] border-[#292932]'
-          }`}
-        >
-          <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-zinc-800 text-amber-600 dark:text-amber-400 font-bold uppercase text-xs tracking-wider">
-            <Wrench className="w-4 h-4 text-amber-500" />
-            <span>2. Problems to Build This (Engineering Obstacles)</span>
-          </div>
-
-          {isEditing ? (
-            <textarea
-              rows={8}
-              value={problemsToBuild}
-              onChange={(e) => setProblemsToBuild(e.target.value)}
-              placeholder="What makes this difficult to build? (e.g. CV models, edge inference, rate limits, race conditions)..."
-              className={`w-full p-3 rounded-xl border text-xs leading-relaxed outline-none font-sans ${
-                isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-amber-400' : 'bg-zinc-900 border-zinc-700 text-white focus:border-amber-400'
-              }`}
-            />
-          ) : (
-            <p className={`text-xs sm:text-sm leading-relaxed whitespace-pre-line ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
-              {product.problemsToBuild || 'Engineering hurdles & implementation obstacles to be defined.'}
-            </p>
-          )}
-
-          <div
-            className={`p-3.5 rounded-xl border flex items-center gap-2 text-xs ${
-              isLight ? 'bg-amber-50/30 border-amber-200/50 text-amber-900' : 'bg-amber-950/20 border-amber-500/20 text-amber-300'
-            }`}
-          >
-            <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
-            <span>Hard engineering trade-offs between local edge execution speed, sensor glare, and multi-channel concurrency.</span>
-          </div>
-        </div>
-
-        {/* Pillar 3: How Competitors Made This & Their Flaws */}
-        <div
-          className={`p-6 sm:p-7 rounded-2xl border space-y-4 ${
-            isLight ? 'bg-white border-slate-200/90 shadow-xs' : 'bg-[#1a1a20] border-[#292932]'
-          }`}
-        >
-          <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-zinc-800 text-sky-600 dark:text-sky-400 font-bold uppercase text-xs tracking-wider">
-            <Building2 className="w-4 h-4 text-sky-500" />
-            <span>3. How Competitors Made This & Why They Fail</span>
-          </div>
-
-          {isEditing ? (
-            <textarea
-              rows={8}
-              value={competitorAnalysis}
-              onChange={(e) => setCompetitorAnalysis(e.target.value)}
-              placeholder="How did competitors (BinderPOS, CardCastle, Decktradr) build this and what are their fatal flaws?..."
-              className={`w-full p-3 rounded-xl border text-xs leading-relaxed outline-none font-sans ${
-                isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-sky-400' : 'bg-zinc-900 border-zinc-700 text-white focus:border-sky-400'
-              }`}
-            />
-          ) : (
-            <p className={`text-xs sm:text-sm leading-relaxed whitespace-pre-line ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
-              {product.competitorAnalysis || 'Incumbent competitor landscape and shortcomings to be analyzed.'}
-            </p>
-          )}
-
-          <div
-            className={`p-3.5 rounded-xl border flex items-center gap-2 text-xs ${
-              isLight ? 'bg-sky-50/30 border-sky-200/50 text-sky-900' : 'bg-sky-950/20 border-sky-500/20 text-sky-300'
-            }`}
-          >
-            <Layers className="w-4 h-4 text-sky-500 shrink-0" />
-            <span>Incumbents suffer from heavy commission cuts, slow batch sync, mechanical hardware jams, and vendor lock-in.</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 5. Deep Dive Section 3: The Aeethod Solution (Left Empty as Requested) */}
-      <div
-        className={`p-6 sm:p-7 rounded-2xl border space-y-4 ${
-          isLight ? 'bg-white border-slate-200/90 shadow-xs' : 'bg-[#1a1a20] border-[#292932]'
-        }`}
-      >
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
-          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold uppercase text-xs tracking-wider">
-            <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            <span>4. The Aeethod Solution Architecture</span>
-          </div>
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
-            In Discovery
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+            Real Merchant Pain Points
           </span>
         </div>
 
         {isEditing ? (
           <textarea
-            rows={4}
+            rows={10}
+            value={problem}
+            onChange={(e) => setProblem(e.target.value)}
+            className={`w-full p-4 rounded-xl border text-xs leading-relaxed outline-none font-sans ${
+              isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-rose-400' : 'bg-zinc-900 border-zinc-700 text-white focus:border-rose-400'
+            }`}
+          />
+        ) : (
+          renderStructuredPoints(product.targetCustomerProblem, 'rose')
+        )}
+      </div>
+
+      {/* 4. Deep Dive Section 2: Problems to Build This (Engineering Obstacles) */}
+      <div
+        className={`p-6 sm:p-8 rounded-2xl border space-y-5 ${
+          isLight ? 'bg-white border-slate-200/90 shadow-xs' : 'bg-[#1a1a20] border-[#292932]'
+        }`}
+      >
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800">
+          <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold uppercase text-xs sm:text-sm tracking-wider">
+            <Wrench className="w-5 h-5 text-amber-500" />
+            <span>2. Problems to Build This (Engineering & Hardware Obstacles)</span>
+          </div>
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+            Technical Architecture Hurdles
+          </span>
+        </div>
+
+        {isEditing ? (
+          <textarea
+            rows={10}
+            value={problemsToBuild}
+            onChange={(e) => setProblemsToBuild(e.target.value)}
+            placeholder="What makes this difficult to build? (e.g. CV models, edge inference, rate limits, race conditions)..."
+            className={`w-full p-4 rounded-xl border text-xs leading-relaxed outline-none font-sans ${
+              isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-amber-400' : 'bg-zinc-900 border-zinc-700 text-white focus:border-amber-400'
+            }`}
+          />
+        ) : (
+          renderStructuredPoints(product.problemsToBuild, 'amber')
+        )}
+      </div>
+
+      {/* 5. Deep Dive Section 3: How Competitors Made This & Their Fatal Flaws */}
+      <div
+        className={`p-6 sm:p-8 rounded-2xl border space-y-5 ${
+          isLight ? 'bg-white border-slate-200/90 shadow-xs' : 'bg-[#1a1a20] border-[#292932]'
+        }`}
+      >
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800">
+          <div className="flex items-center gap-2 text-sky-600 dark:text-sky-400 font-bold uppercase text-xs sm:text-sm tracking-wider">
+            <Building2 className="w-5 h-5 text-sky-500" />
+            <span>3. How Competitors Made This & Why They Fail</span>
+          </div>
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+            Competitor Post-Mortem
+          </span>
+        </div>
+
+        {isEditing ? (
+          <textarea
+            rows={10}
+            value={competitorAnalysis}
+            onChange={(e) => setCompetitorAnalysis(e.target.value)}
+            placeholder="How did competitors (BinderPOS, CardCastle, Decktradr) build this and what are their fatal flaws?..."
+            className={`w-full p-4 rounded-xl border text-xs leading-relaxed outline-none font-sans ${
+              isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-sky-400' : 'bg-zinc-900 border-zinc-700 text-white focus:border-sky-400'
+            }`}
+          />
+        ) : (
+          renderStructuredPoints(product.competitorAnalysis, 'sky')
+        )}
+      </div>
+
+      {/* 6. Deep Dive Section 4: The Aeethod Solution (Left Empty in Discovery) */}
+      <div
+        className={`p-6 sm:p-8 rounded-2xl border space-y-5 ${
+          isLight ? 'bg-white border-slate-200/90 shadow-xs' : 'bg-[#1a1a20] border-[#292932]'
+        }`}
+      >
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800">
+          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold uppercase text-xs sm:text-sm tracking-wider">
+            <ShieldCheck className="w-5 h-5 text-emerald-500" />
+            <span>4. The Aeethod Solution Architecture</span>
+          </div>
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+            Status: In Discovery
+          </span>
+        </div>
+
+        {isEditing ? (
+          <textarea
+            rows={5}
             value={solution}
             onChange={(e) => setSolution(e.target.value)}
             placeholder="Solution specification is currently left empty for discovery. Enter details when ready..."
-            className={`w-full p-3 rounded-xl border text-xs leading-relaxed outline-none ${
+            className={`w-full p-4 rounded-xl border text-xs leading-relaxed outline-none ${
               isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-emerald-500' : 'bg-zinc-900 border-zinc-700 text-white focus:border-emerald-500'
             }`}
           />
@@ -516,22 +522,22 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
           </p>
         ) : (
           <div
-            className={`p-8 rounded-xl border border-dashed text-center space-y-2.5 ${
+            className={`p-8 sm:p-10 rounded-2xl border border-dashed text-center space-y-3 ${
               isLight ? 'bg-slate-50/50 border-slate-200' : 'bg-zinc-900/30 border-zinc-800'
             }`}
           >
-            <Sparkles className="w-7 h-7 text-indigo-400 mx-auto opacity-70" />
+            <Sparkles className="w-8 h-8 text-indigo-400 mx-auto opacity-70" />
             <div className="space-y-1">
-              <p className={`text-xs font-semibold ${isLight ? 'text-slate-800' : 'text-zinc-200'}`}>
+              <h4 className={`text-sm font-bold ${isLight ? 'text-slate-800' : 'text-zinc-200'}`}>
                 Solution Specification Left Blank
-              </p>
-              <p className="text-xs text-slate-400 dark:text-zinc-500 italic max-w-md mx-auto">
-                As specified, the Aeethod software solution for this product is currently in discovery and left unfinalized.
+              </h4>
+              <p className="text-xs text-slate-400 dark:text-zinc-500 italic max-w-lg mx-auto">
+                As instructed, our software solution specification for this product is currently left in discovery and unfinalized. Focus remains squarely on scoping customer problems, technical obstacles to build it, and competitor post-mortems.
               </p>
             </div>
             <button
               onClick={() => setIsEditing(true)}
-              className="text-xs text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 font-semibold hover:underline pt-1 inline-block"
+              className="text-xs text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 font-semibold hover:underline pt-2 inline-block"
             >
               + Define Solution When Ready
             </button>
@@ -539,7 +545,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
         )}
       </div>
 
-      {/* 6. Link to Tech Stack Page */}
+      {/* 7. Link to Tech Stack Page */}
       <div
         className={`p-4 sm:p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs ${
           isLight ? 'bg-cyan-50/60 border-cyan-200/80 text-slate-700' : 'bg-cyan-950/20 border-cyan-500/30 text-slate-300'
