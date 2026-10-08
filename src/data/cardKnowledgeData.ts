@@ -63,6 +63,38 @@ export interface OpticalHardwareChallenge {
   engineeringSolution: string;
 }
 
+export interface AuthenticationCheck {
+  id: string;
+  testName: string;
+  targetGames: string[];
+  equipmentNeeded: string;
+  passCriteria: string;
+  failCriteria: string;
+  riskMitigation: string;
+  aiFeasibility: 'Fully Automatable (Macro/Camera)' | 'Sensor Rig Required' | 'Manual Physical Test';
+}
+
+export interface CardThicknessSpec {
+  id: string;
+  pointSize: string;
+  thicknessMm: string;
+  thicknessInches: string;
+  cardTypes: string[];
+  adfSafe: boolean;
+  scannerFeedRule: string;
+  weightGramsAvg: string;
+}
+
+export interface MisprintClassification {
+  id: string;
+  name: string;
+  collectorName: string;
+  rarity: string;
+  marketImpact: string;
+  visualCharacteristics: string;
+  cvDetectionStrategy: string;
+}
+
 // ---------------------------------------------------------------------------
 // 1. GAME ANATOMY SPECS
 // ---------------------------------------------------------------------------
@@ -522,6 +554,265 @@ export const CARD_GAME_SPECS: CardGameSpec[] = [
         pitfalls: 'Alt-arts have identical code; visual texture classifier must confirm alt-art status.'
       }
     ]
+  },
+  {
+    id: 'disney-lorcana',
+    name: 'Disney Lorcana (Ravensburger)',
+    era: 'The First Chapter to Present (2023–Present)',
+    dimensionMm: '63 x 88 mm',
+    dimensionInches: '2.48 x 3.46 in',
+    cardstockWeight: '320 gsm Ravensburger German cardstock',
+    aspectRatio: '1 : 1.4',
+    borderType: 'Black, Ink-colored, or Borderless (Enchanted)',
+    cardBackDescription: 'Dark blue starry galaxy with golden Lorcana ornate compass and lore ink logo',
+    sampleFrontImage: 'https://images.lorcania.com/cards/tfc/214_en_elsa.webp',
+    rarityScheme: ['Common', 'Uncommon', 'Rare', 'Super Rare', 'Legendary', 'Enchanted (Alt-Art Foil)'],
+    keyIdentificationHeuristics: [
+      'Ink Cost hex symbol located at top-left corner with well ink well swirl.',
+      'Card Title and Subtitle located in header bar.',
+      'Lore Value: Diamond pips on the right side of the text box (1 to 4 diamonds).',
+      'Collector number and set symbol at bottom-center: formatted as XXX/YYY · EN · 1.',
+      'Enchanted Rarity: Borderless art with full shimmering rainbow foil pattern ($200 to $1,500+ value).'
+    ],
+    zones: [
+      {
+        id: 'lor-ink-cost',
+        label: 'Ink Cost Hexagon',
+        xPercent: 4,
+        yPercent: 3.5,
+        widthPercent: 14,
+        heightPercent: 10,
+        color: '#6366f1',
+        aiPipeline: 'OCR + Hexagon Shape Localizer',
+        purpose: 'Extracts the card ink play cost and inkable ring status.',
+        importance: 'Critical P0',
+        pitfalls: 'Cards without circular swirl rim around the hex cost are non-inkable in gameplay.'
+      },
+      {
+        id: 'lor-title',
+        label: 'Card Title & Subtitle',
+        xPercent: 19,
+        yPercent: 4.5,
+        widthPercent: 77,
+        heightPercent: 8,
+        color: '#f59e0b',
+        aiPipeline: 'Double-Line Text OCR',
+        purpose: 'Extracts character name (e.g. Elsa) and version epithet (e.g. Spirit of Winter).',
+        importance: 'Critical P0',
+        pitfalls: 'Subtitle text is smaller and italicized below main character name.'
+      },
+      {
+        id: 'lor-art',
+        label: 'Artwork Canvas / Enchanted Foil',
+        xPercent: 6,
+        yPercent: 15,
+        widthPercent: 88,
+        heightPercent: 45,
+        color: '#3b82f6',
+        aiPipeline: 'Enchanted Micro-Shimmer Texture Classifier',
+        purpose: 'Cross-references Disney character artwork and detects rare Enchanted borderless foil treatment.',
+        importance: 'Critical P0',
+        pitfalls: 'Enchanted cards share identical rules text and set number prefix as normal foil legendaries.'
+      },
+      {
+        id: 'lor-stats',
+        label: 'Strength, Willpower & Lore Pips',
+        xPercent: 76,
+        yPercent: 56,
+        widthPercent: 18,
+        heightPercent: 28,
+        color: '#ec4899',
+        aiPipeline: 'Digit & Glyph Parser',
+        purpose: 'Extracts combat attack, willpower defense shield, and diamond lore counter symbols.',
+        importance: 'High P1',
+        pitfalls: 'Action and Song cards do not have strength/willpower stats.'
+      },
+      {
+        id: 'lor-footer-code',
+        label: 'Collector Number (XXX/YYY) & Rarity',
+        xPercent: 15,
+        yPercent: 93,
+        widthPercent: 70,
+        heightPercent: 4,
+        color: '#10b981',
+        aiPipeline: 'Footer Regex Matcher',
+        purpose: 'Authoritative identification code (e.g. "214/204 · EN · 1") and rarity symbol shape.',
+        importance: 'Critical P0',
+        pitfalls: 'Enchanted cards exceed set denominator (e.g. 214/204 is an Enchanted Elsa).'
+      }
+    ]
+  },
+  {
+    id: 'flesh-and-blood',
+    name: 'Flesh and Blood (Legend Story Studios)',
+    era: 'Welcome to Rathe to Present (2019–Present)',
+    dimensionMm: '63 x 88 mm',
+    dimensionInches: '2.48 x 3.46 in',
+    cardstockWeight: '310 gsm Cartamundi black core stock',
+    aspectRatio: '1 : 1.4',
+    borderType: 'Dark textured frame with red/yellow/blue pitch bars',
+    cardBackDescription: 'Intricate red and gold runic circular seal with cross blades and FAB crest',
+    sampleFrontImage: 'https://storage.googleapis.com/fabmaster/media/images/WTR001.png',
+    rarityScheme: ['Common', 'Rare', 'Majestic', 'Legendary', 'Fabled', 'Marvel (Cold Foil Special)'],
+    keyIdentificationHeuristics: [
+      'Pitch Value: 1 (Red), 2 (Yellow), 3 (Blue) pitch dots on top-left bar. Crucial: Same card name has 3 pitch versions with different market values!',
+      '1st Edition vs Unlimited: "1st Edition" micro-text on bottom edge; Cold Foils only exist in 1st Edition booster boxes for early sets ($10x to $50x value difference).',
+      'Cold Foil vs Rainbow Foil: Cold foil has a metallic matte sheen on borders without rainbow dispersion; rainbow foil shimmers across art.',
+      'Collector code located at bottom: e.g. WTR001 or OUT045.'
+    ],
+    zones: [
+      {
+        id: 'fab-pitch',
+        label: 'Pitch Bar & Color Value',
+        xPercent: 4.5,
+        yPercent: 3.5,
+        widthPercent: 14,
+        heightPercent: 8,
+        color: '#ef4444',
+        aiPipeline: 'Color Dominance + Circle Pip Counter',
+        purpose: 'Detects Red (1-pitch), Yellow (2-pitch), or Blue (3-pitch). Different pitch copies have different prices!',
+        importance: 'Critical P0',
+        pitfalls: 'Mistaking a red pitch copy for a blue pitch copy causes pricing inventory errors.'
+      },
+      {
+        id: 'fab-title',
+        label: 'Card Title & Resource Cost',
+        xPercent: 19,
+        yPercent: 4,
+        widthPercent: 76,
+        heightPercent: 7,
+        color: '#f59e0b',
+        aiPipeline: 'OCR + Resource Cost parser',
+        purpose: 'Reads card name and resource play cost in top-right corner.',
+        importance: 'Critical P0',
+        pitfalls: 'Card name font is gothic serif; spacing must be preserved.'
+      },
+      {
+        id: 'fab-art',
+        label: 'Artwork Box & Cold Foil Edge',
+        xPercent: 6,
+        yPercent: 13,
+        widthPercent: 88,
+        heightPercent: 46,
+        color: '#3b82f6',
+        aiPipeline: 'ResNet-50 Embedding + Cold Foil Specular Sensor',
+        purpose: 'Visual art matching and boundary check for Cold Foil metallic border reflection.',
+        importance: 'Critical P0',
+        pitfalls: 'Cold foil does NOT reflect rainbow prism light; it reflects bright silver metallic light.'
+      },
+      {
+        id: 'fab-stats',
+        label: 'Attack, Defense & Health Values',
+        xPercent: 5,
+        yPercent: 88,
+        widthPercent: 90,
+        heightPercent: 8,
+        color: '#ec4899',
+        aiPipeline: 'OCR Triplets',
+        purpose: 'Reads attack power value, defense shield stat, and life health counter.',
+        importance: 'High P1',
+        pitfalls: 'Non-attack actions do not have bottom attack stats.'
+      },
+      {
+        id: 'fab-edition-footer',
+        label: '1st Edition Stamp & Set Code',
+        xPercent: 20,
+        yPercent: 95,
+        widthPercent: 60,
+        heightPercent: 3.5,
+        color: '#10b981',
+        aiPipeline: 'High-DPI Micro-Line OCR',
+        purpose: 'Verifies 1st Edition vs Unlimited print run and reads set code (e.g. WTR001).',
+        importance: 'Critical P0',
+        pitfalls: '1st Edition text is extremely tiny (3pt) located adjacent to copyright info.'
+      }
+    ]
+  },
+  {
+    id: 'sports-cards-modern',
+    name: 'Sports Cards (Panini / Topps / Bowman)',
+    era: 'Modern Chrome, Prizm & Relic Era (2015–Present)',
+    dimensionMm: '63.5 x 88.9 mm (Standard 2.5 x 3.5 in)',
+    dimensionInches: '2.5 x 3.5 in',
+    cardstockWeight: 'Variable: 35 pt (0.89mm) to 180 pt (4.5mm) Relic Patch',
+    aspectRatio: '1 : 1.4',
+    borderType: 'Opti-chrome, refractor, or borderless',
+    cardBackDescription: 'Player career statistics, scouting report, and manufacturer authentication guarantee',
+    sampleFrontImage: 'https://images.beckett.com/images/items/12345/prizm_silver_sample.png',
+    rarityScheme: ['Base', 'Silver / Prizm Refractor', 'Numbered Parallel (/299, /99, /25, /10)', '1-of-1 SuperFractor / Nebula', 'Game-Used Relic Patch', 'On-Card Rookie Autograph'],
+    keyIdentificationHeuristics: [
+      'Rookie Card "RC" Shield or Bowman 1st Logo: Multiplies base value by 3x to 10x over veteran cards.',
+      'Serial Numbering: Foil-stamped numeric sequence (e.g. "07/25" or "1/1") designating exact rarity print run.',
+      'Card Thickness Hazard: Relic cards measure 75pt–180pt thick. NEVER run thick sports cards through an ADF document feeder (instant mechanical crunch).',
+      'Autograph Type: On-card hand-signed ink commands a 30%–100% price premium over adhesive sticker autographs.'
+    ],
+    zones: [
+      {
+        id: 'sports-rc-shield',
+        label: 'Rookie Card "RC" / 1st Bowman Shield',
+        xPercent: 6,
+        yPercent: 6,
+        widthPercent: 14,
+        heightPercent: 10,
+        color: '#ef4444',
+        aiPipeline: 'Logo Template Matcher (YOLOv8)',
+        purpose: 'Detects presence of "RC" Rookie Card badge or "1st Bowman" foil emblem.',
+        importance: 'Critical P0',
+        pitfalls: 'Rookie card badges vary in style between Panini, Topps, and Upper Deck.'
+      },
+      {
+        id: 'sports-serial-number',
+        label: 'Laser Stamped Serial Number',
+        xPercent: 68,
+        yPercent: 8,
+        widthPercent: 26,
+        heightPercent: 6,
+        color: '#ec4899',
+        aiPipeline: 'Foil Digit Recognizer (Numerator/Denominator)',
+        purpose: 'Verifies limited print run (e.g. 05/25 or 1/1).',
+        importance: 'Critical P0',
+        pitfalls: 'Gold/silver foil stamped digits reflect light and wash out without cross-polarized lens.'
+      },
+      {
+        id: 'sports-player-name',
+        label: 'Player Name & Team Banner',
+        xPercent: 8,
+        yPercent: 80,
+        widthPercent: 84,
+        heightPercent: 10,
+        color: '#f59e0b',
+        aiPipeline: 'OCR + Player Roster Database Lookup',
+        purpose: 'Extracts superstar/rookie athlete name and team.',
+        importance: 'Critical P0',
+        pitfalls: 'Stylized foil typography and curved text baselines require polygonal text contour OCR.'
+      },
+      {
+        id: 'sports-autograph',
+        label: 'Autograph & Ink Verification Window',
+        xPercent: 14,
+        yPercent: 60,
+        widthPercent: 72,
+        heightPercent: 18,
+        color: '#8b5cf6',
+        aiPipeline: 'Stroke Density Analyzer + Sticker Edge Detector',
+        purpose: 'Validates athlete signature and classifies whether it is On-Card or Sticker Auto.',
+        importance: 'Critical P0',
+        pitfalls: 'Sticker autographs show a visible rectangular adhesive tape edge.'
+      },
+      {
+        id: 'sports-relic-patch',
+        label: 'Game-Used Relic Patch Window',
+        xPercent: 20,
+        yPercent: 35,
+        widthPercent: 60,
+        heightPercent: 24,
+        color: '#06b6d4',
+        aiPipeline: 'Fabric Texture & Color Count Analyzer',
+        purpose: 'Inspects jersey swatch cloth (multi-color prime patches with seam stitches are worth 5x more than single-color napkin swatches).',
+        importance: 'High P1',
+        pitfalls: 'Relic cards are thick (75pt - 180pt); dangerous for automated ADF feed rollers.'
+      }
+    ]
   }
 ];
 
@@ -605,6 +896,61 @@ export const VARIANT_FINISHES: VariantFinish[] = [
     visualCharacteristics: 'Foil embossed text (e.g. "STAFF", "PRERELEASE", or event date) stamped directly into the bottom-right of the artwork.',
     scannerDetectionMethod: 'Artwork bottom-right ROI inspects for high-specular metallic lettering overlaying background paint.',
     commonConfusion: 'Staff stamped cards sold as regular prerelease promos ($20 vs $300 difference).'
+  },
+  {
+    id: 'cold-foil',
+    name: 'Cold Foil (Flesh and Blood)',
+    games: ['Flesh and Blood'],
+    rarityLevel: '1st Edition Booster Box Exclusive',
+    priceMultiplier: '5x – 25x over Rainbow Foil',
+    financialRiskLevel: 'Extreme',
+    visualCharacteristics: 'Distinct silver/metallic mirror sheen baked directly into card frames and borders. Lacks rainbow spectrum light dispersion.',
+    scannerDetectionMethod: 'Angular reflectance colorimetry: Cold Foil yields high white/silver specular peak without hue rotation under rotating illumination.',
+    commonConfusion: 'Confused with standard Rainbow Foil, which shimmers with full rainbow colors across the entire art box.'
+  },
+  {
+    id: 'enchanted-foil',
+    name: 'Enchanted Borderless Foil',
+    games: ['Disney Lorcana'],
+    rarityLevel: '1 in ~96 packs (1 per case)',
+    priceMultiplier: '15x – 50x over standard Legendary',
+    financialRiskLevel: 'Extreme',
+    visualCharacteristics: 'Full borderless character illustration overlaid with a distinctive soft hexagonal shimmer foil across the whole card face.',
+    scannerDetectionMethod: 'Edge borderlessness detector combined with full-face micro-shimmer Fourier frequency transform.',
+    commonConfusion: 'Cataloged as base foil legendary due to identical rules text.'
+  },
+  {
+    id: 'god-rare-gdr',
+    name: 'God Rare (GDR)',
+    games: ['Dragon Ball Super Card Game'],
+    rarityLevel: 'Ultra-Mythic (1 in ~3 cases)',
+    priceMultiplier: '20x – 80x over Secret Rare ($800–$2,500)',
+    financialRiskLevel: 'Extreme',
+    visualCharacteristics: 'Intense 24k gold foil leaf stamping with heavy holographic relief etching and gold Japanese kanji.',
+    scannerDetectionMethod: 'Gold pigment reflectance signature + 3D tactile relief height mapping under directional LEDs.',
+    commonConfusion: 'Mistaken for standard Secret Rare (SCR), losing thousands of dollars.'
+  },
+  {
+    id: 'refractor-prizm',
+    name: 'Silver Prizm / Chrome Refractor',
+    games: ['Sports Cards (Panini / Topps / Bowman)'],
+    rarityLevel: 'Parallel Case Hit',
+    priceMultiplier: '2x – 15x over base paper',
+    financialRiskLevel: 'High',
+    visualCharacteristics: 'High-gloss opti-chrome cardstock that diffracts ambient light into vertical/diagonal rainbow light ribbons.',
+    scannerDetectionMethod: 'Diffraction grating response: dual-sensor light angle checks for directional light streak.',
+    commonConfusion: 'Base paper cards mistagged as silver prizms in poor scanner lighting.'
+  },
+  {
+    id: 'on-card-autograph',
+    name: 'On-Card Authentic Autograph',
+    games: ['Sports Cards', 'Magic: The Gathering', 'Pokémon Artist Signatures'],
+    rarityLevel: 'Hand-Signed Collectible',
+    priceMultiplier: '5x – 50x',
+    financialRiskLevel: 'Extreme',
+    visualCharacteristics: 'Real ballpoint, paint pen, or blue Sharpie ink signed directly on the card surface with natural ink pooling and pressure tapering.',
+    scannerDetectionMethod: 'Specular ink reflection + sticker boundary edge exclusion. Checks for absence of clear adhesive tape rectangle border.',
+    commonConfusion: 'Sticker autographs sold as on-card autos, or printed facsimile signatures treated as real hand-signed ink.'
   }
 ];
 
@@ -719,3 +1065,201 @@ export const OPTICAL_CHALLENGES: OpticalHardwareChallenge[] = [
     engineeringSolution: '3D-printed adjustable feeder guide adapters with spring-loaded tension arms that keep cards centered along the optical scanning axis.'
   }
 ];
+
+// ---------------------------------------------------------------------------
+// 5. AUTHENTICATION & COUNTERFEIT DETECTION PROTOCOLS
+// ---------------------------------------------------------------------------
+export const AUTHENTICATION_CHECKS: AuthenticationCheck[] = [
+  {
+    id: 'mtg-green-dot',
+    testName: 'MTG Green Dot Test (60x Magnification)',
+    targetGames: ['Magic: The Gathering (All Eras)'],
+    equipmentNeeded: '60x–120x Micro-Zoom Camera or USB Microscope',
+    passCriteria: 'Inside the green mana circle on the card back, 4 distinct red sub-dots forming an "L" shape (or backwards L) are visible in the yellow background grid. The black circular boundary line has crisp, unbroken rosette edges.',
+    failCriteria: 'Red dots are missing, scattered randomly, or the black boundary line is printed with CMYK dithering instead of solid black ink.',
+    riskMitigation: 'Stops $500–$50,000 counterfeit Vintage/Reserved List cards (Black Lotus, Dual Lands, Moxen).',
+    aiFeasibility: 'Fully Automatable (Macro/Camera)'
+  },
+  {
+    id: 'rosette-screen',
+    testName: 'Halftone Rosette Screen vs Inkjet Droplet Test',
+    targetGames: ['Pokémon', 'Magic: The Gathering', 'Yu-Gi-Oh!', 'One Piece', 'Disney Lorcana'],
+    equipmentNeeded: 'Macro Lens (1200+ DPI Optical Resolution)',
+    passCriteria: 'Card artwork shows traditional offset lithographic circular rosette dot patterns. Black text, mana symbols, and card borders are printed as a separate crisp solid black layer (K-plate) on top of the rosettes with razor-sharp edges.',
+    failCriteria: 'Artwork exhibits erratic micro-droplet spatter (inkjet) or toner melting beads (color laser). Black text has jagged CMYK colored halos rather than solid black ink.',
+    riskMitigation: 'Detects 95% of retail bootlegs and proxy cards within 200 milliseconds of image capture.',
+    aiFeasibility: 'Fully Automatable (Macro/Camera)'
+  },
+  {
+    id: 'blue-black-core-light',
+    testName: 'Paper Core Sandwich Light Transmission Test',
+    targetGames: ['Pokémon (Black Core)', 'Magic: The Gathering (Blue Core)'],
+    equipmentNeeded: 'Backlit Transillumination LED Bed (4000+ Lumens)',
+    passCriteria: 'Light shining through the card reveals a faint, deep bluish or blackish opaque silhouette. Card core blocks 80%+ of direct light transmission.',
+    failCriteria: 'Light penetrates cleanly with a bright yellow or white glow, revealing cheap single-ply cardboard stock lacking the interior anti-translucency sandwich core.',
+    riskMitigation: 'Instantly identifies counterfeit cards made on standard cardstock without industrial security cores.',
+    aiFeasibility: 'Sensor Rig Required'
+  },
+  {
+    id: 'uv-blacklight-fluorescence',
+    testName: 'UV 365nm Optical Brightener Test',
+    targetGames: ['Pokémon Vintage', 'Magic: The Gathering Vintage', 'Yu-Gi-Oh!'],
+    equipmentNeeded: '365nm UV-A Blacklight Illumination Diode',
+    passCriteria: 'Genuine vintage cards absorb UV light and remain dull/dark, as authentic vintage cardstock did not utilize artificial chemical optical brighteners (OBAs).',
+    failCriteria: 'Card glows in radiant neon violet/blue, indicating modern bleached wood pulp containing synthetic whitening agents typical of Chinese counterfeits.',
+    riskMitigation: 'Catches re-backed, bleached, and modern counterfeit vintage cards.',
+    aiFeasibility: 'Sensor Rig Required'
+  },
+  {
+    id: 'weight-micrometer-density',
+    testName: 'Precision Gravimetric & Caliper Thickness Tolerance',
+    targetGames: ['All Card Games'],
+    equipmentNeeded: 'Precision Digital Milligram Scale (0.001g) + Digital Micrometer',
+    passCriteria: 'Pokémon: 1.72g ± 0.05g (Thickness: 0.30mm ± 0.01mm). MTG: 1.75g ± 0.05g (Thickness: 0.31mm). Yu-Gi-Oh!: 1.65g ± 0.04g (Thickness: 0.28mm).',
+    failCriteria: 'Card weight deviates by >0.10g or thickness exceeds 0.33mm or falls below 0.27mm.',
+    riskMitigation: 'Filters out counterfeit paper stock, fake foil laminates, and trimmed cards.',
+    aiFeasibility: 'Sensor Rig Required'
+  },
+  {
+    id: 'microprinting-security',
+    testName: 'Security Microprinting & Holographic Grating Check',
+    targetGames: ['Yu-Gi-Oh! (Eye of Anubis)', 'Magic: The Gathering (M15 Stamp)'],
+    equipmentNeeded: 'High-Res Optical Scanner (>2400 DPI)',
+    passCriteria: 'Yu-Gi-Oh!: Microscopic "KONAMI" text repeats across the Eye of Anubis holographic surface in 50-micron letters. MTG: Oval stamp contains repeating "Wizards" and mana glyphs in holographic relief.',
+    failCriteria: 'Flat reflective foil sticker with no microscopic text or blurry static holographic imitation.',
+    riskMitigation: 'Detects counterfeit high-end singles with fake aftermarket glued holograms.',
+    aiFeasibility: 'Fully Automatable (Macro/Camera)'
+  }
+];
+
+// ---------------------------------------------------------------------------
+// 6. CARD THICKNESS & SCANNER HARDWARE LIMITS (POINT GAUGE)
+// ---------------------------------------------------------------------------
+export const CARD_THICKNESS_SPECS: CardThicknessSpec[] = [
+  {
+    id: 'thick-35pt',
+    pointSize: '35 pt',
+    thicknessMm: '0.89 mm (0.035 in)',
+    thicknessInches: '0.035 in',
+    cardTypes: [
+      'Standard Pokémon (Base & Modern)',
+      'Magic: The Gathering (Standard Blue Core)',
+      'Yu-Gi-Oh! (Standard OCG/TCG)',
+      'One Piece Card Game',
+      'Disney Lorcana',
+      'Standard Base Sports Cards'
+    ],
+    adfSafe: true,
+    scannerFeedRule: 'SAFE: Supported in high-speed ADF document scanners (Ricoh fi-8170, Fujitsu) at up to 70–90 cards/min with proper cardstock guides.',
+    weightGramsAvg: '1.65g – 1.78g'
+  },
+  {
+    id: 'thick-55pt',
+    pointSize: '55 pt',
+    thicknessMm: '1.40 mm (0.055 in)',
+    thicknessInches: '0.055 in',
+    cardTypes: [
+      'Chrome Refractor Parallels (Sports)',
+      'WotC Vintage Promo Heavy Foil Stock',
+      'Acetate Clear Cards',
+      'Double-Sleeved TCG Gaming Cards'
+    ],
+    adfSafe: false,
+    scannerFeedRule: 'CAUTION: Single-feed bypass only. Automated batch ADF feeding risks severe roller friction, double feeds, and surface scratching.',
+    weightGramsAvg: '2.50g – 2.90g'
+  },
+  {
+    id: 'thick-75-100pt',
+    pointSize: '75 pt – 100 pt',
+    thicknessMm: '1.90 mm – 2.54 mm',
+    thicknessInches: '0.075 – 0.100 in',
+    cardTypes: [
+      'Sports Event-Worn Jersey Patch Cards',
+      'Dual-Layer Embossed Metal Cards',
+      'Triple-Thick Memorabilia Insets'
+    ],
+    adfSafe: false,
+    scannerFeedRule: 'PROHIBITED IN ADF: Will cause instant mechanical paper jams and destroy card corners. MUST use flatbed scanner or automated robotic vacuum arm.',
+    weightGramsAvg: '3.80g – 5.20g'
+  },
+  {
+    id: 'thick-130-180pt',
+    pointSize: '130 pt – 180 pt',
+    thicknessMm: '3.30 mm – 4.57 mm',
+    thicknessInches: '0.130 – 0.180 in',
+    cardTypes: [
+      'Prime Multi-Color Game-Used Patch Cards',
+      'Autographed Relic Shield Cards',
+      'Bat Knobs / Cleat Relics'
+    ],
+    adfSafe: false,
+    scannerFeedRule: 'PROHIBITED IN FEEDERS: Thickness exceeds all document scanner throat gaps. Manual flatbed placement or overhead multi-angle camera booth only.',
+    weightGramsAvg: '6.50g – 9.50g'
+  },
+  {
+    id: 'thick-240-360pt',
+    pointSize: '240 pt – 360 pt',
+    thicknessMm: '6.10 mm – 9.14 mm',
+    thicknessInches: '0.240 – 0.360 in',
+    cardTypes: [
+      'Booklet Cards (Fold-out)',
+      'Shoe Sneaker Patch Relics',
+      'Solid Metal Printing Plates'
+    ],
+    adfSafe: false,
+    scannerFeedRule: 'PROHIBITED IN ALL FEEDERS: Museum-grade ultra-thick memorabilia. Requires specialized depth-of-field overhead camera rig with telecentric lens.',
+    weightGramsAvg: '12.0g – 24.0g'
+  }
+];
+
+// ---------------------------------------------------------------------------
+// 7. FACTORY ERRORS & MISPRINTS TAXONOMY
+// ---------------------------------------------------------------------------
+export const MISPRINT_TYPES: MisprintClassification[] = [
+  {
+    id: 'miscut-alignment',
+    name: 'Miscut with Visible Alignment Dot',
+    collectorName: 'Alignment Dot Miscut (MC)',
+    rarity: '1 in ~5,000 packs',
+    marketImpact: '3x – 15x Premium to specialized error collectors (CGC/PSA "MC" qualifier)',
+    visualCharacteristics: 'Card is cut so severely off-center that the black or white crosshair alignment dot in the sheet corner is clearly visible, or part of the neighboring card is shown.',
+    cvDetectionStrategy: 'Corner bounding box template check looks for high-contrast circular alignment dots; border width on opposing side approaches 0.0mm.'
+  },
+  {
+    id: 'factory-crimp',
+    name: 'Factory Packaging Heat Crimp',
+    collectorName: 'Crimped Error',
+    rarity: '1 in ~2,500 packs',
+    marketImpact: '1.5x – 5x Premium on desirable characters; minor penalty on bulk',
+    visualCharacteristics: 'Top or bottom edge of the card features deep corrugated serration ridges caused by booster pack heat-sealing machinery teeth grabbing the card.',
+    cvDetectionStrategy: 'Edge profile analysis: detects regular repeating sinusoidal indentations (depth 0.2mm–0.5mm) along top or bottom margin.'
+  },
+  {
+    id: 'holo-bleed',
+    name: 'Holo Bleed / Opacity Failure',
+    collectorName: 'Full Surface Holo Bleed',
+    rarity: 'Batch-specific (common in certain print waves like Neo Revelation & Scarlet/Violet)',
+    marketImpact: '1.2x – 3x Premium depending on intensity',
+    visualCharacteristics: 'The holographic prism substrate shines brightly through the text box and borders where white opaque underprint ink was applied too thinly.',
+    cvDetectionStrategy: 'Dual-zone reflectance differential: measures specular rainbow reflectance values within non-artwork matte text regions.'
+  },
+  {
+    id: 'ink-layer-missing',
+    name: 'Missing Ink Layer / Albino Card',
+    collectorName: 'Missing Color Plate (No-Black, No-Cyan)',
+    rarity: 'Extremely Rare (< 1 in 50,000)',
+    marketImpact: '10x – 50x Premium',
+    visualCharacteristics: 'Card appears in ghostly monochrome or lacks all black text/art lines because one offset printing tower ran out of ink or experienced a feeder skip.',
+    cvDetectionStrategy: 'Color channel histogram: detects complete zero-distribution in Cyan, Magenta, Yellow, or Black color planes.'
+  },
+  {
+    id: 'registration-shift',
+    name: 'CMYK Registration Shift / Double Vision',
+    collectorName: 'Misaligned Print Plate Shift',
+    rarity: '1 in ~10,000 packs',
+    marketImpact: '2x – 8x Premium',
+    visualCharacteristics: 'Card text or artwork appears blurred like a 3D movie without glasses, with noticeable cyan and magenta ghost edges offset by 0.5mm–2mm.',
+    cvDetectionStrategy: 'Phase correlation and edge gradient disparity: detects dual parallel edges where a single sharp boundary contour should exist.'
+  }
+];
+

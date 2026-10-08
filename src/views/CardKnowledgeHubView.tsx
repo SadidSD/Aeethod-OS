@@ -19,7 +19,11 @@ import {
   ChevronRight,
   HelpCircle,
   Camera,
-  Coins
+  Coins,
+  ShieldCheck,
+  Gauge,
+  AlertOctagon,
+  Microscope
 } from 'lucide-react';
 import { useStore } from '../store';
 import {
@@ -27,16 +31,22 @@ import {
   VARIANT_FINISHES,
   CONDITION_RUBRICS,
   OPTICAL_CHALLENGES,
+  AUTHENTICATION_CHECKS,
+  CARD_THICKNESS_SPECS,
+  MISPRINT_TYPES,
   CardGameSpec,
   VariantFinish,
-  ConditionTier
+  ConditionTier,
+  AuthenticationCheck,
+  CardThicknessSpec,
+  MisprintClassification
 } from '../data/cardKnowledgeData';
 
 export const CardKnowledgeHubView: React.FC = () => {
   const { theme } = useStore();
   const isLight = theme === 'light';
 
-  const [activeTab, setActiveTab] = useState<'anatomy' | 'variants' | 'conditions' | 'optics'>('anatomy');
+  const [activeTab, setActiveTab] = useState<'anatomy' | 'variants' | 'conditions' | 'auth' | 'thickness' | 'errors' | 'optics'>('anatomy');
   const [selectedGameId, setSelectedGameId] = useState<string>(CARD_GAME_SPECS[0].id);
   const [variantSearch, setVariantSearch] = useState('');
   const [riskFilter, setRiskFilter] = useState<'All' | 'Extreme' | 'High' | 'Medium'>('All');
@@ -117,7 +127,7 @@ export const CardKnowledgeHubView: React.FC = () => {
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
-            <span>1. Card Anatomy & Detection Zones</span>
+            <span>1. Card Anatomy ({CARD_GAME_SPECS.length} Games)</span>
           </button>
 
           <button
@@ -131,7 +141,7 @@ export const CardKnowledgeHubView: React.FC = () => {
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>2. Variants & Foil Finishes Matrix ({VARIANT_FINISHES.length})</span>
+            <span>2. Variants & Finishes ({VARIANT_FINISHES.length})</span>
           </button>
 
           <button
@@ -145,7 +155,49 @@ export const CardKnowledgeHubView: React.FC = () => {
             }`}
           >
             <Scale className="w-3.5 h-3.5" />
-            <span>3. Condition Grading Rubrics (NM → DMG)</span>
+            <span>3. Condition Rubric (NM→DMG)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('auth')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
+              activeTab === 'auth'
+                ? 'bg-indigo-600 text-white shadow-xs'
+                : isLight
+                ? 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                : 'bg-zinc-900/60 hover:bg-zinc-800 text-zinc-300 border border-zinc-800'
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span>4. Counterfeit & Auth ({AUTHENTICATION_CHECKS.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('thickness')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
+              activeTab === 'thickness'
+                ? 'bg-indigo-600 text-white shadow-xs'
+                : isLight
+                ? 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                : 'bg-zinc-900/60 hover:bg-zinc-800 text-zinc-300 border border-zinc-800'
+            }`}
+          >
+            <Gauge className="w-3.5 h-3.5 text-amber-400" />
+            <span>5. Thickness & Feeder Rules ({CARD_THICKNESS_SPECS.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('errors')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
+              activeTab === 'errors'
+                ? 'bg-indigo-600 text-white shadow-xs'
+                : isLight
+                ? 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                : 'bg-zinc-900/60 hover:bg-zinc-800 text-zinc-300 border border-zinc-800'
+            }`}
+          >
+            <AlertOctagon className="w-3.5 h-3.5 text-rose-400" />
+            <span>6. Errors & Misprints ({MISPRINT_TYPES.length})</span>
           </button>
 
           <button
@@ -158,8 +210,8 @@ export const CardKnowledgeHubView: React.FC = () => {
                 : 'bg-zinc-900/60 hover:bg-zinc-800 text-zinc-300 border border-zinc-800'
             }`}
           >
-            <Camera className="w-3.5 h-3.5" />
-            <span>4. Optical & Hardware Challenges ({OPTICAL_CHALLENGES.length})</span>
+            <Camera className="w-3.5 h-3.5 text-cyan-400" />
+            <span>7. Optical Hardware ({OPTICAL_CHALLENGES.length})</span>
           </button>
         </div>
       </div>
@@ -474,7 +526,232 @@ export const CardKnowledgeHubView: React.FC = () => {
       )}
 
       {/* =================================================================== */}
-      {/* TAB 4: OPTICAL & HARDWARE CHALLENGES                                */}
+      {/* TAB 4: AUTHENTICATION & COUNTERFEIT DETECTION                       */}
+      {/* =================================================================== */}
+      {activeTab === 'auth' && (
+        <div className="space-y-6">
+          <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-start gap-3 text-xs">
+            <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <span className="font-bold text-emerald-300">Automated Counterfeit Deterrence:</span>
+              <p className="text-emerald-200/90 leading-relaxed">
+                Counterfeits ("proxies") create massive inventory liability. An automated scanner must evaluate multi-spectral signals (micro-halftone rosettes, light transmission core density, 365nm UV fluorescence, and microprinting) before accepting a card into inventory.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {AUTHENTICATION_CHECKS.map((check) => (
+              <div
+                key={check.id}
+                className={`p-6 rounded-2xl border space-y-4 ${
+                  isLight ? 'bg-white border-slate-200 shadow-xs' : 'bg-[#1a1a22] border-[#292934]'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wider">
+                      {check.targetGames.join(', ')}
+                    </span>
+                    <h3 className={`text-base font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                      {check.testName}
+                    </h3>
+                  </div>
+
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold border shrink-0 uppercase tracking-wider ${
+                      check.aiFeasibility.includes('Fully Automatable')
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                        : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                    }`}
+                  >
+                    {check.aiFeasibility}
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-900/60 border border-slate-100 dark:border-zinc-800 text-xs">
+                  <span className="font-bold text-slate-400 block mb-0.5 text-[10px] uppercase">Required Hardware:</span>
+                  <span className="font-mono text-indigo-400">{check.equipmentNeeded}</span>
+                </div>
+
+                <div className="space-y-2 text-xs">
+                  <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                    <span className="font-bold text-emerald-400 block mb-1 text-[10px] uppercase">
+                      Pass Criteria (Authentic Signal):
+                    </span>
+                    <p className="text-emerald-200/90 leading-relaxed">{check.passCriteria}</p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-rose-500/5 border border-rose-500/20">
+                    <span className="font-bold text-rose-400 block mb-1 text-[10px] uppercase">
+                      Fail Criteria (Counterfeit / Re-backed Flag):
+                    </span>
+                    <p className="text-rose-200/90 leading-relaxed">{check.failCriteria}</p>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 text-[11px] text-slate-400">
+                  <span className="font-semibold text-slate-300">Financial Risk Prevented: </span>
+                  {check.riskMitigation}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* =================================================================== */}
+      {/* TAB 5: CARD THICKNESS & SCANNER FEEDER RULES (POINT GAUGE)          */}
+      {/* =================================================================== */}
+      {activeTab === 'thickness' && (
+        <div className="space-y-6">
+          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-3 text-xs">
+            <Gauge className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <span className="font-bold text-amber-300">ADF Hardware Damage Warning:</span>
+              <p className="text-amber-200/90 leading-relaxed">
+                Automated Document Feeder (ADF) rollers (Ricoh fi-8170) have a strict physical throat clearance of 0.95mm. Feeding thick cards (&gt;55 pt) into a high-speed auto-feeder will result in severe mechanical jamming and permanent crease damage.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {CARD_THICKNESS_SPECS.map((spec) => (
+              <div
+                key={spec.id}
+                className={`p-6 rounded-2xl border space-y-4 ${
+                  isLight ? 'bg-white border-slate-200 shadow-xs' : 'bg-[#1a1a22] border-[#292934]'
+                }`}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="px-3 py-1.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-black font-mono text-base">
+                      {spec.pointSize}
+                    </span>
+                    <div>
+                      <h3 className={`text-base font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                        {spec.thicknessMm} ({spec.thicknessInches})
+                      </h3>
+                      <span className="text-xs text-slate-400">Average Weight: {spec.weightGramsAvg}</span>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-bold border uppercase tracking-wider shrink-0 ${
+                      spec.adfSafe
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                        : spec.pointSize.includes('55')
+                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                        : 'bg-rose-500/10 text-rose-500 border-rose-500/30'
+                    }`}
+                  >
+                    {spec.adfSafe ? 'ADF Auto-Feed Safe' : spec.pointSize.includes('55') ? 'Caution: Single-Feed Only' : 'PROHIBITED IN ADF'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-900/60 border border-slate-100 dark:border-zinc-800">
+                    <span className="font-bold text-slate-400 block mb-1 text-[10px] uppercase">
+                      Typical Card Types In This Gauge:
+                    </span>
+                    <ul className="space-y-1 list-disc list-inside text-slate-300">
+                      {spec.cardTypes.map((type, i) => (
+                        <li key={i}>{type}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div
+                    className={`p-3.5 rounded-xl border ${
+                      spec.adfSafe
+                        ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-300'
+                        : 'bg-rose-500/5 border-rose-500/20 text-rose-300'
+                    }`}
+                  >
+                    <span className="font-bold block mb-1 text-[10px] uppercase">
+                      Scanner Engineering Protocol:
+                    </span>
+                    <p className="leading-relaxed font-medium">{spec.scannerFeedRule}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* =================================================================== */}
+      {/* TAB 6: FACTORY ERRORS & MISPRINTS TAXONOMY                          */}
+      {/* =================================================================== */}
+      {activeTab === 'errors' && (
+        <div className="space-y-6">
+          <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-start gap-3 text-xs">
+            <AlertOctagon className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <span className="font-bold text-purple-300">Error Recognition vs Defect Penalties:</span>
+              <p className="text-purple-200/90 leading-relaxed">
+                Standard grading algorithms would penalize miscuts and crimps as "Damaged". However, verified factory errors command a 3x to 50x price premium in collector communities. The AI must differentiate genuine factory errors from user damage.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {MISPRINT_TYPES.map((err) => (
+              <div
+                key={err.id}
+                className={`p-6 rounded-2xl border space-y-4 ${
+                  isLight ? 'bg-white border-slate-200 shadow-xs' : 'bg-[#1a1a22] border-[#292934]'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <span className="text-[10px] font-mono text-purple-400 font-bold uppercase tracking-wider">
+                      {err.collectorName}
+                    </span>
+                    <h3 className={`text-base font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                      {err.name}
+                    </h3>
+                  </div>
+
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/30 shrink-0">
+                    {err.rarity}
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/20 text-xs">
+                  <span className="font-bold text-purple-300 block mb-0.5 text-[10px] uppercase">
+                    Collector Market Value Impact:
+                  </span>
+                  <span className="font-semibold text-white">{err.marketImpact}</span>
+                </div>
+
+                <div className="space-y-2 text-xs">
+                  <div>
+                    <span className="font-bold text-slate-400 block mb-1 text-[10px] uppercase">
+                      Physical Visual Cues:
+                    </span>
+                    <p className={`leading-relaxed ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
+                      {err.visualCharacteristics}
+                    </p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-900/60 border border-slate-100 dark:border-zinc-800">
+                    <span className="font-bold text-indigo-400 block mb-1 text-[10px] uppercase">
+                      Computer Vision Detection Strategy:
+                    </span>
+                    <p className="text-slate-300 leading-relaxed font-mono text-[11px]">
+                      {err.cvDetectionStrategy}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* =================================================================== */}
+      {/* TAB 7: OPTICAL & HARDWARE CHALLENGES                                */}
       {/* =================================================================== */}
       {activeTab === 'optics' && (
         <div className="space-y-4">
