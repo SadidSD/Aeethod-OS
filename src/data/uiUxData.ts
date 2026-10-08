@@ -15,6 +15,470 @@ export interface UiUxItem {
   screensCount?: number;
 }
 
+export interface UxFlowStep {
+  id: string;
+  stepNumber: number;
+  title: string;
+  userGoal: string;
+  hotkey?: string;
+  touchTargetSize: string; // e.g. "48px"
+  frictionLevel: 'Low' | 'Medium' | 'High';
+  edgeCaseNotes: string;
+  figmaUrl?: string;
+}
+
+export interface UxFlowPlan {
+  id: string;
+  flowName: string;
+  category: 'Onboarding' | 'Buylist' | 'Inventory' | 'Sync' | 'Tournaments';
+  targetPersona: string;
+  targetSeconds: number;
+  steps: UxFlowStep[];
+  status: 'Draft' | 'Wireframing' | 'In Prototype' | 'Validated';
+  summary: string;
+}
+
+export interface HeuristicAuditItem {
+  id: number;
+  name: string;
+  summary: string;
+  aeethodExample: string;
+  status: 'Pass' | 'Warning' | 'Fail';
+  notes: string;
+  severity: 'None' | 'Cosmetic' | 'Minor' | 'Major';
+}
+
+export interface UserPersona {
+  id: string;
+  name: string;
+  role: string;
+  environment: string;
+  primaryGoal: string;
+  biggestFrustration: string;
+  keyUiRequirements: string[];
+  avatarEmoji: string;
+}
+
+export interface UxMetricTarget {
+  id: string;
+  name: string;
+  category: 'Activation' | 'Speed' | 'Quality' | 'Satisfaction';
+  targetValue: string;
+  currentValue: string;
+  status: 'On Track' | 'Needs Attention' | 'Exceeding';
+  businessImpact: string;
+}
+
+export const INITIAL_USER_PERSONAS: UserPersona[] = [
+  {
+    id: 'persona-1',
+    name: 'Counter Clerk Jake',
+    role: 'Retail Frontline Specialist (22 yrs)',
+    environment: 'Physical Store Counter, standing on feet, iPad POS & barcode scanner, loud rush hours',
+    primaryGoal: 'Process customer trade-ins and checkout sales in under 30 seconds with 0 math errors',
+    biggestFrustration: 'Nested dropdown menus, slow loading spinners, and tiny buttons that cause mis-clicks',
+    keyUiRequirements: ['Touch pads >= 48px', 'Numpad keyboard shortcuts', 'Audible barcode beep confirmation', 'High-contrast lighting compatibility'],
+    avatarEmoji: '⚡'
+  },
+  {
+    id: 'persona-2',
+    name: 'Store Owner Sadid',
+    role: 'LGS Founder & Multi-Channel Director (34 yrs)',
+    environment: 'Back-office desk laptop and floor iPad, managing cash flow & inventory risk',
+    primaryGoal: 'Maintain positive gross margin spreads and ensure physical cards never double-sell on eBay',
+    biggestFrustration: 'Cluttered SaaS with low data density, hidden fees, and inventory lag',
+    keyUiRequirements: ['High-density 28px table rows', 'Instant buy-margin calculators', '180ms webhook sync status', 'Multi-channel conflict alerts'],
+    avatarEmoji: '💼'
+  },
+  {
+    id: 'persona-3',
+    name: 'Content Host Anika',
+    role: 'Brand Evangelist & Media Producer (26 yrs)',
+    environment: 'Studio desk, ring lights, mobile phone, direct-to-camera filming',
+    primaryGoal: 'Identify viral market trends, unbox high-value tins, and record engaging talking-head reels',
+    biggestFrustration: 'Generic analytics charts that show numbers without diagnosing why a reel boomed or flopped',
+    keyUiRequirements: ['Real-time Meta insights sync', 'Clean teleprompter script view', 'Root-cause algorithmic diagnostics', 'High-res card zoom'],
+    avatarEmoji: '🎙️'
+  },
+  {
+    id: 'persona-4',
+    name: 'Grail Collector Sarah',
+    role: 'High-End Vintage Investor (28 yrs)',
+    environment: 'Mobile collector app, trade night meetups, high financial vigilance ($5,000+ slabs)',
+    primaryGoal: 'Verify card authenticity, corner whitening, centering ratios, and holographic foil patterns',
+    biggestFrustration: 'Flat low-resolution scans that hide micro-creases and edge wear',
+    keyUiRequirements: ['Interactive 3D foil/hologram tilt', 'PSA/BGS cert verification badge', 'Price history delta sparklines', 'Instant condition audit'],
+    avatarEmoji: '💎'
+  }
+];
+
+export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
+  {
+    id: 'flow-buylist',
+    flowName: '30-Second Counter Buylist Intake',
+    category: 'Buylist',
+    targetPersona: 'Counter Clerk Jake',
+    targetSeconds: 30,
+    status: 'In Prototype',
+    summary: 'The critical frontline workflow where a customer brings 50 raw cards to the trade counter. Eliminates manual search lag and typing.',
+    steps: [
+      {
+        id: 'b-1',
+        stepNumber: 1,
+        title: 'Optical / Barcode Scanner Intake',
+        userGoal: 'Identify the exact card expansion set and variant without typing',
+        hotkey: 'Space or Barcode Trigger',
+        touchTargetSize: '64px',
+        frictionLevel: 'Low',
+        edgeCaseNotes: 'Card is un-sleeved or barcode is scratched: Falls back to instant 2-keystroke fuzzy search.'
+      },
+      {
+        id: 'b-2',
+        stepNumber: 2,
+        title: '1-Tap Condition Grading Pills',
+        userGoal: 'Assign physical condition (NM/LP/MP/HP/DMG) in exactly 1 touch',
+        hotkey: 'Keys 1 to 5',
+        touchTargetSize: '52px',
+        frictionLevel: 'Low',
+        edgeCaseNotes: 'Card has micro-indent: Clerk clicks "Flag Flaw" to attach grading note for store audit.'
+      },
+      {
+        id: 'b-3',
+        stepNumber: 3,
+        title: 'Live Market Margin Calculation',
+        userGoal: 'Calculate store buy-offer based on real-time TCGplayer market prices',
+        hotkey: 'Auto-computed',
+        touchTargetSize: '48px',
+        frictionLevel: 'Low',
+        edgeCaseNotes: 'Network drops: System uses cached offline daily buylist rate table.'
+      },
+      {
+        id: 'b-4',
+        stepNumber: 4,
+        title: 'Cash vs Store Credit Split Decision',
+        userGoal: 'Present customer with Cash ($120) vs Store Credit ($156 @ +30% boost)',
+        hotkey: 'Tab + Enter',
+        touchTargetSize: '60px',
+        frictionLevel: 'Medium',
+        edgeCaseNotes: 'Store cash drawer has insufficient physical bills: System highlights Store Credit bonus.'
+      },
+      {
+        id: 'b-5',
+        stepNumber: 5,
+        title: 'Receipt Print & Multi-Channel Injection',
+        userGoal: 'Print intake voucher and add card into active store inventory immediately',
+        hotkey: 'Enter',
+        touchTargetSize: '48px',
+        frictionLevel: 'Low',
+        edgeCaseNotes: 'Thermal printer runs out of paper: Digital SMS/email voucher toggle available.'
+      }
+    ]
+  },
+  {
+    id: 'flow-inventory',
+    flowName: 'High-Density Singles Inventory & Multi-Channel Sync',
+    category: 'Inventory',
+    targetPersona: 'Store Owner Sadid',
+    targetSeconds: 15,
+    status: 'Wireframing',
+    summary: 'Desktop data grid built for managing 30,000+ card SKUs with inline editing and zero modal clutter.',
+    steps: [
+      {
+        id: 'i-1',
+        stepNumber: 1,
+        title: 'Global Fast Filter & Set Selection',
+        userGoal: 'Instantly isolate Base Set Charizard holos from 30,000 SKUs',
+        hotkey: '⌘K / Ctrl+K',
+        touchTargetSize: '36px',
+        frictionLevel: 'Low',
+        edgeCaseNotes: 'Query returns 500+ variants: Virtualized windowing maintains 60 FPS scrolling.'
+      },
+      {
+        id: 'i-2',
+        stepNumber: 2,
+        title: 'Inline Cell Pricing & Condition Adjustment',
+        userGoal: 'Update price from $420 to $450 without opening an inspection modal',
+        hotkey: 'Double Click or Enter',
+        touchTargetSize: '32px',
+        frictionLevel: 'Low',
+        edgeCaseNotes: 'Typing error (e.g. $4500 instead of $450): System warns on >30% market divergence.'
+      },
+      {
+        id: 'i-3',
+        stepNumber: 3,
+        title: 'Multi-Select Bulk Action Execution',
+        userGoal: 'Select 20 singles and sync them to eBay with a 10% premium',
+        hotkey: 'Shift + Click',
+        touchTargetSize: '40px',
+        frictionLevel: 'Medium',
+        edgeCaseNotes: 'eBay API rate limit: Actions queue gracefully in a background worker.'
+      },
+      {
+        id: 'i-4',
+        stepNumber: 4,
+        title: 'Live Channel Webhook Health Verification',
+        userGoal: 'Confirm that physical in-store sale decremented the online listing in <200ms',
+        hotkey: 'Auto-monitored',
+        touchTargetSize: '32px',
+        frictionLevel: 'Low',
+        edgeCaseNotes: 'Shopify sync failure: Persistent amber warning badge triggers manual retry.'
+      }
+    ]
+  },
+  {
+    id: 'flow-onboarding',
+    flowName: 'Store Owner 3-Day Time-to-Value Onboarding',
+    category: 'Onboarding',
+    targetPersona: 'Store Owner Sadid',
+    targetSeconds: 180,
+    status: 'In Prototype',
+    summary: 'Gets a brand-new card shop from signup to their first synced sale in under 3 days.',
+    steps: [
+      {
+        id: 'o-1',
+        stepNumber: 1,
+        title: 'Welcome & Legacy Inventory Importer',
+        userGoal: 'Upload existing BinderPOS, CrystalCommerce, or Excel CSV sheet in 1 click',
+        hotkey: 'Drag & Drop',
+        touchTargetSize: '64px',
+        frictionLevel: 'Medium',
+        edgeCaseNotes: 'CSV has missing columns: Smart auto-column mapping reconciles column headers.'
+      },
+      {
+        id: 'o-2',
+        stepNumber: 2,
+        title: 'Connect Primary Sales Channels',
+        userGoal: 'Authorize eBay, Shopify, and TCGplayer seller accounts',
+        hotkey: 'OAuth 1-Click',
+        touchTargetSize: '48px',
+        frictionLevel: 'Medium',
+        edgeCaseNotes: 'User lacks developer keys: In-app guided walkthrough opens direct auth links.'
+      },
+      {
+        id: 'o-3',
+        stepNumber: 3,
+        title: 'Configure Automated Buylist Spread Rules',
+        userGoal: 'Establish default store margins (e.g. 65% cash / 80% store credit)',
+        hotkey: 'Preset Chips',
+        touchTargetSize: '48px',
+        frictionLevel: 'Low',
+        edgeCaseNotes: 'User unsure of competitive margins: System recommends regional industry defaults.'
+      },
+      {
+        id: 'o-4',
+        stepNumber: 4,
+        title: 'First Transaction Simulation & Celebration',
+        userGoal: 'Run a sample trade-in to experience zero-latency checkout',
+        hotkey: 'Enter to Complete',
+        touchTargetSize: '56px',
+        frictionLevel: 'Low',
+        edgeCaseNotes: 'User wants live test: Provides a sandbox toggle with instant reset.'
+      }
+    ]
+  },
+  {
+    id: 'flow-tournaments',
+    flowName: 'Friday Night Tournament Swiss Pairing & Check-in',
+    category: 'Tournaments',
+    targetPersona: 'Counter Clerk Jake',
+    targetSeconds: 60,
+    status: 'Draft',
+    summary: 'Rapid check-in and automated Swiss pairing for 64-player competitive card nights.',
+    steps: [
+      {
+        id: 't-1',
+        stepNumber: 1,
+        title: 'Player QR / Name Search Check-in',
+        userGoal: 'Confirm player attendance and collect tournament entry fee in 3 seconds',
+        hotkey: 'Barcode Scan or Enter',
+        touchTargetSize: '52px',
+        frictionLevel: 'Low',
+        edgeCaseNotes: 'Player pays with store credit: Register automatically deducts from customer balance.'
+      },
+      {
+        id: 't-2',
+        stepNumber: 2,
+        title: '1-Click Swiss Round Pairing Algorithm',
+        userGoal: 'Generate mathematically balanced pairings and table assignments',
+        hotkey: '⌘P',
+        touchTargetSize: '52px',
+        frictionLevel: 'Low',
+        edgeCaseNotes: 'Odd player count: System grants bye to lowest-ranked player automatically.'
+      },
+      {
+        id: 't-3',
+        stepNumber: 3,
+        title: 'Store Screen Projector & Mobile Display',
+        userGoal: 'Broadcast pairings to store wall TV and player mobile phones via QR code',
+        hotkey: 'Auto-broadcast',
+        touchTargetSize: '48px',
+        frictionLevel: 'Low',
+        edgeCaseNotes: 'Player dispute: Clerk can manually swap table seating in 1 click.'
+      },
+      {
+        id: 't-4',
+        stepNumber: 4,
+        title: 'Rapid Match Slip Result Entry',
+        userGoal: 'Record 2-0 / 2-1 match outcomes as players report to the desk',
+        hotkey: 'Numpad 2-0 / 2-1',
+        touchTargetSize: '48px',
+        frictionLevel: 'Low',
+        edgeCaseNotes: 'Tied match: Automatically logs tiebreaker percentages.'
+      }
+    ]
+  }
+];
+
+export const INITIAL_HEURISTIC_AUDITS: HeuristicAuditItem[] = [
+  {
+    id: 1,
+    name: '1. Visibility of System Status',
+    summary: 'Keep users informed about what is happening through appropriate feedback within reasonable time.',
+    aeethodExample: 'Live status pill displays: "✓ Connected to @the_tcg_baddie (511 followers) • Syncing 6 reels..."',
+    status: 'Pass',
+    notes: 'Real-time banners provide instant verification during Meta API syncing.',
+    severity: 'None'
+  },
+  {
+    id: 2,
+    name: '2. Match Between System and the Real World',
+    summary: 'Speak the users\' language with words, phrases, and concepts familiar to the user rather than internal jargon.',
+    aeethodExample: 'Using "Buylist Intake" and "PSA 10 Slab" instead of "Inventory Acquisition Sub-Module".',
+    status: 'Pass',
+    notes: 'Terminology matches real retail card counter conversations perfectly.',
+    severity: 'None'
+  },
+  {
+    id: 3,
+    name: '3. User Control and Freedom',
+    summary: 'Provide a clearly marked emergency exit to leave the unwanted state without an extended dialogue.',
+    aeethodExample: '1-click "Undo" snackbar when an item is deleted from the counter trade cart.',
+    status: 'Pass',
+    notes: 'Esc key dismisses modals; non-destructive actions feature quick undo.',
+    severity: 'None'
+  },
+  {
+    id: 4,
+    name: '4. Consistency and Standards',
+    summary: 'Users should not have to wonder whether different words, situations, or actions mean the same thing.',
+    aeethodExample: 'Condition badges (Near Mint, Lightly Played, etc.) maintain identical colors across all views.',
+    status: 'Pass',
+    notes: 'Standardized on Plus Jakarta Sans for UI and JetBrains Mono for pricing numbers.',
+    severity: 'None'
+  },
+  {
+    id: 5,
+    name: '5. Error Prevention',
+    summary: 'Eliminate error-prone conditions or check for them and present users with a confirmation option.',
+    aeethodExample: 'Disabling Cash Payout button if store cash drawer balance is lower than trade payout.',
+    status: 'Pass',
+    notes: 'Prevents negative cash balances before transactions can be committed.',
+    severity: 'None'
+  },
+  {
+    id: 6,
+    name: '6. Recognition Rather than Recall',
+    summary: 'Minimize user memory load by making elements, actions, and options visible.',
+    aeethodExample: 'Fuzzy search dropdown shows card artwork thumbnails as the clerk types.',
+    status: 'Pass',
+    notes: 'Visual recognition allows clerks to verify foil cards in 1 second.',
+    severity: 'None'
+  },
+  {
+    id: 7,
+    name: '7. Flexibility and Efficiency of Use',
+    summary: 'Accelerators unseen by novice users may speed up the interaction for expert users.',
+    aeethodExample: 'Numpad shortcuts (1-5 for card conditions, Enter to accept trade) allow mouse-free counter ops.',
+    status: 'Pass',
+    notes: 'Both touchscreen tap and keyboard power-user shortcuts are supported.',
+    severity: 'None'
+  },
+  {
+    id: 8,
+    name: '8. Aesthetic and Minimalist Design',
+    summary: 'Dialogues should not contain information that is irrelevant or rarely needed.',
+    aeethodExample: 'POS counter view strips away all non-critical widgets; only card, grade, and payout are shown.',
+    status: 'Pass',
+    notes: 'High signal-to-noise ratio prevents clerk fatigue during long shifts.',
+    severity: 'None'
+  },
+  {
+    id: 9,
+    name: '9. Help Users Recognize, Diagnose, and Recover from Errors',
+    summary: 'Error messages should be expressed in plain language, indicate the problem, and suggest a solution.',
+    aeethodExample: 'Instead of "Error 500", displays: "Card SKU #402 not found in Base Set. Did you mean Base Set 2?"',
+    status: 'Pass',
+    notes: 'All API exceptions are mapped to human-readable recovery suggestions.',
+    severity: 'None'
+  },
+  {
+    id: 10,
+    name: '10. Help and Documentation',
+    summary: 'Provide documentation that is easy to search, focused on user tasks, and lists concrete steps.',
+    aeethodExample: 'Inline tooltips on margin calculations explain how the 65% cash vs 80% credit formula works.',
+    status: 'Pass',
+    notes: 'Contextual tooltips exist on all complex economic levers.',
+    severity: 'None'
+  }
+];
+
+export const INITIAL_UX_METRIC_TARGETS: UxMetricTarget[] = [
+  {
+    id: 'm-1',
+    name: 'Activation Rate (First Value <48h)',
+    category: 'Activation',
+    targetValue: '> 60%',
+    currentValue: '64%',
+    status: 'Exceeding',
+    businessImpact: 'Stores reach positive ROI within 2 days of signup, cutting early trial churn.'
+  },
+  {
+    id: 'm-2',
+    name: '50-Card Buylist Intake Velocity',
+    category: 'Speed',
+    targetValue: '< 45s',
+    currentValue: '32s',
+    status: 'Exceeding',
+    businessImpact: 'Saves 38 minutes per trade day, allowing stores to handle 3x more weekend trade-ins.'
+  },
+  {
+    id: 'm-3',
+    name: 'Clerk Mis-click & Error Rate',
+    category: 'Quality',
+    targetValue: '< 3.0%',
+    currentValue: '1.8%',
+    status: 'On Track',
+    businessImpact: 'Prevents expensive inventory mis-pricings and double-sale chargebacks.'
+  },
+  {
+    id: 'm-4',
+    name: 'System Usability Scale (SUS Score)',
+    category: 'Satisfaction',
+    targetValue: '> 75 / 100',
+    currentValue: '84 / 100',
+    status: 'Exceeding',
+    businessImpact: 'Grade A usability drives organic word-of-mouth referrals across LGS store owners.'
+  },
+  {
+    id: 'm-5',
+    name: 'Time to First Live Sale (TTV)',
+    category: 'Activation',
+    targetValue: '< 3 days',
+    currentValue: '2.1 days',
+    status: 'On Track',
+    businessImpact: 'Fastest onboarding in the TCG industry compared to 3-week legacy setups.'
+  },
+  {
+    id: 'm-6',
+    name: 'Net Promoter Score (NPS)',
+    category: 'Satisfaction',
+    targetValue: '> +40',
+    currentValue: '+48',
+    status: 'Exceeding',
+    businessImpact: 'High customer loyalty ensures recurring $149/mo subscription durability.'
+  }
+];
+
 export const INITIAL_UI_UX_ITEMS: UiUxItem[] = [
   {
     id: 'ux-1',
