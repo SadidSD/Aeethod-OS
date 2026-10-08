@@ -245,14 +245,14 @@ export const useStore = create<State>((set, get) => ({
       const promises = collections.map(async (c) => {
         // A. Try direct Supabase table first
         const { data, error } = await supabase.from(c).select('*');
-        if (!error && Array.isArray(data) && data.length > 0) {
+        if (!error && Array.isArray(data)) {
           supabaseResults[c] = data;
           hasSupabaseData = true;
           try {
             localStorage.setItem(`aeethod_col_${c}`, JSON.stringify(data));
           } catch {}
         } else {
-          // B. If direct table does not exist or returned no rows, check Supabase 'docs' table storage
+          // B. If direct table does not exist, check Supabase 'docs' table storage
           try {
             const docRes = await supabase
               .from('docs')
@@ -277,10 +277,9 @@ export const useStore = create<State>((set, get) => ({
             const cached = localStorage.getItem(`aeethod_col_${c}`);
             if (cached) {
               const parsed = JSON.parse(cached);
-              if (Array.isArray(parsed) && parsed.length > 0) {
+              if (Array.isArray(parsed)) {
                 supabaseResults[c] = parsed;
                 hasSupabaseData = true;
-                syncCollectionToSupabaseDoc(c, parsed);
               }
             }
           } catch {}
