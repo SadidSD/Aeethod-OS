@@ -81,5 +81,39 @@ export const INITIAL_UI_UX_ITEMS: UiUxItem[] = [
       '1-tap condition swapping with keyboard hotkeys (1-5)'
     ],
     screensCount: 4
+  },
+  {
+    id: 'ux-5',
+    title: 'High-Density Singles Inventory Table & Multi-Channel Status',
+    category: 'Wireframe & Flow',
+    surface: 'Desktop App',
+    status: 'In Figma / Wireframe',
+    userProblem: 'Store owners manage 20,000+ card singles across eBay, TCGplayer, and Shopify. Generic tables waste vertical space and lack instant bulk editing.',
+    uxDesignSolution: 'Compact 28px row height, sticky header with instant filtering, inline price & condition editing, and multi-channel sync status indicators.',
+    designChecklist: [
+      'Compact row layout with JetBrains Mono numbers',
+      'Inline edit cell without opening modal dialog',
+      'Sticky column sorting & filter chips bar',
+      'Bulk action bar (Change Price, Print Barcode, De-list)'
+    ],
+    figmaOrPreviewNotes: 'Prioritizes maximum data density similar to Linear / Bloomberg Terminal.',
+    screensCount: 6
+  },
+  {
+    id: 'ux-6',
+    title: 'Fast-Touch Counter Register & Split-Payment Flow',
+    category: 'Component Library',
+    surface: 'POS Counter Kiosk',
+    status: 'Concept',
+    userProblem: 'Long lines during tournament nights freeze if a customer wants to pay with 50% store credit and 50% cash/card.',
+    uxDesignSolution: '1-tap split payment slider, automatic store credit balance check, hold/resume cart buffer, and high-visibility digital change display.',
+    designChecklist: [
+      'Touch pads >= 48px for quick register taps',
+      'Automatic dual balance calculator (Credit vs Cash)',
+      '1-button Hold Order buffer to service next customer in line',
+      'Customer-facing display toggle'
+    ],
+    figmaOrPreviewNotes: 'Optimized for high-velocity Friday Night Magic counter rush.',
+    screensCount: 5
   }
 ];
