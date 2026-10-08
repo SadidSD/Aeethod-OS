@@ -111,6 +111,54 @@ export interface PreFlightChecklistRule {
   algorithmicReward: string;
 }
 
+export interface FunnelStage {
+  id: 'tofu' | 'mofu' | 'bofu';
+  stageName: string;
+  funnelLabel: string;
+  badgeColor: string;
+  targetAudience: string;
+  strategicObjective: string;
+  psychologicalTriggers: string[];
+  contentFormats: {
+    formatTitle: string;
+    description: string;
+    testedHookExample: string;
+    runtime: string;
+    primaryCreator: 'Sadid' | 'Anika' | 'Both';
+  }[];
+  algorithmicGates: {
+    gate: string;
+    metricTarget: string;
+    mechanism: string;
+  }[];
+  callToAction: {
+    ctaType: string;
+    sampleCopy: string;
+    conversionAsset: string;
+  };
+}
+
+export interface TcgIndustryAnalysis {
+  macroMarketOverview: {
+    totalEstimatedGmv: string;
+    activeStoresGlobal: string;
+    powerSellersCount: string;
+    contentLandscapeSummary: string;
+  };
+  supplyDemandParadox: {
+    consumerHypeShare: string;
+    gameplayShare: string;
+    collectorShare: string;
+    b2bRetailShare: string;
+    unmetNeedDescription: string;
+  };
+  theThreeTraps: {
+    trapName: string;
+    trapFlaw: string;
+    aeethodCounterMove: string;
+  }[];
+}
+
 export const AUDIENCE_COHORTS: AudienceCohort[] = [
   {
     id: 'lgs_owner',
@@ -1273,3 +1321,241 @@ export const PRE_FLIGHT_CHECKLIST_RULES: PreFlightChecklistRule[] = [
     algorithmicReward: 'Pushes Average Percentage Watched (APW) >110%.'
   }
 ];
+
+export const FUNNEL_STAGES: FunnelStage[] = [
+  {
+    id: 'tofu',
+    stageName: 'Top of Funnel (TOFU)',
+    funnelLabel: 'Viral Curiosity & Operational Discovery Engine',
+    badgeColor: 'bg-purple-500/10 text-purple-400 border border-purple-500/20',
+    targetAudience: 'Broad TCG Ecosystem: Collectors, Casual Players, Hobby Dreamers, Flippers & Lurking Store Owners',
+    strategicObjective:
+      'Beat algorithmic gatekeepers (3-Second Hook Retention >65%, APW >100%) to capture massive cold organic reach across Instagram Reels & YouTube Shorts without paying for ads.',
+    psychologicalTriggers: [
+      'Visceral Curiosity (What went wrong with this transaction?)',
+      'Frame 0 Pattern Interrupt (Slamming graded slabs or props on desk)',
+      'Counterfeit & Micro-Flaw Mysteries under Loupe Zoom',
+      'Behind-the-Counter Card Shop Reality on Saturday Night'
+    ],
+    contentFormats: [
+      {
+        formatTitle: 'Forensic Loupe Zoom & Fake Triage',
+        runtime: '25–35s Rapid Loop',
+        primaryCreator: 'Anika',
+        description: 'Spot the counterfeit card under 10x magnification in 5s. Drives loop re-watches and intense comment debate.',
+        testedHookExample: 'One of these is worth $800. The other came from an overseas counterfeit factory.'
+      },
+      {
+        formatTitle: 'Real Counter Dilemmas ("Would You Take This Deal?")',
+        runtime: '35–45s Conflict Arc',
+        primaryCreator: 'Both',
+        description: 'Customer brings vintage card asking cash; inspecting surface dings to reveal why the offer was lowered.',
+        testedHookExample: 'A customer brought in this vintage Charizard asking for $400 cash, but one micro-flaw changed our offer.'
+      },
+      {
+        formatTitle: '30-Second Hardware/Speed Showdowns',
+        runtime: '30s Split-Screen Race',
+        primaryCreator: 'Both',
+        description: 'Optical camera neural scanner scanning 40 cards in 15 seconds vs clerk typing manually with stopwatch.',
+        testedHookExample: 'Every unsorted shoebox behind your register is burning $450 in clerk payroll while the card prices crash 40%.'
+      }
+    ],
+    algorithmicGates: [
+      {
+        gate: '3-Second Hold Rate',
+        metricTarget: '>65% Retention',
+        mechanism: 'Stops scroll with physical prop or high cash stakes in first 0.5s.'
+      },
+      {
+        gate: 'Average Percentage Watched (APW)',
+        metricTarget: '>105% Loop Rate',
+        mechanism: 'Driven by seamless replay sentence loops where final sentence completes the hook.'
+      },
+      {
+        gate: 'Comments & Dwell Time',
+        metricTarget: 'High Comment Volume',
+        mechanism: 'Drives fierce authentication debate ("Look at the bottom rosette pattern!").'
+      }
+    ],
+    callToAction: {
+      ctaType: 'Micro-Engagement / Loop Replay',
+      sampleCopy: '"Would you have taken $240 cash or $310 store credit? Drop your answer below." (or seamless audio loop without outro)',
+      conversionAsset: 'Profile Visit & Discovery Algorithmic Tagging'
+    }
+  },
+  {
+    id: 'mofu',
+    stageName: 'Middle of Funnel (MOFU)',
+    funnelLabel: 'Operational Authority & Financial Agitation Engine',
+    badgeColor: 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20',
+    targetAudience: 'Overworked LGS Owners, Retail Managers, Full-Time Power Flippers, Convention Dealers',
+    strategicObjective:
+      'Shift viewers from entertained spectators into agitated merchants realizing their current software, distributor tie-ins, and manual intake are draining tens of thousands of dollars in profit.',
+    psychologicalTriggers: [
+      'Financial Outrage (The 2.5% Commission Tax)',
+      'Defensive Terror (Double-selling $400 slabs, eBay defects)',
+      'Save/Bookmark Practical Utility (Formulas and fee tables)',
+      'Insiders-vs-Outsiders Commercial Truth'
+    ],
+    contentFormats: [
+      {
+        formatTitle: 'The 2.5% Platform Tax Autopsy',
+        runtime: '45s Ledger Teardown',
+        primaryCreator: 'Sadid',
+        description: 'Auditing real store P&L statements showing BinderPOS taking $1,500/mo ($18,000/yr) on $60k GMV.',
+        testedHookExample: 'If your card shop sells $60,000 a month in singles, your software vendor is quietly stealing $1,500 of your net profit every 30 days.'
+      },
+      {
+        formatTitle: 'The $400 Double-Selling Concurrency Nightmare',
+        runtime: '35s Concurrency Demo',
+        primaryCreator: 'Both',
+        description: 'Simulating register scan delisting in 320ms vs 15-minute cron bug that causes eBay Out-of-Stock Defects.',
+        testedHookExample: 'Selling the same $400 slab in your shop and on eBay at the exact same minute is NOT bad luck. It\'s a 15-minute polling bug.'
+      },
+      {
+        formatTitle: 'The 70% Buylist Margin Illusion',
+        runtime: '40s Whiteboard Math',
+        primaryCreator: 'Sadid',
+        description: 'Mathematical deduction of marketplace fees, packaging, clerk labor, and 60-day price decay.',
+        testedHookExample: 'Paying 60% cash for a collection feels like an easy 40% profit. Here is why it\'s actually margin suicide.'
+      },
+      {
+        formatTitle: 'Distributor Allocation Ratio Desk',
+        runtime: '40s Invoice Audit',
+        primaryCreator: 'Sadid',
+        description: 'Wholesale invoices exposing dead stock tie-ins (buying $4k dead board games to get 6 cases of 151).',
+        testedHookExample: 'Ordering $30,000 in sealed product does NOT mean you\'re getting 30 cases. Here is the distributor ratio they won\'t tell you.'
+      }
+    ],
+    algorithmicGates: [
+      {
+        gate: 'DM Share Velocity',
+        metricTarget: '5x Multiplier',
+        mechanism: 'Store partners forwarding to co-owners: "Look how much cash we\'re bleeding every month."'
+      },
+      {
+        gate: 'Save / Bookmark Rate',
+        metricTarget: '4x Multiplier',
+        mechanism: 'Viewers save fee formulas and buylist deduction tables to consult during trade nights.'
+      },
+      {
+        gate: 'Profile Visit Rate',
+        metricTarget: '>8% Profile Visits',
+        mechanism: 'Viewers tap profile bio to verify operational credentials and tooling.'
+      }
+    ],
+    callToAction: {
+      ctaType: 'Partner Alignment & Lead Magnet DM',
+      sampleCopy: '"Send this to your store partner before you sign next year\'s POS contract. Comment \'AUDIT\' for our free 0% GMV fee auditor."',
+      conversionAsset: 'Interactive Fee Audit Tool & Warm DM Pipeline'
+    }
+  },
+  {
+    id: 'bofu',
+    stageName: 'Bottom of Funnel (BOFU)',
+    funnelLabel: 'Aeethod OS Product Moat & Commercial Acquisition Engine',
+    badgeColor: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
+    targetAudience: 'High-Intent LGS Owners, Store Partners, Warehouse Breakers & Power Sellers Ready to Switch',
+    strategicObjective:
+      'Direct commercial conversion into paying Aeethod OS subscriptions ($149/mo flat SaaS), software migration bookings, and self-service buylist kiosk deployments.',
+    psychologicalTriggers: [
+      'Immediate Mathematical ROI ($15,000+ net cash back in pocket)',
+      'Operational Relief (Eliminating Friday night counter freezes)',
+      'Zero-Downtime Migration Confidence (10-minute catalog import)',
+      'Fear of Falling Behind Tech Competitors'
+    ],
+    contentFormats: [
+      {
+        formatTitle: 'Zero-Latency POS & Concurrency Stress Test',
+        runtime: '35s Live Software Demo',
+        primaryCreator: 'Sadid',
+        description: 'Screen capture of in-store barcode beep delisting on eBay in 320ms via distributed Redis lock + 0% GMV flat pricing.',
+        testedHookExample: 'Watch eBay and TCGplayer delist this $400 card in 320 milliseconds before the receipt finishes printing.'
+      },
+      {
+        formatTitle: '1-Click Tournament Decklist Webstore Ingest',
+        runtime: '30s Webstore Friction Race',
+        primaryCreator: 'Both',
+        description: 'Pasting raw Moxfield/Limitless decklist into local webstore in 2.8s, eliminating the 82% cart abandonment.',
+        testedHookExample: 'Your local players aren\'t buying singles on TCGplayer because they\'re cheap. They\'re doing it because your Shopify site takes 25 minutes to build a deck.'
+      },
+      {
+        formatTitle: 'The Self-Service Buylist Kiosk In Action',
+        runtime: '40s In-Store Deployment',
+        primaryCreator: 'Anika',
+        description: 'Friday Night Magic customer scans 45 cards in 90 seconds while cashier rings up sales, eliminating walk-outs.',
+        testedHookExample: 'How one customer trading in a binder at 7:30 PM just cost your game store $1,200 in lost Friday night sales.'
+      },
+      {
+        formatTitle: 'Offline Airplane Mode Convention Stress Test',
+        runtime: '35s Hardware Stress Test',
+        primaryCreator: 'Both',
+        description: 'Ringing up $1,400 in slabs at Collect-A-Con with zero Wi-Fi, caching sales locally in SQLite.',
+        testedHookExample: 'Can your store POS complete a 5-card transaction and print a receipt with Airplane Mode turned ON?'
+      }
+    ],
+    algorithmicGates: [
+      {
+        gate: 'Bio Link Click-Through Rate (CTR)',
+        metricTarget: '>4% Bio Link Clicks',
+        mechanism: 'High conversion from video watch to landing page demo scheduling.'
+      },
+      {
+        gate: 'Inbound High-Intent DMs',
+        metricTarget: 'Direct Inbound Inquiries',
+        mechanism: 'Store owners messaging: "How fast can I migrate my inventory from BinderPOS?"'
+      },
+      {
+        gate: 'Trial Activation Rate',
+        metricTarget: 'Rapid SaaS Onboarding',
+        mechanism: 'Instant catalog sync and POS terminal login.'
+      }
+    ],
+    callToAction: {
+      ctaType: 'Direct SaaS Trial / Migration Booking',
+      sampleCopy: '"Stop paying 2.5% of your gross sales. Tap the link in bio to book your 15-minute live migration demo and start your 14-day free trial."',
+      conversionAsset: 'Aeethod OS Flat $149/mo Subscription ($0 GMV Commission)'
+    }
+  }
+];
+
+export const TCG_INDUSTRY_ANALYSIS: TcgIndustryAnalysis = {
+  macroMarketOverview: {
+    totalEstimatedGmv: '$12.5 Billion+ Annual Global Collectibles GMV (Pokémon, MTG, One Piece, Lorcana, Sports)',
+    activeStoresGlobal: '8,500–12,000 Brick-and-Mortar Local Game Stores (LGS) worldwide',
+    powerSellersCount: '45,000+ High-Volume Multi-Channel Power Sellers (eBay Top Rated, TCGplayer Direct)',
+    contentLandscapeSummary:
+      'Over 90% of views in the TCG creator economy are saturated by consumer unboxing hype and speculative bag-pumping, leaving the multi-billion-dollar retail operations infrastructure completely unserved.'
+  },
+  supplyDemandParadox: {
+    consumerHypeShare: '85% (Over-saturated red ocean: pack openings, screaming thumbnails, mystery box gambling)',
+    gameplayShare: '10% (Competitive deck tech, tournament streams, tier lists)',
+    collectorShare: '4% (High-end vintage auction showcases, PSA grading reveals)',
+    b2bRetailShare: '<1% (Virtually zero creators cover store P&Ls, intake economics, inventory velocity, or POS software)',
+    unmetNeedDescription:
+      'Store owners and power sellers are running $1M+ retail operations on 2012 legacy software that charges 2.5% GMV or takes 15 minutes to sync. They do not read LinkedIn whitepapers; they watch Instagram Reels and YouTube Shorts after closing the store at 11 PM.'
+  },
+  theThreeTraps: [
+    {
+      trapName: 'The Consumer Clown Trap',
+      trapFlaw:
+        'Chasing 14-year-old pack openers with screaming thumbnails. Generates vanity views with zero software buyer intent.',
+      aeethodCounterMove:
+        'Anchor all content in cold retail math, physical trade counter reality, and operational tension.'
+    },
+    {
+      trapName: 'The Corporate SaaS Bore Trap',
+      trapFlaw:
+        'Posting sterile software feature matrices and dry screencasts. Fails the 3-second algorithmic hook test and gets 80 views.',
+      aeethodCounterMove:
+        'Frame 0 pattern interrupts, physical cash props, split-screen stopwatch races, and dramatic trade disputes.'
+    },
+    {
+      trapName: 'The Philosophical Hobbyist Trap',
+      trapFlaw:
+        'Whining about distributor politics or begging community members to "support local stores" without fixing broken webstore UX.',
+      aeethodCounterMove:
+        'Cold mathematical analysis showing why buyers leave and how Aeethod automation recovers lost revenue.'
+    }
+  ]
+};

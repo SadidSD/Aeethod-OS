@@ -55,7 +55,8 @@ import {
   AlertTriangle,
   Users,
   Compass,
-  CheckSquare
+  CheckSquare,
+  Filter
 } from 'lucide-react';
 import {
   AUDIENCE_COHORTS,
@@ -64,6 +65,9 @@ import {
   ContentSpace,
   ContentSpaceRecurringSeries,
   ContentSpaceVideoAngle,
+  FUNNEL_STAGES,
+  TCG_INDUSTRY_ANALYSIS,
+  FunnelStage,
   COMPETITOR_ANALYSIS,
   DEMAND_SUPPLY_MATRIX,
   PRE_FLIGHT_CHECKLIST_RULES,
@@ -149,7 +153,8 @@ export const ContentManagementView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'blueprint' | 'strategy' | 'sadid' | 'anika' | 'matrix' | 'analytics'>('blueprint');
 
   // Content Strategy Blueprint state
-  const [strategyModule, setStrategyModule] = useState<'audiences' | 'gaps' | 'competitors' | 'matrix' | 'checklist'>('audiences');
+  const [strategyModule, setStrategyModule] = useState<'audiences' | 'gaps' | 'funnel' | 'competitors' | 'matrix' | 'checklist'>('audiences');
+  const [activeFunnelStage, setActiveFunnelStage] = useState<'tofu' | 'mofu' | 'bofu'>('tofu');
   const [selectedCohortId, setSelectedCohortId] = useState<string>('lgs_owner');
   const [checkedGates, setCheckedGates] = useState<Record<string, boolean>>({
     'gate-1': true,
@@ -1549,10 +1554,11 @@ export const ContentManagementView: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2 pt-6 mt-6 border-t border-purple-500/15">
               {[
                 { id: 'audiences', label: '1. Audience Anatomy (4 Profiles)', icon: Users },
-                { id: 'gaps', label: '2. White Space Gaps (Red vs Blue)', icon: Compass },
-                { id: 'competitors', label: '3. Competitor Teardown', icon: Target },
-                { id: 'matrix', label: '4. Demand vs Supply Matrix', icon: BarChart3 },
-                { id: 'checklist', label: '5. Pre-Flight 6-Gate Tester', icon: CheckSquare }
+                { id: 'gaps', label: '2. Strategic White Spaces (6 Domains)', icon: Compass },
+                { id: 'funnel', label: '3. Conversion Funnel (TOFU/MOFU/BOFU)', icon: Filter },
+                { id: 'competitors', label: '4. Competitor Teardown', icon: Target },
+                { id: 'matrix', label: '5. Demand vs Supply Matrix', icon: BarChart3 },
+                { id: 'checklist', label: '6. Pre-Flight 6-Gate Tester', icon: CheckSquare }
               ].map((m) => {
                 const Icon = m.icon;
                 const isActive = strategyModule === m.id;
@@ -2215,7 +2221,304 @@ export const ContentManagementView: React.FC = () => {
           })()}
 
           {/* ================================================================= */}
-          {/* SUB-MODULE 3: COMPETITOR TEARDOWN & POSITIONING                   */}
+          {/* SUB-MODULE 3: CONVERSION FUNNEL (TOFU / MOFU / BOFU ARCHITECTURE) */}
+          {/* ================================================================= */}
+          {strategyModule === 'funnel' && (() => {
+            const currentStage = FUNNEL_STAGES.find((s) => s.id === activeFunnelStage) || FUNNEL_STAGES[0];
+
+            return (
+              <div className="space-y-8">
+                {/* 1. Header & Industry Landscape Context */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="p-1.5 rounded-lg bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
+                        <Filter className="w-4 h-4" />
+                      </span>
+                      <h3 className={`text-sm font-bold uppercase tracking-wider font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                        TCG Content Funnel Architecture: Top, Middle & Bottom Funnel
+                      </h3>
+                    </div>
+                    <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-slate-400'} max-w-4xl leading-relaxed`}>
+                      Why traditional B2B SaaS marketing (whitepapers, cold LinkedIn outreach) fails in the card industry: LGS owners don't read enterprise whitepapers. They scroll short-form video at midnight after closing the store. Aeethod's funnel converts cold curiosity into $149/mo active software subscriptions.
+                    </p>
+                  </div>
+
+                  {/* Industry Macro Stats Ribbon */}
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <span className="px-3 py-1.5 rounded-xl border font-mono text-xs font-bold bg-purple-500/10 text-purple-400 border-purple-500/25">
+                      {TCG_INDUSTRY_ANALYSIS.macroMarketOverview.totalEstimatedGmv.split('(')[0].trim()}
+                    </span>
+                    <span className="px-3 py-1.5 rounded-xl border font-mono text-xs font-bold bg-emerald-500/10 text-emerald-400 border-emerald-500/25">
+                      {TCG_INDUSTRY_ANALYSIS.macroMarketOverview.activeStoresGlobal.split('(')[0].trim()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 2. Interactive 3-Stage Visual Funnel Pipeline */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {FUNNEL_STAGES.map((stage, idx) => {
+                    const isSelected = activeFunnelStage === stage.id;
+                    const stageStep = idx === 0 ? '01 • TOFU' : idx === 1 ? '02 • MOFU' : '03 • BOFU';
+
+                    return (
+                      <button
+                        key={stage.id}
+                        onClick={() => setActiveFunnelStage(stage.id)}
+                        className={`p-5 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between gap-3 ${
+                          isSelected
+                            ? isLight
+                              ? 'bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-500 shadow-md ring-2 ring-indigo-500/20'
+                              : 'bg-gradient-to-br from-[#1a1a2c] to-[#1e1c2f] border-indigo-500/80 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/40'
+                            : isLight
+                            ? 'bg-white hover:bg-slate-50 border-slate-200'
+                            : 'bg-[#151520] hover:bg-[#1b1b28] border-[#262638]'
+                        }`}
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-mono font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-black/20 text-slate-300">
+                              {stageStep}
+                            </span>
+                            <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${stage.badgeColor}`}>
+                              {stage.contentFormats.length} Formats
+                            </span>
+                          </div>
+                          <div>
+                            <h4 className={`text-sm font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                              {stage.stageName}
+                            </h4>
+                            <p className="text-xs text-purple-400 font-medium">
+                              {stage.funnelLabel}
+                            </p>
+                          </div>
+                          <p className={`text-[11px] leading-relaxed line-clamp-2 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                            {stage.strategicObjective}
+                          </p>
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-200/50 dark:border-zinc-800 flex items-center justify-between text-[10px] font-mono">
+                          <span className="text-slate-400">Target Conversion:</span>
+                          <span className="font-bold text-indigo-400">{stage.callToAction.ctaType}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* 3. Deep Dive into the Selected Stage */}
+                <div className={`p-6 rounded-2xl border space-y-6 ${
+                  isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#181822] border-[#282838]'
+                }`}>
+                  {/* Stage Headline & Objective */}
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-zinc-800">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-mono font-bold px-2.5 py-0.5 rounded-md ${currentStage.badgeColor}`}>
+                          {currentStage.stageName}
+                        </span>
+                        <h4 className={`text-base font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                          {currentStage.funnelLabel}
+                        </h4>
+                      </div>
+                      <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-slate-300'} max-w-4xl leading-relaxed`}>
+                        <strong className="text-indigo-400 font-mono">Core Strategic Objective: </strong>
+                        {currentStage.strategicObjective}
+                      </p>
+                    </div>
+
+                    <div className="px-3 py-1.5 rounded-xl bg-black/20 border border-slate-700/40 text-xs font-mono text-slate-300 shrink-0">
+                      <span className="text-slate-400 block text-[10px] uppercase">Target Audience:</span>
+                      <strong className="text-white text-xs">{currentStage.targetAudience}</strong>
+                    </div>
+                  </div>
+
+                  {/* Psychological Triggers */}
+                  <div className="space-y-2">
+                    <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                      <span>Psychological Triggers Exploited in This Stage:</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {currentStage.psychologicalTriggers.map((trig, tIdx) => (
+                        <span
+                          key={tIdx}
+                          className="px-2.5 py-1 rounded-lg text-xs font-mono bg-purple-500/10 text-purple-300 border border-purple-500/20"
+                        >
+                          ✓ {trig}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Tested Content Formats Grid */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h5 className={`text-xs font-bold uppercase font-mono tracking-wider flex items-center gap-2 ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                        <Clapperboard className="w-3.5 h-3.5 text-indigo-400" />
+                        <span>Core Short-Form Content Formats for {currentStage.stageName}:</span>
+                      </h5>
+                      <span className="text-[10px] font-mono text-slate-400">
+                        {currentStage.contentFormats.length} Tested Formats
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {currentStage.contentFormats.map((fmt, fIdx) => (
+                        <div
+                          key={fIdx}
+                          className={`p-4 rounded-xl border space-y-3 flex flex-col justify-between ${
+                            isLight ? 'bg-slate-50/70 border-slate-200' : 'bg-[#14141e] border-[#252535]'
+                          }`}
+                        >
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
+                              <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold">
+                                {fmt.runtime}
+                              </span>
+                              <span className="text-slate-400">Host: {fmt.primaryCreator}</span>
+                            </div>
+
+                            <h6 className={`text-xs font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                              {fmt.formatTitle}
+                            </h6>
+
+                            <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                              {fmt.description}
+                            </p>
+
+                            {/* Tested Hook Box */}
+                            <div className="p-2.5 rounded-lg bg-black/40 border border-emerald-500/30 space-y-1">
+                              <div className="flex items-center justify-between text-[9px] font-mono text-emerald-400 uppercase font-bold">
+                                <span>Tested Opening Hook:</span>
+                                <button
+                                  onClick={() => handleCopyHook(`funnel-${activeFunnelStage}-${fIdx}`, fmt.testedHookExample)}
+                                  className="px-1.5 py-0.2 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[9px] flex items-center gap-1 transition"
+                                >
+                                  {copiedHookGapId === `funnel-${activeFunnelStage}-${fIdx}` ? (
+                                    <>
+                                      <Check className="w-2.5 h-2.5 text-emerald-400" />
+                                      <span>Copied!</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="w-2.5 h-2.5" />
+                                      <span>Copy</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                              <div className="text-[11px] italic text-emerald-200 font-medium leading-snug">
+                                "{fmt.testedHookExample}"
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Algorithmic Gates & Call-to-Action Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-200/50 dark:border-zinc-800">
+                    {/* Algorithmic Gates */}
+                    <div className={`p-4 rounded-xl border space-y-3 ${
+                      isLight ? 'bg-indigo-50/40 border-indigo-200' : 'bg-black/25 border-[#282838]'
+                    }`}>
+                      <div className="flex items-center gap-2 text-xs font-bold font-mono text-indigo-400 uppercase">
+                        <Zap className="w-3.5 h-3.5" />
+                        <span>Algorithmic Retention Gates for {currentStage.stageName}:</span>
+                      </div>
+                      <div className="space-y-2">
+                        {currentStage.algorithmicGates.map((gate, gIdx) => (
+                          <div
+                            key={gIdx}
+                            className={`p-2.5 rounded-lg border text-xs flex flex-col gap-0.5 ${
+                              isLight ? 'bg-white border-slate-200' : 'bg-[#151520] border-[#272738]'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between font-mono text-[11px]">
+                              <span className="font-bold text-purple-400">{gate.gate}</span>
+                              <span className="font-bold text-emerald-400">{gate.metricTarget}</span>
+                            </div>
+                            <p className="text-[10px] text-slate-400">{gate.mechanism}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Exact CTA Blueprint */}
+                    <div className={`p-4 rounded-xl border space-y-3 ${
+                      isLight ? 'bg-emerald-50/40 border-emerald-200' : 'bg-emerald-950/15 border-emerald-500/25'
+                    }`}>
+                      <div className="flex items-center gap-2 text-xs font-bold font-mono text-emerald-400 uppercase">
+                        <Target className="w-3.5 h-3.5" />
+                        <span>Conversion Call-to-Action (CTA) Blueprint:</span>
+                      </div>
+
+                      <div className="space-y-2 text-xs">
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-mono text-slate-400 uppercase block">CTA Mechanism:</span>
+                          <span className="font-mono font-bold text-emerald-300 text-xs">
+                            {currentStage.callToAction.ctaType}
+                          </span>
+                        </div>
+
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-mono text-slate-400 uppercase block">Spoken Video Script / Outro:</span>
+                          <div className="p-2.5 rounded-lg bg-black/40 border border-emerald-500/30 text-[11px] italic text-emerald-200 font-medium">
+                            {currentStage.callToAction.sampleCopy}
+                          </div>
+                        </div>
+
+                        <div className="space-y-1 pt-1 border-t border-emerald-500/20">
+                          <span className="text-[10px] font-mono text-slate-400 uppercase block">Target Conversion Asset:</span>
+                          <span className="font-mono text-xs text-white">
+                            {currentStage.callToAction.conversionAsset}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. The 3 Traps to Avoid in the TCG Industry */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h5 className={`text-xs font-bold uppercase font-mono tracking-wider flex items-center gap-2 ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                      <span>The 3 Deadly Traps of TCG Content (And Aeethod's Countermove)</span>
+                    </h5>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {TCG_INDUSTRY_ANALYSIS.theThreeTraps.map((trap, tIdx) => (
+                      <div
+                        key={tIdx}
+                        className={`p-4 rounded-xl border space-y-2.5 ${
+                          isLight ? 'bg-white border-slate-200 shadow-2xs' : 'bg-[#151520] border-[#262636]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 text-rose-400 font-mono text-xs font-bold uppercase">
+                          <span>✕</span>
+                          <span>{trap.trapName}</span>
+                        </div>
+                        <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                          {trap.trapFlaw}
+                        </p>
+                        <div className="pt-2 border-t border-slate-200/50 dark:border-zinc-800 text-[11px]">
+                          <span className="text-emerald-400 font-mono font-bold block text-[10px] uppercase">Aeethod Solution:</span>
+                          <span className={isLight ? 'text-slate-700' : 'text-slate-300'}>{trap.aeethodCounterMove}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ================================================================= */}
+          {/* SUB-MODULE 4: COMPETITOR TEARDOWN & POSITIONING                   */}
           {/* ================================================================= */}
           {strategyModule === 'competitors' && (
             <div className="space-y-6">
