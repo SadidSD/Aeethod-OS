@@ -169,7 +169,10 @@ export const ContentManagementView: React.FC = () => {
   const [formatFilter, setFormatFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'vertical' | 'table'>('vertical');
+  const [creatorViewMode, setCreatorViewMode] = useState<Record<'Sadid' | 'Anika', 'vertical' | 'table' | 'analytics'>>({
+    Sadid: 'vertical',
+    Anika: 'vertical'
+  });
 
   // Floating page card modal state
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
@@ -451,6 +454,38 @@ export const ContentManagementView: React.FC = () => {
   // Render Creator Content
   const renderCreatorContent = (creator: 'Sadid' | 'Anika') => {
     const isSadid = creator === 'Sadid';
+    const currentMode = creatorViewMode[creator];
+    const setMode = (mode: 'vertical' | 'table' | 'analytics') => {
+      setCreatorViewMode((prev) => ({ ...prev, [creator]: mode }));
+    };
+
+    // All videos for this creator
+    const creatorAllVideos = videos.filter((v) => v.creator === creator);
+
+    // Published videos with analytics
+    const creatorPublished = creatorAllVideos.filter((v) => v.views !== undefined && v.views > 0);
+    const creatorTotalViews = creatorPublished.reduce((acc, v) => acc + (v.views || 0), 0);
+    const creatorTotalLikes = creatorPublished.reduce((acc, v) => acc + (v.likes || 0), 0);
+    const creatorTotalComments = creatorPublished.reduce((acc, v) => acc + (v.comments || 0), 0);
+    const creatorTotalShares = creatorPublished.reduce((acc, v) => acc + (v.shares || 0), 0);
+    const creatorTotalSaves = creatorPublished.reduce((acc, v) => acc + (v.saves || 0), 0);
+
+    const creatorAvgWatchPct = creatorPublished.length > 0
+      ? Math.round(creatorPublished.reduce((acc, v) => acc + (v.averageWatchPercentage || 60), 0) / creatorPublished.length)
+      : 0;
+
+    const creatorAvgVirality = creatorPublished.length > 0
+      ? Number((creatorPublished.reduce((acc, v) => acc + getViralityScore(v), 0) / creatorPublished.length).toFixed(1))
+      : 0;
+
+    const topReel = creatorPublished.length > 0
+      ? [...creatorPublished].sort((a, b) => (b.views || 0) - (a.views || 0))[0]
+      : null;
+
+    const lowestReel = creatorPublished.length > 1
+      ? [...creatorPublished].sort((a, b) => (a.views || 0) - (b.views || 0))[0]
+      : null;
+
     const creatorVideos = videos.filter((v) => {
       if (v.creator !== creator) return false;
       if (topicFilter !== 'all' && v.topic !== topicFilter) return false;
@@ -515,6 +550,57 @@ export const ContentManagementView: React.FC = () => {
           </div>
         </div>
 
+        {/* Creator Analytics Quick Ribbon (Live Performance Highlights) */}
+        <div className={`p-3.5 rounded-xl border flex flex-wrap items-center justify-between gap-3 ${
+          isLight
+            ? 'bg-gradient-to-r from-slate-50 via-indigo-50/20 to-purple-50/20 border-slate-200 shadow-2xs'
+            : 'bg-gradient-to-r from-[#1a1a24] via-[#1c1c28] to-[#201c2c] border-[#2e2e3e]'
+        }`}>
+          <div className="flex flex-wrap items-center gap-4 text-xs font-mono">
+            <div className="flex items-center gap-1.5">
+              <Eye className="w-3.5 h-3.5 text-indigo-400" />
+              <span className={isLight ? 'text-slate-500' : 'text-slate-400'}>Plays:</span>
+              <strong className={isLight ? 'text-slate-900' : 'text-white'}>{creatorTotalViews.toLocaleString()}</strong>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Share2 className="w-3.5 h-3.5 text-pink-400" />
+              <span className={isLight ? 'text-slate-500' : 'text-slate-400'}>DM Shares:</span>
+              <strong className="text-pink-400">{creatorTotalShares.toLocaleString()}</strong>
+              <span className="text-[10px] px-1 py-0.2 rounded bg-pink-500/10 text-pink-400 border border-pink-500/20">5x Algorithm Boost</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Bookmark className="w-3.5 h-3.5 text-amber-400" />
+              <span className={isLight ? 'text-slate-500' : 'text-slate-400'}>Saves:</span>
+              <strong className="text-amber-400">{creatorTotalSaves.toLocaleString()}</strong>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <TrendingUp className="w-3.5 h-3.5 text-purple-400" />
+              <span className={isLight ? 'text-slate-500' : 'text-slate-400'}>Avg Loop Watch:</span>
+              <strong className="text-purple-400">{creatorAvgWatchPct}%</strong>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-emerald-400" />
+              <span className={isLight ? 'text-slate-500' : 'text-slate-400'}>Viral Score:</span>
+              <strong className="text-emerald-400">{creatorAvgVirality}%</strong>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setMode(currentMode === 'analytics' ? 'vertical' : 'analytics')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
+              currentMode === 'analytics'
+                ? 'bg-purple-600 text-white shadow-xs'
+                : isLight
+                ? 'bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-200 shadow-2xs'
+                : 'bg-[#252532] text-indigo-300 hover:bg-[#2c2c3d] border border-[#37374c]'
+            }`}
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span>{currentMode === 'analytics' ? '← Back to Pipeline' : 'Open Reel Analytics & Flop Audit'}</span>
+          </button>
+        </div>
+
         {/* Minimal Clean Toolbar */}
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
@@ -568,12 +654,12 @@ export const ContentManagementView: React.FC = () => {
             </select>
           </div>
 
-          {/* View mode toggle */}
+          {/* View mode toggle: Stages | Table | Reel Analytics */}
           <div className={`flex items-center p-1 rounded-lg border ${isLight ? 'bg-white border-[#e3e2de]' : 'bg-[#202020] border-[#2a2a2a]'}`}>
             <button
-              onClick={() => setViewMode('vertical')}
+              onClick={() => setMode('vertical')}
               className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition ${
-                viewMode === 'vertical'
+                currentMode === 'vertical'
                   ? isLight
                     ? 'bg-[#f0f0ed] text-black font-semibold shadow-xs'
                     : 'bg-[#2d2d2d] text-white font-medium shadow-sm'
@@ -586,9 +672,9 @@ export const ContentManagementView: React.FC = () => {
               <span>Stages</span>
             </button>
             <button
-              onClick={() => setViewMode('table')}
+              onClick={() => setMode('table')}
               className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition ${
-                viewMode === 'table'
+                currentMode === 'table'
                   ? isLight
                     ? 'bg-[#f0f0ed] text-black font-semibold shadow-xs'
                     : 'bg-[#2d2d2d] text-white font-medium shadow-sm'
@@ -600,11 +686,33 @@ export const ContentManagementView: React.FC = () => {
               <List className="w-3.5 h-3.5" />
               <span>Table</span>
             </button>
+            <button
+              onClick={() => setMode('analytics')}
+              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition ${
+                currentMode === 'analytics'
+                  ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white font-semibold shadow-sm'
+                  : isLight
+                  ? 'text-purple-600 hover:text-purple-700 font-medium'
+                  : 'text-purple-400 hover:text-purple-300 font-medium'
+              }`}
+            >
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span>Reel Analytics</span>
+              <span className={`text-[9px] px-1 py-0.2 rounded-full ${
+                currentMode === 'analytics'
+                  ? 'bg-white/20 text-white'
+                  : isLight
+                  ? 'bg-purple-100 text-purple-700'
+                  : 'bg-purple-500/20 text-purple-300'
+              }`}>
+                {creatorPublished.length}
+              </span>
+            </button>
           </div>
         </div>
 
         {/* 1. VERTICAL STAGES PIPELINE (Clean White / Notion Ivory) */}
-        {viewMode === 'vertical' && (
+        {currentMode === 'vertical' && (
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3.5 items-start">
             {STATUS_LIST.map((stage) => {
               const stageVideos = creatorVideos.filter((v) => v.status === stage);
@@ -779,7 +887,7 @@ export const ContentManagementView: React.FC = () => {
         )}
 
         {/* 2. COMPACT TABLE SPREADSHEET */}
-        {viewMode === 'table' && (
+        {currentMode === 'table' && (
           <div className={`rounded-xl border overflow-hidden ${isLight ? 'bg-white border-[#e9e9e7]' : 'bg-[#1f1f1f] border-[#282828]'}`}>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
@@ -888,6 +996,318 @@ export const ContentManagementView: React.FC = () => {
                   })}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* 3. CREATOR SPECIFIC VIRAL ANALYTICS & DIAGNOSTICS VIEW */}
+        {currentMode === 'analytics' && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Top Stat Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5 font-mono">
+              <div className={`p-4 rounded-xl border ${isLight ? 'bg-white border-[#e9e9e7]' : 'bg-[#1a1a22] border-[#292934]'}`}>
+                <div className="flex items-center justify-between text-slate-400 text-[10px] uppercase font-bold">
+                  <span>Total Plays</span>
+                  <Eye className="w-3.5 h-3.5 text-indigo-400" />
+                </div>
+                <div className={`text-2xl font-bold mt-1 ${isLight ? 'text-black' : 'text-white'}`}>
+                  {creatorTotalViews.toLocaleString()}
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5">Across {creatorPublished.length} published reels</div>
+              </div>
+
+              <div className={`p-4 rounded-xl border ${isLight ? 'bg-white border-[#e9e9e7]' : 'bg-[#1a1a22] border-[#292934]'}`}>
+                <div className="flex items-center justify-between text-slate-400 text-[10px] uppercase font-bold">
+                  <span>DM Shares</span>
+                  <Share2 className="w-3.5 h-3.5 text-pink-400" />
+                </div>
+                <div className="text-2xl font-bold mt-1 text-pink-500">
+                  {creatorTotalShares.toLocaleString()}
+                </div>
+                <div className="text-[10px] text-pink-400 mt-0.5">#1 Algorithm Multiplier</div>
+              </div>
+
+              <div className={`p-4 rounded-xl border ${isLight ? 'bg-white border-[#e9e9e7]' : 'bg-[#1a1a22] border-[#292934]'}`}>
+                <div className="flex items-center justify-between text-slate-400 text-[10px] uppercase font-bold">
+                  <span>Saves & Bookmarks</span>
+                  <Bookmark className="w-3.5 h-3.5 text-amber-400" />
+                </div>
+                <div className="text-2xl font-bold mt-1 text-amber-400">
+                  {creatorTotalSaves.toLocaleString()}
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5">Evergreen Reference Intent</div>
+              </div>
+
+              <div className={`p-4 rounded-xl border ${isLight ? 'bg-white border-[#e9e9e7]' : 'bg-[#1a1a22] border-[#292934]'}`}>
+                <div className="flex items-center justify-between text-slate-400 text-[10px] uppercase font-bold">
+                  <span>Avg Watch % (APW)</span>
+                  <TrendingUp className="w-3.5 h-3.5 text-purple-400" />
+                </div>
+                <div className="text-2xl font-bold mt-1 text-purple-400">
+                  {creatorAvgWatchPct}%
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5">{creatorAvgWatchPct >= 100 ? 'Re-watched / Looped' : 'Mid-retention'}</div>
+              </div>
+
+              <div className={`p-4 rounded-xl border ${isLight ? 'bg-white border-[#e9e9e7]' : 'bg-[#1a1a22] border-[#292934]'}`}>
+                <div className="flex items-center justify-between text-slate-400 text-[10px] uppercase font-bold">
+                  <span>Viral Quotient</span>
+                  <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                </div>
+                <div className="text-2xl font-bold mt-1 text-emerald-400">
+                  {creatorAvgVirality}%
+                </div>
+                <div className="text-[10px] text-emerald-500 mt-0.5">&gt;5.0% = High Distribution</div>
+              </div>
+            </div>
+
+            {/* Algorithmic Root-Cause Breakdown Card for this Creator */}
+            <div className={`p-5 rounded-xl border space-y-4 ${
+              isLight ? 'bg-white border-[#e9e9e7]' : 'bg-[#181820] border-[#292934]'
+            }`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h3 className={`text-sm font-bold uppercase tracking-wider font-mono flex items-center gap-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                    <Sparkles className="w-4 h-4 text-purple-400" />
+                    <span>{creator}'s Algorithmic Playbook: Why Reels Boom vs Flop</span>
+                  </h3>
+                  <p className={`text-xs mt-0.5 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                    {isSadid
+                      ? 'Niche: Financial auditing, unit economics & zero-latency POS inventory.'
+                      : 'Niche: Retail floor POV, jeweler’s loupe card inspection & trade-in counter workflows.'}
+                  </p>
+                </div>
+                <span className={`px-2 py-0.5 rounded text-[11px] font-mono font-semibold self-start sm:self-auto ${
+                  isSadid ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                }`}>
+                  {isSadid ? 'Strategy: Shock Balance Sheet Math' : 'Strategy: Loupe Mystery & Spot-The-Fake'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                {/* Booming Lever */}
+                <div className={`p-4 rounded-xl border space-y-2.5 ${
+                  isLight ? 'bg-emerald-50/50 border-emerald-200' : 'bg-emerald-950/15 border-emerald-500/20'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="font-mono text-[11px] uppercase font-bold text-emerald-400">
+                      Why {creator}'s Videos Boom (Viral Pattern)
+                    </span>
+                  </div>
+                  <p className={`text-xs leading-relaxed ${isLight ? 'text-emerald-900' : 'text-emerald-200'}`}>
+                    {isSadid
+                      ? 'When Sadid slaps a real receipt or bill on the desk on Frame 0 and reveals brutal deduction math ($100 gross -> $26 net), business partners share the reel via DM ("Look at these platform fees!"). High DM share velocity (>2.5%) triggers Meta Explore push.'
+                      : 'When Anika holds a vintage card under a 10x jewelers loupe with an open mystery ("One micro-flaw changed our cash offer by $120"), viewers watch 1.3x to inspect the flaw. High loop completion (APW >110%) signals irresistible content.'}
+                  </p>
+                  <div className={`p-2 rounded font-mono text-[11px] font-semibold ${isLight ? 'bg-white text-emerald-700' : 'bg-black/30 text-emerald-300'}`}>
+                    ✓ Formula: {isSadid ? 'Cold Financial Truth + Receipt Proof + 70% Buylist Rule' : 'Macro Loupe Inspection + Price Stake + Spot-The-Flaw Loop'}
+                  </div>
+                </div>
+
+                {/* Flop Trap */}
+                <div className={`p-4 rounded-xl border space-y-2.5 ${
+                  isLight ? 'bg-rose-50/50 border-rose-200' : 'bg-rose-950/15 border-rose-500/20'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-rose-400" />
+                    <span className="font-mono text-[11px] uppercase font-bold text-rose-400">
+                      Why {creator}'s Videos Flop (Algorithmic Drop-Off)
+                    </span>
+                  </div>
+                  <p className={`text-xs leading-relaxed ${isLight ? 'text-rose-900' : 'text-rose-200'}`}>
+                    {isSadid
+                      ? 'When Sadid records generic store philosophy ("Why community matters more than profit") without numbers, viewers scroll past in seconds 0-3 (68% drop-off). Without tension or concrete deductions, there is zero DM share or save intent.'
+                      : 'When Anika records casual behind-the-counter sorting without a grading dilemma or counterfeit dispute, viewers swipe away quickly. No mystery means low completion (38% APW) and no comment debates.'}
+                  </p>
+                  <div className={`p-2 rounded font-mono text-[11px] font-semibold ${isLight ? 'bg-white text-rose-700' : 'bg-black/30 text-rose-300'}`}>
+                    ✗ Flop Trap: {isSadid ? 'Generic philosophical talk without dollar figures or physical props' : 'Casual sorting vlogs without conflict, loupe zoom, or grading stakes'}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Top vs Lowest Reel Matchup for this Creator */}
+            {topReel && lowestReel && (
+              <div className={`p-5 rounded-xl border space-y-4 ${
+                isLight ? 'bg-white border-[#e9e9e7]' : 'bg-[#181820] border-[#292934]'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <h3 className={`text-sm font-bold uppercase tracking-wider font-mono flex items-center gap-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                    <ArrowRightLeft className="w-4 h-4 text-purple-400" />
+                    <span>{creator}'s Best vs Lowest Performing Reel Comparison</span>
+                  </h3>
+                  <span className="text-[11px] font-mono text-slate-400">Head-to-Head Root Cause</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                  {/* Top Performer Card */}
+                  <div className={`p-4 rounded-xl border space-y-3 ${
+                    isLight ? 'bg-emerald-50/30 border-emerald-200' : 'bg-[#1a201c] border-emerald-500/20'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        Top Performer (Booming)
+                      </span>
+                      <span className="font-mono text-emerald-400 font-bold">{topReel.views?.toLocaleString()} views</span>
+                    </div>
+                    <div className="font-bold text-sm">{topReel.title}</div>
+                    <div className="p-2.5 rounded bg-black/10 text-[11px] italic">
+                      Hook: "{topReel.hook}"
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 font-mono text-[11px] text-center">
+                      <div className="p-2 rounded bg-black/20">
+                        <span className="text-[9px] text-slate-400 uppercase block">Shares</span>
+                        <span className="font-bold text-pink-400">{topReel.shares?.toLocaleString() || 0}</span>
+                      </div>
+                      <div className="p-2 rounded bg-black/20">
+                        <span className="text-[9px] text-slate-400 uppercase block">Saves</span>
+                        <span className="font-bold text-amber-400">{topReel.saves?.toLocaleString() || 0}</span>
+                      </div>
+                      <div className="p-2 rounded bg-black/20">
+                        <span className="text-[9px] text-slate-400 uppercase block">Watch %</span>
+                        <span className="font-bold text-purple-400">{topReel.averageWatchPercentage}%</span>
+                      </div>
+                    </div>
+                    <div className="p-2 rounded text-[11px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+                      ✓ <strong>Diagnosis:</strong> {getReelDiagnostic(topReel).verdict} — {getReelDiagnostic(topReel).reasons[0]}
+                    </div>
+                  </div>
+
+                  {/* Lowest Performer Card */}
+                  <div className={`p-4 rounded-xl border space-y-3 ${
+                    isLight ? 'bg-rose-50/30 border-rose-200' : 'bg-[#201a1c] border-rose-500/20'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                        Underperformer (Stalled)
+                      </span>
+                      <span className="font-mono text-rose-400 font-bold">{lowestReel.views?.toLocaleString()} views</span>
+                    </div>
+                    <div className="font-bold text-sm">{lowestReel.title}</div>
+                    <div className="p-2.5 rounded bg-black/10 text-[11px] italic">
+                      Hook: "{lowestReel.hook}"
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 font-mono text-[11px] text-center">
+                      <div className="p-2 rounded bg-black/20">
+                        <span className="text-[9px] text-slate-400 uppercase block">Shares</span>
+                        <span className="font-bold text-rose-400">{lowestReel.shares?.toLocaleString() || 0}</span>
+                      </div>
+                      <div className="p-2 rounded bg-black/20">
+                        <span className="text-[9px] text-slate-400 uppercase block">Saves</span>
+                        <span className="font-bold text-slate-400">{lowestReel.saves?.toLocaleString() || 0}</span>
+                      </div>
+                      <div className="p-2 rounded bg-black/20">
+                        <span className="text-[9px] text-slate-400 uppercase block">Watch %</span>
+                        <span className="font-bold text-rose-400">{lowestReel.averageWatchPercentage}%</span>
+                      </div>
+                    </div>
+                    <div className="p-2 rounded text-[11px] text-rose-400 bg-rose-500/10 border border-rose-500/20">
+                      ✗ <strong>Diagnosis:</strong> {getReelDiagnostic(lowestReel).verdict} — {getReelDiagnostic(lowestReel).reasons[0]}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Published Reels Performance Table */}
+            <div className={`rounded-xl border overflow-hidden ${
+              isLight ? 'bg-white border-[#e9e9e7]' : 'bg-[#181820] border-[#292934]'
+            }`}>
+              <div className={`p-4 border-b flex items-center justify-between ${
+                isLight ? 'bg-slate-50 border-[#e9e9e7]' : 'bg-[#202028] border-[#292934]'
+              }`}>
+                <div>
+                  <h4 className="font-bold text-xs uppercase font-mono tracking-wider">
+                    {creator}'s Published Reels & Algorithmic Health
+                  </h4>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Real-time metrics and root-cause viral verdict for each published video
+                  </p>
+                </div>
+                <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                  {creatorPublished.length} Monitored Videos
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left border-collapse">
+                  <thead>
+                    <tr className={`border-b text-[10px] font-mono uppercase ${
+                      isLight ? 'bg-slate-100 text-slate-600 border-[#e9e9e7]' : 'bg-black/30 text-slate-400 border-[#292934]'
+                    }`}>
+                      <th className="p-3">Video & Hook</th>
+                      <th className="p-3">Topic / Format</th>
+                      <th className="p-3 text-right">Plays</th>
+                      <th className="p-3 text-right">Shares (DM)</th>
+                      <th className="p-3 text-right">Saves</th>
+                      <th className="p-3 text-center">Avg Watch %</th>
+                      <th className="p-3 text-center">Virality</th>
+                      <th className="p-3">Algorithmic Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className={`divide-y font-mono ${
+                    isLight ? 'divide-[#f0eee9]' : 'divide-[#282834]'
+                  }`}>
+                    {creatorPublished.map((vid) => {
+                      const tier = getReelPerformanceTier(vid);
+                      const diag = getReelDiagnostic(vid);
+                      const virality = getViralityScore(vid);
+
+                      return (
+                        <tr key={vid.id} className={`transition ${
+                          isLight ? 'hover:bg-slate-50/80' : 'hover:bg-white/[0.02]'
+                        }`}>
+                          <td className="p-3 max-w-xs font-sans">
+                            <div className={`font-semibold text-xs line-clamp-1 ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>
+                              {vid.title}
+                            </div>
+                            <div className="text-[11px] text-slate-400 italic line-clamp-1">"{vid.hook}"</div>
+                          </td>
+                          <td className="p-3 font-sans">
+                            <div className="text-[10px] px-2 py-0.5 rounded-full inline-block bg-slate-500/10 text-slate-300 border border-slate-500/20">
+                              {vid.format}
+                            </div>
+                          </td>
+                          <td className={`p-3 text-right font-bold ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>
+                            {vid.views?.toLocaleString()}
+                          </td>
+                          <td className="p-3 text-right font-bold text-pink-400">
+                            {vid.shares?.toLocaleString() || 0}
+                          </td>
+                          <td className="p-3 text-right font-bold text-amber-400">
+                            {vid.saves?.toLocaleString() || 0}
+                          </td>
+                          <td className="p-3 text-center">
+                            <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                              (vid.averageWatchPercentage || 0) >= 100
+                                ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                                : (vid.averageWatchPercentage || 0) >= 70
+                                ? 'bg-blue-500/20 text-blue-300'
+                                : 'bg-rose-500/20 text-rose-400'
+                            }`}>
+                              {vid.averageWatchPercentage || '—'}%
+                            </span>
+                          </td>
+                          <td className="p-3 text-center font-bold text-emerald-400">
+                            {virality.toFixed(1)}%
+                          </td>
+                          <td className="p-3">
+                            <div className="space-y-1 font-sans">
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${tier.badge}`}>
+                                {tier.label}
+                              </span>
+                              <div className="text-[10px] text-slate-400 line-clamp-1" title={diag.reasons[0]}>
+                                {diag.reasons[0]}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}

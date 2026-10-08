@@ -326,6 +326,44 @@ Fix your sync latency before you lose your top-rated seller badge... because dou
     hook: 'Do NOT order your Q4 sealed inventory until you run these 3 numbers.',
     notes: 'Focus on inventory turnover vs tied-up working capital.'
   },
+  {
+    id: 'sadid-7',
+    creator: 'Sadid',
+    title: 'I audited an $18,000 card shop cash-out: Here is what they actually netted',
+    topic: 'Education for Resellers and Shop Owners',
+    format: 'Price Breakdown and Analysis',
+    status: 'Uploaded',
+    hook: 'A store owner boasted about an $18,000 cash-out day. When we audited the receipts, the truth was brutal.',
+    script: `[00:00 - 00:03] THE HOOK
+A store owner boasted about an $18,000 cash-out day. When we audited the receipts, the truth was brutal.
+
+[00:03 - 00:16] THE AUDIT
+Here is where that $18,000 actually went:
+- Wholesale inventory cost: $11,400 (63.3%)
+- Merchant processing & terminal fees: $576
+- Sales tax reserve: $1,440
+- Store credit liability accrued: $2,100
+- Staff commission & overtime: $650
+
+[00:16 - 00:32] THE PROFIT REALITY
+Gross register total: $18,000.
+Real cash left for overhead & net margin: $1,834.
+That is roughly 10.1% true net margin.
+
+[00:32 - 00:48] THE LESSON
+If you run your card shop on top-line vanity numbers, you will go bankrupt with full registers. Focus on gross margin return on investment (GMROI), not gross transaction volume.
+
+[00:48 - 00:60] THE LOOP
+Track your net retention every single evening... because an $18,000 cash-out day does NOT mean you made $18,000.`,
+    publishDate: '2026-10-02',
+    views: 62400,
+    likes: 4890,
+    comments: 512,
+    shares: 3400,
+    saves: 2890,
+    averageWatchPercentage: 128,
+    notes: 'Mega viral hit. Huge share velocity among store owners, GMROI debate in comments.'
+  },
 
   // Anika Videos
   {
@@ -439,5 +477,23 @@ The line is gone, the register balances out, and we actually get to go home on t
     status: 'Scripting',
     hook: 'If you sold your Dragapult ex singles on Friday, you left $40 on the table.',
     notes: 'Meta-to-pricing speed analysis.'
+  },
+  {
+    id: 'anika-7',
+    creator: 'Anika',
+    title: 'Just casually organizing random cards behind the counter today',
+    topic: 'Shop Problem',
+    format: 'Myth Blast',
+    status: 'Uploaded',
+    hook: 'Hey guys, just doing some basic organizing behind the register today.',
+    script: `Hey guys, just doing some basic organizing behind the register today. Sorting commons into white boxes. Nothing crazy happening, just another shift. Let me know in the comments how your day is going.`,
+    publishDate: '2026-09-12',
+    views: 2100,
+    likes: 110,
+    comments: 12,
+    shares: 18,
+    saves: 22,
+    averageWatchPercentage: 38,
+    notes: 'Stalled: Zero tension, no hook conflict or inspection element. 64% swipe-away in first 3s.'
   }
 ];
