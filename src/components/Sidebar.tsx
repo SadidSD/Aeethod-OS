@@ -363,15 +363,26 @@ export const Sidebar: React.FC = () => {
                   <span className="font-semibold text-cyan-300">Tech Stack</span>
                 </a>
                 <a
-                  href="#/dev/ui-ux"
+                  href="#/dev/ux"
                   className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs transition ${
-                    (currentPath === 'dev' && currentSub === 'ui-ux') || currentPath === 'ui-ux'
+                    (currentPath === 'dev' && (currentSub === 'ux' || currentSub === 'ui-ux')) || currentPath === 'ux'
                       ? 'bg-[#2c2c2c] text-white font-medium'
                       : 'text-[#9b9b9b] hover:text-white hover:bg-[#282828]'
                   }`}
                 >
                   <BrainCircuit className="w-3.5 h-3.5 text-indigo-400" />
                   <span className="font-semibold text-white">UX Research & Decisions</span>
+                </a>
+                <a
+                  href="#/dev/ui"
+                  className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs transition ${
+                    (currentPath === 'dev' && currentSub === 'ui') || currentPath === 'ui'
+                      ? 'bg-[#2c2c2c] text-white font-medium'
+                      : 'text-[#9b9b9b] hover:text-white hover:bg-[#282828]'
+                  }`}
+                >
+                  <Palette className="w-3.5 h-3.5 text-purple-400" />
+                  <span className="font-semibold text-purple-300">UI Systems & Decisions</span>
                 </a>
                 <a
                   href="#/whiteboard"
