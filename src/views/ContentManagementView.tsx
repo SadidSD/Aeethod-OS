@@ -162,7 +162,6 @@ export const ContentManagementView: React.FC = () => {
 
   // White Space Gap Filter State
   const [gapCategoryFilter, setGapCategoryFilter] = useState<string>('All');
-  const [gapCreatorFilter, setGapCreatorFilter] = useState<'All' | 'Sadid' | 'Anika' | 'Both'>('All');
   const [gapSearchQuery, setGapSearchQuery] = useState('');
   const [copiedHookGapId, setCopiedHookGapId] = useState<string | null>(null);
 
@@ -1618,16 +1617,6 @@ export const ContentManagementView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono text-slate-400">Creator Best Fit:</span>
-                    <span className={`px-2.5 py-1 rounded-lg text-xs font-bold font-mono ${
-                      selectedCohort.creatorFit === 'Sadid'
-                        ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30'
-                        : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                    }`}>
-                      {selectedCohort.creatorFit}
-                    </span>
-                  </div>
                 </div>
 
                 {/* Primary Nightmare vs Primary Desire (Two Columns) */}
@@ -1731,10 +1720,6 @@ export const ContentManagementView: React.FC = () => {
 
             const filteredGaps = WHITE_SPACE_GAPS.filter((gap) => {
               const matchesCat = gapCategoryFilter === 'All' || gap.category === gapCategoryFilter;
-              const matchesCreator =
-                gapCreatorFilter === 'All' ||
-                gap.blueOceanWedge.creator === gapCreatorFilter ||
-                gap.blueOceanWedge.creator === 'Both';
               const matchesSearch =
                 !gapSearchQuery ||
                 gap.niche.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
@@ -1742,7 +1727,7 @@ export const ContentManagementView: React.FC = () => {
                 gap.blueOceanWedge.exampleHook.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
                 gap.redOceanTrap.title.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
                 gap.redOceanTrap.flaw.toLowerCase().includes(gapSearchQuery.toLowerCase());
-              return matchesCat && matchesCreator && matchesSearch;
+              return matchesCat && matchesSearch;
             });
 
             const getCategoryColor = (cat: string) => {
@@ -1817,25 +1802,6 @@ export const ContentManagementView: React.FC = () => {
                         </button>
                       )}
                     </div>
-
-                    {/* Creator Filter */}
-                    <div className="flex items-center gap-1.5 shrink-0 bg-black/20 dark:bg-black/40 p-1 rounded-xl border border-slate-200/50 dark:border-[#2a2a38]">
-                      {(['All', 'Sadid', 'Anika', 'Both'] as const).map((creator) => (
-                        <button
-                          key={creator}
-                          onClick={() => setGapCreatorFilter(creator)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                            gapCreatorFilter === creator
-                              ? 'bg-purple-600 text-white shadow-xs'
-                              : isLight
-                              ? 'text-slate-600 hover:text-slate-900'
-                              : 'text-slate-400 hover:text-white'
-                          }`}
-                        >
-                          {creator === 'All' ? 'All Hosts' : creator}
-                        </button>
-                      ))}
-                    </div>
                   </div>
 
                   {/* Category Filter Chips */}
@@ -1887,7 +1853,6 @@ export const ContentManagementView: React.FC = () => {
                       onClick={() => {
                         setGapSearchQuery('');
                         setGapCategoryFilter('All');
-                        setGapCreatorFilter('All');
                       }}
                       className="px-3.5 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-bold hover:bg-purple-500 transition"
                     >
@@ -1922,12 +1887,6 @@ export const ContentManagementView: React.FC = () => {
                             <h4 className={`text-base font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
                               {gap.niche}
                             </h4>
-                          </div>
-
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span className="text-xs font-mono px-3 py-1 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 font-bold">
-                              Assigned: {gap.blueOceanWedge.creator}
-                            </span>
                           </div>
                         </div>
 
@@ -2412,9 +2371,6 @@ export const ContentManagementView: React.FC = () => {
                           {fmt.idealLength}
                         </span>
                       </div>
-                      <span className="text-[11px] font-mono text-indigo-600 dark:text-indigo-400">
-                        Fit: {fmt.bestFitCreator}
-                      </span>
                     </div>
 
                     <p className={`text-xs leading-relaxed font-sans ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>{fmt.description}</p>
@@ -2922,7 +2878,7 @@ export const ContentManagementView: React.FC = () => {
                             {vid.topic}
                           </span>
                           <span className="text-[10px] font-mono text-slate-400">
-                            {vid.format} • by {vid.creator}
+                            {vid.format}
                           </span>
                         </div>
                         <h4 className="text-sm font-bold tracking-tight">
