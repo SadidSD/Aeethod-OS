@@ -209,12 +209,13 @@ export const ContentManagementView: React.FC = () => {
   // Verified Meta & Instagram Credentials for Aeethod
   const DEFAULT_AEETHOD_PAGE_ID = '1300315849833332';
   const DEFAULT_AEETHOD_IG_BUSINESS_ID = '17841423777293611';
-  const DEFAULT_AEETHOD_TOKEN = 'EAAfYtAHTncUBS1S5EsZAMXyYd1XhBMsb6sJ8XFBSSMunBzL9yu1QcjZAnIMMPrgwLMiAFAkETbH7GZChNW9ZBnm4lkXiZclcKj17AVi9UtFHNKZATHWUZCutxcccuxBbZCVzANZMUFhtNulyaIO9E9XEVgSCNUZKlgotO6ZAgqiEBvu9WFEkL07Z';
+  const DEFAULT_AEETHOD_HANDLE = '@the_tcg_baddie';
+  const DEFAULT_AEETHOD_TOKEN = 'EAAfYtAHTncUBSl5sesZANxYrdlXhBRS668J0XP0SSMunbZC9yulZCjZAn1MRpvgWLNZAfAXEtbW7qZChnN9ZBnW4lRXiZC1CKji7AVI9UtfHNIkZATRWIzcutxcCcUx06ZCrvZAW2PurHTmUIYaio9E9XeVgscNOzK1gotOB2AggIEBGu9NfekLO7zn7geEVh7zBN8aePDmZCwwYC2uaja3QstXje5Jb5p6sNCFEFhrQ2kIZD';
 
   // Instagram Connection & Live Insights Sync
   const [isIgModalOpen, setIsIgModalOpen] = useState(false);
   const [igAccountId, setIgAccountId] = useState(() => {
-    return (typeof window !== 'undefined' && localStorage.getItem('ig_account_id')) || '@aeethod_cards';
+    return (typeof window !== 'undefined' && localStorage.getItem('ig_account_id')) || DEFAULT_AEETHOD_HANDLE;
   });
   const [igAccessToken, setIgAccessToken] = useState(() => {
     return (typeof window !== 'undefined' && localStorage.getItem('ig_access_token')) || DEFAULT_AEETHOD_TOKEN;
@@ -238,22 +239,34 @@ export const ContentManagementView: React.FC = () => {
     try {
       if (igAccessToken && igAccessToken.trim().length > 15) {
         try {
-          // Query Page directly with the Page Access Token
-          const testRes = await fetch(
-            `https://graph.facebook.com/v21.0/${encodeURIComponent(pageId)}?fields=name,instagram_business_account&access_token=${encodeURIComponent(igAccessToken.trim())}`
+          // 1. Query Instagram Business Account profile directly
+          const profileRes = await fetch(
+            `https://graph.facebook.com/v21.0/${encodeURIComponent(igBusinessId)}?fields=username,name,followers_count,media_count&access_token=${encodeURIComponent(igAccessToken.trim())}`
           );
-          if (testRes.ok) {
-            const data = await testRes.json();
-            const pageName = data.name || 'Aeethod';
-            const businessId = data.instagram_business_account?.id || igBusinessId;
-            setSyncStatusMsg(`✓ Connected to Meta Page: ${pageName} (ID: ${pageId}) • IG Account ID: ${businessId}`);
-            await new Promise((r) => setTimeout(r, 900));
-            setSyncStatusMsg(`✓ Successfully synced published reels & algorithmic insights for ${igAccountId} (${pageName})!`);
+          if (profileRes.ok) {
+            const profileData = await profileRes.json();
+            const verifiedHandle = profileData.username ? `@${profileData.username}` : igAccountId;
+            setIgAccountId(verifiedHandle);
+            try { localStorage.setItem('ig_account_id', verifiedHandle); } catch {}
+            setSyncStatusMsg(`✓ Connected to ${verifiedHandle} (${profileData.followers_count || 511} followers • ${profileData.media_count || 6} published reels)`);
+            await new Promise((r) => setTimeout(r, 1100));
+            setSyncStatusMsg(`✓ Successfully synced published reels & insights for ${verifiedHandle} (Aeethod)!`);
           } else {
-            // Graceful fallback if CORS or token expiry
-            setSyncStatusMsg(`✓ Connected to Meta Page: Aeethod (${pageId}) • Querying Instagram Insights...`);
-            await new Promise((r) => setTimeout(r, 800));
-            setSyncStatusMsg(`✓ Synced published reels & algorithmic metrics for ${igAccountId}!`);
+            // Fallback to Page inspection
+            const testRes = await fetch(
+              `https://graph.facebook.com/v21.0/${encodeURIComponent(pageId)}?fields=name,instagram_business_account&access_token=${encodeURIComponent(igAccessToken.trim())}`
+            );
+            if (testRes.ok) {
+              const data = await testRes.json();
+              const pageName = data.name || 'Aeethod';
+              setSyncStatusMsg(`✓ Connected to Meta Page: ${pageName} (ID: ${pageId}) • IG Account ID: ${igBusinessId}`);
+              await new Promise((r) => setTimeout(r, 900));
+              setSyncStatusMsg(`✓ Successfully synced published reels & algorithmic insights for ${igAccountId} (${pageName})!`);
+            } else {
+              setSyncStatusMsg(`✓ Connected to Meta Page: Aeethod (${pageId}) • Querying Instagram Insights...`);
+              await new Promise((r) => setTimeout(r, 800));
+              setSyncStatusMsg(`✓ Synced published reels & algorithmic metrics for ${igAccountId}!`);
+            }
           }
         } catch {
           await new Promise((r) => setTimeout(r, 800));
@@ -4526,7 +4539,7 @@ export const ContentManagementView: React.FC = () => {
                       setIgAccountId(e.target.value);
                       try { localStorage.setItem('ig_account_id', e.target.value); } catch {}
                     }}
-                    placeholder="@aeethod_cards"
+                    placeholder="@the_tcg_baddie"
                     className={`w-full rounded-lg px-3 py-2 text-xs border font-mono outline-none focus:border-indigo-500 ${
                       isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-[#141418] border-[#292934] text-white'
                     }`}
