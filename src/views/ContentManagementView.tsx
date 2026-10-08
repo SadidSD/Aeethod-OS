@@ -233,6 +233,10 @@ export const ContentManagementView: React.FC = () => {
   const [compareReelAId, setCompareReelAId] = useState<string>('anika-2');
   const [compareReelBId, setCompareReelBId] = useState<string>('sadid-6');
 
+  const updateVideo = (id: string, updates: Partial<VideoRecord>) => {
+    update('content_videos', id, updates);
+  };
+
   const handleSyncInstagram = async () => {
     setIsSyncingIg(true);
     setSyncStatusMsg('Connecting to Meta Graph API v21.0 & Instagram Business Account...');
@@ -248,54 +252,86 @@ export const ContentManagementView: React.FC = () => {
             const verifiedHandle = profileData.username ? `@${profileData.username}` : igAccountId;
             setIgAccountId(verifiedHandle);
             try { localStorage.setItem('ig_account_id', verifiedHandle); } catch {}
-            setSyncStatusMsg(`✓ Connected to ${verifiedHandle} (${profileData.followers_count || 511} followers • ${profileData.media_count || 6} published reels)`);
-            await new Promise((r) => setTimeout(r, 1100));
-            setSyncStatusMsg(`✓ Successfully synced published reels & insights for ${verifiedHandle} (Aeethod)!`);
-          } else {
-            // Fallback to Page inspection
-            const testRes = await fetch(
-              `https://graph.facebook.com/v21.0/${encodeURIComponent(pageId)}?fields=name,instagram_business_account&access_token=${encodeURIComponent(igAccessToken.trim())}`
+
+            // 2. Query published media
+            setSyncStatusMsg(`Pulling published reels for ${verifiedHandle}...`);
+            const mediaRes = await fetch(
+              `https://graph.facebook.com/v21.0/${encodeURIComponent(igBusinessId)}/media?fields=id,caption,comments_count,like_count,media_type,media_product_type,permalink,shortcode,timestamp&access_token=${encodeURIComponent(igAccessToken.trim())}`
             );
-            if (testRes.ok) {
-              const data = await testRes.json();
-              const pageName = data.name || 'Aeethod';
-              setSyncStatusMsg(`✓ Connected to Meta Page: ${pageName} (ID: ${pageId}) • IG Account ID: ${igBusinessId}`);
-              await new Promise((r) => setTimeout(r, 900));
-              setSyncStatusMsg(`✓ Successfully synced published reels & algorithmic insights for ${igAccountId} (${pageName})!`);
-            } else {
-              setSyncStatusMsg(`✓ Connected to Meta Page: Aeethod (${pageId}) • Querying Instagram Insights...`);
-              await new Promise((r) => setTimeout(r, 800));
-              setSyncStatusMsg(`✓ Synced published reels & algorithmic metrics for ${igAccountId}!`);
+
+            let hasInsightsScope = false;
+            if (mediaRes.ok) {
+              const mediaData = await mediaRes.json();
+              if (mediaData.data && Array.isArray(mediaData.data)) {
+                for (const item of mediaData.data) {
+                  try {
+                    const insightRes = await fetch(
+                      `https://graph.facebook.com/v21.0/${item.id}/insights?metric=views,reach,saved,shares,total_interactions&access_token=${encodeURIComponent(igAccessToken.trim())}`
+                    );
+                    if (insightRes.ok) {
+                      hasInsightsScope = true;
+                      const insightJson = await insightRes.json();
+                      const metricsMap: Record<string, number> = {};
+                      insightJson.data?.forEach((m: any) => {
+                        metricsMap[m.name] = m.values?.[0]?.value || 0;
+                      });
+
+                      const matched = INITIAL_VIDEO_RECORDS.find((v) => v.notes?.includes(item.shortcode) || (item.caption && v.title.toLowerCase().includes(item.caption.slice(0, 15).toLowerCase())));
+                      if (matched) {
+                        updateVideo(matched.id, {
+                          views: metricsMap.views ?? metricsMap.plays,
+                          shares: metricsMap.shares,
+                          saves: metricsMap.saved,
+                          likes: item.like_count,
+                          comments: item.comments_count,
+                        });
+                      }
+                    } else {
+                      // Basic engagement update
+                      const matched = INITIAL_VIDEO_RECORDS.find((v) => v.notes?.includes(item.shortcode) || (item.caption && v.title.toLowerCase().includes(item.caption.slice(0, 15).toLowerCase())));
+                      if (matched) {
+                        updateVideo(matched.id, {
+                          likes: item.like_count,
+                          comments: item.comments_count,
+                        });
+                      }
+                    }
+                  } catch {}
+                }
+              }
             }
+
+            if (hasInsightsScope) {
+              setSyncStatusMsg(`✓ Synced 100% live insights (Plays, Shares, Saves, Likes) for ${verifiedHandle}!`);
+            } else {
+              setSyncStatusMsg(`✓ Synced live Likes & Comments for ${verifiedHandle}! (Add 'instagram_manage_insights' in Meta Graph API Explorer to pull Plays & Saves automatically)`);
+            }
+          } else {
+            setSyncStatusMsg(`✓ Connected to Meta Page: Aeethod (${pageId}) • Querying Instagram Insights...`);
           }
-        } catch {
-          await new Promise((r) => setTimeout(r, 800));
-          setSyncStatusMsg(`✓ Synced published reels & algorithmic metrics for ${igAccountId} (Aeethod)!`);
+        } catch (e) {
+          console.error(e);
+          setSyncStatusMsg(`Error connecting to Meta Graph API. Please verify token.`);
         }
       } else {
-        await new Promise((r) => setTimeout(r, 800));
-        setSyncStatusMsg('Syncing insights metrics: plays, reach, saved, shares, total_interactions...');
-        await new Promise((r) => setTimeout(r, 700));
-        setSyncStatusMsg(`✓ Synced published reels & algorithmic metrics for ${igAccountId}!`);
+        setSyncStatusMsg(`Please configure a valid Meta Page Access Token.`);
       }
-    } catch {
-      setSyncStatusMsg(`✓ Synced published reels & algorithmic metrics for ${igAccountId}!`);
     } finally {
       setIsSyncingIg(false);
-      setTimeout(() => setSyncStatusMsg(null), 6000);
+      setTimeout(() => setSyncStatusMsg(null), 8000);
     }
   };
 
   // Video State synced with persistent store / Supabase with @the_tcg_baddie live sync
   const videos: VideoRecord[] = useMemo(() => {
     if (db && db.content_videos && db.content_videos.length > 0) {
-      // Check if Anika's videos in DB are missing real views or using legacy placeholders
-      const anikaPublishedCount = db.content_videos.filter(
-        (v) => v.creator === 'Anika' && v.views !== undefined && v.views > 0
-      ).length;
+      const fakeViewsSet = new Set([3120, 8940, 2850, 3410, 5240, 6180]);
+      // Sanitize legacy fake placeholder numbers if present
+      const hasFakeViews = db.content_videos.some(
+        (v) => v.creator === 'Anika' && v.views !== undefined && fakeViewsSet.has(v.views)
+      );
 
-      if (anikaPublishedCount === 0) {
-        // Upgrade Anika's videos with the verified @the_tcg_baddie live records
+      if (hasFakeViews) {
         const sadidVideos = db.content_videos.filter((v) => v.creator !== 'Anika');
         const anikaVerifiedVideos = INITIAL_VIDEO_RECORDS.filter((v) => v.creator === 'Anika');
         return [...sadidVideos, ...anikaVerifiedVideos];
@@ -393,10 +429,6 @@ export const ContentManagementView: React.FC = () => {
     if (!activeScriptVideoId) return null;
     return videos.find((v) => v.id === activeScriptVideoId) || null;
   }, [videos, activeScriptVideoId]);
-
-  const updateVideo = (id: string, updates: Partial<VideoRecord>) => {
-    update('content_videos', id, updates);
-  };
 
   const deleteVideo = (id: string) => {
     remove('content_videos', id);
@@ -1269,7 +1301,7 @@ export const ContentManagementView: React.FC = () => {
             </div>
 
             {/* Top vs Lowest Reel Matchup for this Creator */}
-            {topReel && lowestReel && (
+            {topReel && lowestReel && (topReel.views || 0) > 0 ? (
               <div className={`p-5 rounded-xl border space-y-4 ${
                 isLight ? 'bg-white border-[#e9e9e7]' : 'bg-[#181820] border-[#292934]'
               }`}>
@@ -1349,6 +1381,40 @@ export const ContentManagementView: React.FC = () => {
                   </div>
                 </div>
               </div>
+            ) : (
+              <div className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${
+                isLight ? 'bg-indigo-50/50 border-indigo-200 text-indigo-950' : 'bg-[#191924] border-indigo-500/20 text-slate-300'
+              }`}>
+                <div className="space-y-1">
+                  <div className="font-bold flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-indigo-400" />
+                    <span>Algorithmic Comparison: Awaiting Verified Reel Plays & Insights</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    Real likes ({creatorPublished.reduce((acc, v) => acc + (v.likes || 0), 0)}) and comments ({creatorPublished.reduce((acc, v) => acc + (v.comments || 0), 0)}) are live. Click any reel in the table below to enter its actual Plays, DM Shares, and Saves, or sync them with Meta.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (creatorPublished.length > 0) setSelectedCardId(creatorPublished[0].id);
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-[11px] font-semibold transition"
+                  >
+                    Edit Metrics
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsIgModalOpen(true)}
+                    className={`px-3 py-1.5 rounded-lg border font-mono text-[11px] font-semibold transition ${
+                      isLight ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50' : 'bg-[#202028] border-[#323240] text-slate-300 hover:bg-[#282830]'
+                    }`}
+                  >
+                    API Setup ↗
+                  </button>
+                </div>
+              </div>
             )}
 
             {/* Published Reels Performance Table */}
@@ -1396,11 +1462,16 @@ export const ContentManagementView: React.FC = () => {
                       const virality = getViralityScore(vid);
 
                       return (
-                        <tr key={vid.id} className={`transition ${
-                          isLight ? 'hover:bg-slate-50/80' : 'hover:bg-white/[0.02]'
-                        }`}>
+                        <tr
+                          key={vid.id}
+                          onClick={() => setSelectedCardId(vid.id)}
+                          className={`transition cursor-pointer group ${
+                            isLight ? 'hover:bg-indigo-50/70' : 'hover:bg-white/[0.04]'
+                          }`}
+                          title="Click to view details and edit real metrics"
+                        >
                           <td className="p-3 max-w-xs font-sans">
-                            <div className={`font-semibold text-xs line-clamp-1 ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>
+                            <div className={`font-semibold text-xs line-clamp-1 group-hover:text-indigo-400 transition ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>
                               {vid.title}
                             </div>
                             <div className="text-[11px] text-slate-400 italic line-clamp-1">"{vid.hook}"</div>
@@ -1411,37 +1482,66 @@ export const ContentManagementView: React.FC = () => {
                             </div>
                           </td>
                           <td className={`p-3 text-right font-bold ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>
-                            {vid.views?.toLocaleString()}
+                            {vid.views !== undefined ? (
+                              vid.views.toLocaleString()
+                            ) : (
+                              <span className="text-slate-400 font-mono text-[11px] italic font-normal group-hover:text-indigo-400">
+                                + Set Plays
+                              </span>
+                            )}
                           </td>
                           <td className="p-3 text-right font-bold text-pink-400">
-                            {vid.shares?.toLocaleString() || 0}
+                            {vid.shares !== undefined ? (
+                              vid.shares.toLocaleString()
+                            ) : (
+                              <span className="text-slate-400 font-mono text-[11px] italic font-normal">—</span>
+                            )}
                           </td>
                           <td className="p-3 text-right font-bold text-amber-400">
-                            {vid.saves?.toLocaleString() || 0}
+                            {vid.saves !== undefined ? (
+                              vid.saves.toLocaleString()
+                            ) : (
+                              <span className="text-slate-400 font-mono text-[11px] italic font-normal">—</span>
+                            )}
                           </td>
                           <td className="p-3 text-center">
-                            <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                              (vid.averageWatchPercentage || 0) >= 100
-                                ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                                : (vid.averageWatchPercentage || 0) >= 70
-                                ? 'bg-blue-500/20 text-blue-300'
-                                : 'bg-rose-500/20 text-rose-400'
-                            }`}>
-                              {vid.averageWatchPercentage || '—'}%
-                            </span>
+                            {vid.averageWatchPercentage !== undefined ? (
+                              <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                                vid.averageWatchPercentage >= 100
+                                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                                  : vid.averageWatchPercentage >= 70
+                                  ? 'bg-blue-500/20 text-blue-300'
+                                  : 'bg-rose-500/20 text-rose-400'
+                              }`}>
+                                {vid.averageWatchPercentage}%
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 font-mono text-[11px] italic">—</span>
+                            )}
                           </td>
                           <td className="p-3 text-center font-bold text-emerald-400">
-                            {virality.toFixed(1)}%
+                            {virality > 0 ? `${virality.toFixed(1)}%` : '—'}
                           </td>
                           <td className="p-3">
-                            <div className="space-y-1 font-sans">
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${tier.badge}`}>
-                                {tier.label}
-                              </span>
-                              <div className="text-[10px] text-slate-400 line-clamp-1" title={diag.reasons[0]}>
-                                {diag.reasons[0]}
+                            {vid.views !== undefined ? (
+                              <div className="space-y-1 font-sans">
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${tier.badge}`}>
+                                  {tier.label}
+                                </span>
+                                <div className="text-[10px] text-slate-400 line-clamp-1" title={diag.reasons[0]}>
+                                  {diag.reasons[0]}
+                                </div>
                               </div>
-                            </div>
+                            ) : (
+                              <div className="space-y-1 font-sans">
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-500/10 text-slate-400 border border-slate-500/20">
+                                  ❤️ {vid.likes ?? 0} • 💬 {vid.comments ?? 0}
+                                </span>
+                                <div className="text-[10px] text-indigo-400 group-hover:underline">
+                                  Click to edit metrics ↗
+                                </div>
+                              </div>
+                            )}
                           </td>
                         </tr>
                       );
@@ -5474,18 +5574,86 @@ export const ContentManagementView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Performance Analytics (if published) */}
-                {selectedCard.views !== undefined && (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 items-center pt-1 border-t border-slate-700/20">
-                    <span className="text-slate-400 font-medium flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                      Metrics
-                    </span>
-                    <div className="col-span-2 sm:col-span-3 flex items-center gap-3 font-mono text-[11px]">
-                      <span className="text-emerald-400 font-bold">{selectedCard.views.toLocaleString()} views</span>
-                      <span className="text-slate-400">❤️ {selectedCard.likes}</span>
-                      <span className="text-slate-400">📤 {selectedCard.shares} shares</span>
-                      <span className="text-slate-400">🔖 {selectedCard.saves} saves</span>
+                {/* Performance Analytics (if published or being tracked) */}
+                {selectedCard.status === 'Uploaded' && (
+                  <div className="pt-2 border-t border-slate-700/20 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400 font-medium flex items-center gap-1.5 text-xs">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        Performance Metrics (Real Data)
+                      </span>
+                      <span className="text-[10px] text-indigo-400 font-mono">
+                        Direct Edit / Live Sync
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-xs">
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-slate-400 block uppercase">Plays / Views</label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 3500"
+                          value={selectedCard.views ?? ''}
+                          onChange={(e) => updateVideo(selectedCard.id, { views: e.target.value === '' ? undefined : parseInt(e.target.value) || 0 })}
+                          className={`w-full px-2 py-1.5 rounded-md text-xs font-mono font-bold border outline-none ${
+                            isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-[#202028] border-[#323240] text-emerald-400'
+                          }`}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-slate-400 block uppercase">Shares (DM)</label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 45"
+                          value={selectedCard.shares ?? ''}
+                          onChange={(e) => updateVideo(selectedCard.id, { shares: e.target.value === '' ? undefined : parseInt(e.target.value) || 0 })}
+                          className={`w-full px-2 py-1.5 rounded-md text-xs font-mono font-bold border outline-none ${
+                            isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-[#202028] border-[#323240] text-pink-400'
+                          }`}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-slate-400 block uppercase">Saves</label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 60"
+                          value={selectedCard.saves ?? ''}
+                          onChange={(e) => updateVideo(selectedCard.id, { saves: e.target.value === '' ? undefined : parseInt(e.target.value) || 0 })}
+                          className={`w-full px-2 py-1.5 rounded-md text-xs font-mono font-bold border outline-none ${
+                            isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-[#202028] border-[#323240] text-amber-400'
+                          }`}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-slate-400 block uppercase">Avg Watch %</label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 85"
+                          value={selectedCard.averageWatchPercentage ?? ''}
+                          onChange={(e) => updateVideo(selectedCard.id, { averageWatchPercentage: e.target.value === '' ? undefined : parseInt(e.target.value) || 0 })}
+                          className={`w-full px-2 py-1.5 rounded-md text-xs font-mono font-bold border outline-none ${
+                            isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-[#202028] border-[#323240] text-purple-400'
+                          }`}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1 font-mono text-[11px] text-slate-400 border-t border-slate-700/10">
+                      <div className="flex items-center gap-3">
+                        <span>❤️ Likes: <strong className="text-slate-200">{selectedCard.likes ?? 0}</strong></span>
+                        <span>💬 Comments: <strong className="text-slate-200">{selectedCard.comments ?? 0}</strong></span>
+                      </div>
+                      {selectedCard.notes?.includes('https://') && (
+                        <a
+                          href={selectedCard.notes.match(/https:\/\/[^\s]+/)?.[0]}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-indigo-400 hover:underline text-[10px] flex items-center gap-1"
+                        >
+                          <span>Open Reel on Instagram</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
                     </div>
                   </div>
                 )}

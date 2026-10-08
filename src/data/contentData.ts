@@ -389,12 +389,8 @@ True market value is defined by repeatable bid-ask spread, not a one-off trophy 
 [00:52 - 00:60] THE LOOP
 Which is why whenever you see a record-shattering sale, always ask: was that really its market value?`,
     publishDate: '2026-10-07',
-    views: 3120,
     likes: 6,
     comments: 0,
-    shares: 48,
-    saves: 72,
-    averageWatchPercentage: 94,
     notes: 'Market value teardown of Illustrator Pikachu sale. Analyzes auction liquidity vs repeatable market price. Live URL: https://www.instagram.com/reel/DeMtsSUB75q/'
   },
   {
@@ -420,13 +416,9 @@ For sealed collectors, the full 10-tin display case holds a 40% premium over loo
 [00:52 - 00:60] THE LOOP
 So before you rip these open, let me know: would you collect all 10?`,
     publishDate: '2026-10-05',
-    views: 8940,
     likes: 36,
     comments: 0,
-    shares: 182,
-    saves: 240,
-    averageWatchPercentage: 122,
-    notes: 'Top performing reel. 30th Anniversary tin unboxing with hidden panoramic art. Live URL: https://www.instagram.com/reel/DeHibRnBnv3/'
+    notes: '30th Anniversary tin unboxing with hidden panoramic art. Live URL: https://www.instagram.com/reel/DeHibRnBnv3/'
   },
   {
     id: 'anika-3',
@@ -451,12 +443,8 @@ Keep one sealed. First-time seasonal gimmick boxes have historically appreciated
 [00:52 - 00:60] THE LOOP
 Because who ever expected a Pokémon box that actually turns into a mailbox?!`,
     publishDate: '2026-10-03',
-    views: 2850,
     likes: 7,
     comments: 0,
-    shares: 54,
-    saves: 68,
-    averageWatchPercentage: 88,
     notes: 'Valentine’s Day specialty product reveal and packaging novelty analysis. Live URL: https://www.instagram.com/reel/DeChasPppnW/'
   },
   {
@@ -482,12 +470,8 @@ Does shrink-cutting protect real players, or does it hurt legitimate sealed inve
 [00:52 - 00:60] THE LOOP
 Either way, the message from the factory is loud and clear: they are taking anti-scalping very seriously.`,
     publishDate: '2026-10-02',
-    views: 3410,
     likes: 8,
     comments: 0,
-    shares: 68,
-    saves: 85,
-    averageWatchPercentage: 91,
     notes: 'Retail anti-scalping distribution rules and shrink-wrap cutting debate. Live URL: https://www.instagram.com/reel/Dd_y4Z_BZU7/'
   },
   {
@@ -513,12 +497,8 @@ Optical AI scanning and zero-latency buylist sync identify 50 cards in 30 second
 [00:52 - 00:60] THE LOOP
 Next time you see a 40-minute trade counter queue, ask yourself: why are TCG stores still doing this manually?`,
     publishDate: '2026-10-01',
-    views: 5240,
     likes: 15,
     comments: 2,
-    shares: 142,
-    saves: 165,
-    averageWatchPercentage: 104,
     notes: 'High audience resonance on retail floor trade-in bottlenecks and automation. Live URL: https://www.instagram.com/reel/Dd9PdPjBmA7/'
   },
   {
@@ -544,12 +524,8 @@ Card shops deserve specialized tools built by people who actually understand car
 [00:52 - 00:60] THE LOOP
 That’s why I saw the massive gap in TCG retail tech... and why we are building it.`,
     publishDate: '2026-09-30',
-    views: 6180,
     likes: 14,
     comments: 6,
-    shares: 195,
-    saves: 210,
-    averageWatchPercentage: 112,
     notes: 'Foundational SaaS manifesto reel for Aeethod OS. Highest comments & direct founder engagement. Live URL: https://www.instagram.com/reel/Dd6tPEFB5HH/'
   }
 ];
