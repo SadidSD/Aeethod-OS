@@ -48,8 +48,10 @@ export interface VideoRecord {
   publishDate?: string;
   views?: number;
   likes?: number;
+  comments?: number;
   shares?: number;
   saves?: number;
+  averageWatchPercentage?: number; // e.g. 125% means looped/re-watched
   notes?: string;
 }
 
@@ -239,9 +241,29 @@ So stop celebrating $10,000 revenue months until you calculate your real take-ho
     publishDate: '2026-09-28',
     views: 18450,
     likes: 1240,
+    comments: 215,
     shares: 480,
     saves: 890,
+    averageWatchPercentage: 94,
     notes: 'Massive DM share rate among store partners and power sellers.'
+  },
+  {
+    id: 'sadid-6',
+    creator: 'Sadid',
+    title: 'Why our card store values customer community over profit margins',
+    topic: 'Shop Problem',
+    format: 'Myth Blast',
+    status: 'Uploaded',
+    hook: 'Today I want to talk about why community matters more than money in our card shop.',
+    script: `Today I want to talk about why community matters more than money in our card shop. When we started, we thought about numbers, but now we care about people. Make sure you stop by our store this weekend for open play.`,
+    publishDate: '2026-09-15',
+    views: 1650,
+    likes: 95,
+    comments: 8,
+    shares: 12,
+    saves: 14,
+    averageWatchPercentage: 34,
+    notes: 'Stalled: Generic slow opening without tension. 68% drop-off before second 3. Low share & save utility.'
   },
   {
     id: 'sadid-2',
@@ -335,8 +357,10 @@ Always inspect the back before you hand over cash... which is why when a custome
     publishDate: '2026-09-30',
     views: 34200,
     likes: 2890,
+    comments: 340,
     shares: 1120,
     saves: 640,
+    averageWatchPercentage: 112,
     notes: 'High completion rate. Loops back to the opening statement.'
   },
   {
@@ -350,8 +374,10 @@ Always inspect the back before you hand over cash... which is why when a custome
     publishDate: '2026-10-03',
     views: 48900,
     likes: 4120,
+    comments: 730,
     shares: 2100,
     saves: 1450,
+    averageWatchPercentage: 138,
     notes: 'Highest comment velocity. Viewers arguing over the holo pattern.'
   },
   {
