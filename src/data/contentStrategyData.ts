@@ -5,12 +5,51 @@ export interface AudienceCohort {
   badgeColor: string;
   avatarIcon: string;
   demographics: string;
+  
+  // Funnel Mapping Attributes
+  funnelStage: 'BOFU (Core SaaS Buyer)' | 'MOFU (Margin Multiplier)' | 'TOFU-MOFU (Validation Bridge)' | 'TOFU (Algorithmic Seed)';
+  funnelStageBadge: string;
+  funnelStagePill: 'TOFU' | 'MOFU' | 'BOFU' | 'TOFU-MOFU';
+  funnelRole: string;
+  commercialValueToSaaS: string;
+  
+  // 3-Tier Funnel Triggers (How this persona moves through TOFU -> MOFU -> BOFU)
+  funnelTriggers: {
+    tofuHook: {
+      headline: string;
+      mechanism: string;
+      sampleHook: string;
+    };
+    mofuResonance: {
+      headline: string;
+      mechanism: string;
+      targetMetric: string;
+    };
+    bofuConversion: {
+      headline: string;
+      mechanism: string;
+      action: string;
+    };
+  };
+
+  // Psychological & Operational Reality
   primaryNightmare: string;
   greedDesire: string;
+  objectionToSaaS: string;
+  aeethodKillerFeature: {
+    name: string;
+    description: string;
+  };
+  
+  // Algorithmic Mechanics & Outro Blueprint
   algorithmicHabit: string;
   keyInteractionTrigger: 'DM Sends' | 'Bookmarks & Saves' | 'Loop Replays & Comments' | 'Watch Time';
   triggerKeywords: string[];
   winningHooks: string[];
+  funnelCtaBlueprint: {
+    ctaType: string;
+    spokenScript: string;
+  };
   creatorFit: 'Sadid' | 'Anika' | 'Both';
 }
 
@@ -164,87 +203,231 @@ export const AUDIENCE_COHORTS: AudienceCohort[] = [
     id: 'lgs_owner',
     title: 'The Overworked LGS Owner & Store Manager',
     tag: 'B2B Core Buyer',
-    badgeColor: 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20',
+    badgeColor: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
     avatarIcon: '🏢',
     demographics: 'Age 28–52 • Owns or operates physical card shops with 2–15 retail clerks',
+    funnelStage: 'BOFU (Core SaaS Buyer)',
+    funnelStageBadge: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25',
+    funnelStagePill: 'BOFU',
+    funnelRole: 'Primary Commercial Buyer ($149/mo Flat SaaS Revenue)',
+    commercialValueToSaaS:
+      'Direct MRR Generation. Each store pays $149/mo flat with 0% GMV commission, recovering $1,250/mo vs BinderPOS 2.5% tax. Extremely high LTV (>36 months) with near-zero churn once cloud POS & inventory sync are active.',
+    funnelTriggers: {
+      tofuHook: {
+        headline: 'The 11:30 PM Midnight Exhaustion Trigger',
+        mechanism: 'Clerk typing speed vs optical scanner battles, and night-shift sorting overtime.',
+        sampleHook:
+          'Selling the same $300 slab in-store and on eBay at the exact same minute is NOT bad luck — it is legacy software latency.'
+      },
+      mofuResonance: {
+        headline: 'The 2.5% Commission Autopsy',
+        mechanism: 'Exposing the hidden $1,500/mo GMV tax charged by incumbent vendors, employee intake payroll burn, and distributor tie-in cash traps.',
+        targetMetric: '5x DM Share to store partners & co-owners ("Look at this. We are bleeding cash.")'
+      },
+      bofuConversion: {
+        headline: 'The 320ms Multi-Channel Delist Demo',
+        mechanism: 'Live split-screen showing a card selling on physical counter and automatically delisting from eBay/TCGplayer in under 320ms.',
+        action: 'Taps bio link, books a 15-minute migration demo, and signs up for $149/mo flat.'
+      }
+    },
     primaryNightmare:
-      'Bleeding cash on hourly sorting payroll, 6-hour inventory intake marathons, double-selling $400 slabs across eBay & in-store POS, and 75% distributor allocation cuts.',
+      'Bleeding cash on hourly sorting payroll, 6-hour inventory intake marathons, double-selling $400 slabs across eBay & in-store POS, and losing $18,000/year to BinderPOS 2.5% GMV commission.',
     greedDesire:
-      'Predictable gross margin return on investment (GMROI), automated optical intake, zero-latency multi-channel syncing, and leaving the shop at 9:00 PM without unpaid sorting overtime.',
+      'Predictable gross margin return on investment (GMROI), automated optical intake, sub-500ms multi-channel syncing, 0% GMV commission, and leaving the shop at 9:00 PM without unpaid sorting overtime.',
+    objectionToSaaS:
+      'Migration is too painful: "Our 25,000 singles are already stuck in Shopify/BinderPOS and re-cataloging would take months."',
+    aeethodKillerFeature: {
+      name: '1-Click Legacy Store Importer & Sub-320ms Redis Channel Sync',
+      description:
+        'Zero-downtime migration from BinderPOS/Shopify plus real-time inventory delisting across in-store POS, eBay, and TCGplayer in under 320ms.'
+    },
     algorithmicHabit:
       'High DM Share Velocity (5x multiplier) — DMs reels directly to store partners, co-owners, and head clerks: "We need this exact system in our shop."',
     keyInteractionTrigger: 'DM Sends',
-    triggerKeywords: ['Buylist formula', 'Clerk payroll', 'Double sold', 'Allocation cut', 'Sync delay', 'Net profit'],
+    triggerKeywords: ['Buylist formula', 'Clerk payroll', 'Double sold', 'Allocation cut', 'Sync delay', 'Net profit', 'BinderPOS fee'],
     winningHooks: [
       'Selling a $100 card on a marketplace does NOT give you $100 in the bank.',
-      'A store owner boasted about an $18,000 cash-out day. Here is what they actually netted.',
+      'A store owner boasted about an $18,000 cash-out day. Here is what they actually netted after fees and clerk labor.',
       'Selling the same $300 slab in-store and on eBay at the exact same minute is NOT bad luck.'
     ],
+    funnelCtaBlueprint: {
+      ctaType: 'Direct Demo Booking & Ledger Audit',
+      spokenScript:
+        'If your POS vendor takes 2.5% of your card sales, DM us "AUDIT" or tap the bio link to run your store\'s migration calculator.'
+    },
     creatorFit: 'Sadid'
   },
   {
     id: 'reseller',
     title: 'The Full-Time Reseller & Power Flipper',
     tag: 'High-Volume Transactional',
-    badgeColor: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+    badgeColor: 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20',
     avatarIcon: '📦',
     demographics: 'Age 20–38 • Flips singles and sealed cases from home, card shows, eBay, and TCGplayer',
+    funnelStage: 'MOFU (Margin Multiplier)',
+    funnelStageBadge: 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/25',
+    funnelStagePill: 'MOFU',
+    funnelRole: 'High-Volume Intake Multiplier & Future Store Founder',
+    commercialValueToSaaS:
+      'High-Volume Product Advocacy & Top-of-Funnel Word of Mouth. Generates 1,000+ card scans per week, recommends Aeethod to convention vendors, and represents the next cohort of physical card shop founders.',
+    funnelTriggers: {
+      tofuHook: {
+        headline: 'The Trade Counter Dilemma',
+        mechanism: '"$50 Cash vs $85 Store Credit" trade negotiations, bulk lot margin traps, and fast inventory turnover puzzles.',
+        sampleHook:
+          'If you sell cards under $2.49 on TCGplayer Direct, you are literally working for free after postage and handling.'
+      },
+      mofuResonance: {
+        headline: 'The 70% Buylist Margin Guardrail',
+        mechanism: 'Calculating cash-flow cycles, platform fee deductions (TCGplayer fee increases), and inventory holding cost decay.',
+        targetMetric: '4x Save & Bookmark Rate (saving fee formulas to check during live collection buyouts).'
+      },
+      bofuConversion: {
+        headline: 'The 60fps Optical Camera Batch Scanner',
+        mechanism: 'Scanning 100 raw cards in 3 minutes via mobile phone camera without manual typing, syncing instantly to eBay draft listings.',
+        action: 'Adopts Aeethod Solo/Power Seller tier or registers for the beta intake scanner.'
+      }
+    },
     primaryNightmare:
-      'Platform fee inflation (TCGplayer Direct micro-fee hikes), return fraud, shipping chargebacks, and buying binder collections with undetected micro-creases.',
+      'Platform fee inflation (TCGplayer Direct micro-fee hikes), return fraud, shipping chargebacks, and buying binder collections with undetected micro-creases that destroy margin.',
     greedDesire:
       'The 70% buylist formula, rapid 7-day inventory velocity, buying at 50% cash value without customer pushback, and mathematical margin guardrails.',
+    objectionToSaaS:
+      'I don\'t have a physical retail storefront yet, so enterprise POS systems are too expensive and clunky for my card show setup.',
+    aeethodKillerFeature: {
+      name: 'Browser Neural Vision Scanner & Mobile Convention POS',
+      description:
+        '60fps optical card recognition that works on any phone or laptop camera with offline cache mode for card shows and conventions.'
+    },
     algorithmicHabit:
       'High Save / Bookmark Rate (4x multiplier) — Saves videos to consult pricing deduction formulas and fee tables during trade negotiations.',
     keyInteractionTrigger: 'Bookmarks & Saves',
-    triggerKeywords: ['TCGplayer fee update', 'Gross vs Net', 'Buylist 70%', 'Binder buyout', 'Packaging loss'],
+    triggerKeywords: ['TCGplayer fee update', 'Gross vs Net', 'Buylist 70%', 'Binder buyout', 'Packaging loss', 'Convention POS'],
     winningHooks: [
       'If you sell cards under $2.49 on TCGplayer Direct, you are working for free.',
       'How to calculate cash vs store credit margins without losing money on fees.',
       'Do NOT order your Q4 sealed inventory until you run these 3 working-capital numbers.'
     ],
+    funnelCtaBlueprint: {
+      ctaType: 'Buylist Cheat-Sheet & Scanner Beta',
+      spokenScript:
+        'Save this video for your next binder buyout, and comment "SCANNER" to test the 60fps card recognition tool free.'
+    },
     creatorFit: 'Sadid'
   },
   {
     id: 'collector',
     title: 'The Serious Collector & Slab Investor',
     tag: 'High-Ticket Capital',
-    badgeColor: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
+    badgeColor: 'bg-purple-500/10 text-purple-400 border border-purple-500/20',
     avatarIcon: '💎',
     demographics: 'Age 24–48 • High disposable income, purchasing $150 to $10,000+ raw vintage and PSA/CGC slabs',
+    funnelStage: 'TOFU-MOFU (Validation Bridge)',
+    funnelStageBadge: 'bg-purple-500/10 text-purple-400 border border-purple-500/25',
+    funnelStagePill: 'TOFU-MOFU',
+    funnelRole: 'Authenticity Validation & Comment Debate Multiplier',
+    commercialValueToSaaS:
+      'Technical Credibility & Algorithmic Debate Engine. Drives fierce comment wars (debating foil patterns, PSA grading grades, and counterfeit tells), validating that Aeethod\'s neural vision model is technically elite.',
+    funnelTriggers: {
+      tofuHook: {
+        headline: 'The 10x Jeweler Loupe Mystery',
+        mechanism: 'Inspecting counterfeit rosette patterns, micro-creases, hairline surface scratches, and fake vs real comparison splits.',
+        sampleHook:
+          'A customer brought in this vintage Charizard asking for $1,200 cash, but one micro-flaw under the loupe changed our offer to $0.'
+      },
+      mofuResonance: {
+        headline: 'Condition Grading & Value Defense',
+        mechanism: 'Deep-dive teardowns on how hidden factory print lines knock a PSA 10 down to a PSA 7, destroying $1,500 in value.',
+        targetMetric: 'High Comment Velocity (debating grading subjectivity and authentication tells).'
+      },
+      bofuConversion: {
+        headline: 'The Verified Store Standard',
+        mechanism: 'Showing card shops that use Aeethod optical grading kiosks to give fair, transparent, non-subjective buy prices.',
+        action: 'Demands local card shops adopt Aeethod transparent intake; follows Aeethod social channels for market data.'
+      }
+    },
     primaryNightmare:
       'Paying PSA 9 prices for a card with an invisible binder ring compression ding, buying counterfeit factory fakes, or holding pumped cards right before a reprint crash.',
     greedDesire:
       'Spotting undervalued raw cards that will grade PSA 10, forensic counterfeit detection skills, and timing the secondary market print cycles.',
+    objectionToSaaS:
+      'I am an individual collector, not a commercial retailer — why do I need inventory software?',
+    aeethodKillerFeature: {
+      name: 'Micro-Flaw Condition & Optical Authentication Vision',
+      description:
+        'Computer vision trained on thousands of authentic TCG cards to detect surface indents, rosette print errors, and centering ratios.'
+    },
     algorithmicHabit:
       'High Loop Replay (APW >120%) & Fierce Comment Debates — Loops videos 2x to inspect the foil under 10x jeweler loupe and argues authentication in the comments.',
     keyInteractionTrigger: 'Loop Replays & Comments',
-    triggerKeywords: ['Loupe zoom', 'Foil pattern fake', 'PSA 8 to PSA 5', 'Hairline indent', 'Reprint crash'],
+    triggerKeywords: ['Loupe zoom', 'Foil pattern fake', 'PSA 8 to PSA 5', 'Hairline indent', 'Reprint crash', 'Surface ding'],
     winningHooks: [
       'A customer brought in this vintage Charizard asking for cash, but one micro-flaw changed the offer.',
       'Can you spot the Super Fake 30th Celebration Mew ex in 5 seconds?',
       'One of these is worth $800. The other came from an overseas counterfeit factory.'
     ],
+    funnelCtaBlueprint: {
+      ctaType: 'Comment Debate & Condition Checklist',
+      spokenScript:
+        'Did you spot the counterfeit tell before we zoomed in? Drop your guess in the comments and save this for your next slab purchase.'
+    },
     creatorFit: 'Anika'
   },
   {
     id: 'dreamer',
     title: 'The Hobby Dreamer & Casual Player',
     tag: 'Viral Reach & Community',
-    badgeColor: 'bg-purple-500/10 text-purple-400 border border-purple-500/20',
+    badgeColor: 'bg-pink-500/10 text-pink-400 border border-pink-500/20',
     avatarIcon: '🎮',
     demographics: 'Age 15–32 • Plays local weekly tournaments, opens packs, dreams of opening an LGS one day',
+    funnelStage: 'TOFU (Algorithmic Seed)',
+    funnelStageBadge: 'bg-pink-500/10 text-pink-400 border border-pink-500/25',
+    funnelStagePill: 'TOFU',
+    funnelRole: 'Viral Velocity Multiplier & Baseline Watch Time Seed',
+    commercialValueToSaaS:
+      'Top-of-Funnel Algorithmic Fuel. Supplies the raw watch time, loop completions, and casual likes that signal Instagram and YouTube algorithms to push Aeethod videos to millions of viewers, inevitably reaching lurking store owners.',
+    funnelTriggers: {
+      tofuHook: {
+        headline: 'The Saturday Night Card Shop Reality',
+        mechanism: 'Dramatic behind-the-counter storytelling, tournament chaos, trade desk rush hour, and opening massive vintage binder collections.',
+        sampleHook:
+          'People think owning a card shop is opening packs all day. Here is what 8:45 PM on a Saturday night tournament actually looks like.'
+      },
+      mofuResonance: {
+        headline: 'The Economics of Card Shop Ownership',
+        mechanism: 'Transparent breakdowns of store P&Ls, what wholesale booster boxes cost vs retail, and how prize support works.',
+        targetMetric: 'Raw Watch Time (watching 45s-60s narrative videos to 100% completion).'
+      },
+      bofuConversion: {
+        headline: 'The Future Store Founder Onboarding',
+        mechanism: 'Showing how modern card shops run smoothly with self-service kiosks and automated scanners instead of stressed clerks.',
+        action: 'Advocates for Aeethod at their local LGS ("Hey, why don\'t you guys use that Aeethod scanner?") and plans future store around it.'
+      }
+    },
     primaryNightmare:
       'Missing out on chase cards, paying scalper markups, and intimidation at the store trade-in counter.',
     greedDesire:
       'Behind-the-scenes reality of what running a card store is actually like, and experiencing huge binder unboxing reveals.',
+    objectionToSaaS:
+      'I don\'t have a business yet, I just love playing and collecting cards.',
+    aeethodKillerFeature: {
+      name: 'Self-Service Buylist Kiosk & Decklist Webstore Ingest',
+      description:
+        'Customer-facing kiosk where players drop decklists or singles and get immediate cash/credit valuation without clerk friction.'
+    },
     algorithmicHabit:
       'High Raw Watch Time & Casual Likes — Watches narrative storytelling arcs from start to finish, driving baseline algorithm distribution.',
     keyInteractionTrigger: 'Watch Time',
-    triggerKeywords: ['Saturday night rush', 'Behind the counter', 'Card shop reality', 'Tournament night'],
+    triggerKeywords: ['Saturday night rush', 'Behind the counter', 'Card shop reality', 'Tournament night', 'Decklist intake'],
     winningHooks: [
       'People think working at a card shop is opening packs all day. Here is what Saturday night actually looks like.',
       'Saturday 8:30 PM: 30 tournament players rush the trade-in counter with 1,500 unsorted foils.'
     ],
+    funnelCtaBlueprint: {
+      ctaType: 'Community Engagement & LGS Tagging',
+      spokenScript:
+        'Tag your local card shop in the comments to see if their trade counter looks like this on Saturday night!'
+    },
     creatorFit: 'Anika'
   }
 ];

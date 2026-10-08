@@ -2158,72 +2158,248 @@ export const ContentManagementView: React.FC = () => {
           </div>
 
           {/* ================================================================= */}
-          {/* SUB-MODULE 1: AUDIENCE ANATOMY (4 PROFILES)                       */}
+          {/* SUB-MODULE 1: AUDIENCE ANATOMY (4 PROFILES) ACCORDING TO THE FUNNEL */}
           {/* ================================================================= */}
           {strategyModule === 'audiences' && (
             <div className="space-y-6">
-              {/* Cohort Chips */}
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span className="text-xs font-semibold text-slate-400 mr-1">Select Cohort Profile:</span>
-                {AUDIENCE_COHORTS.map((cohort) => {
-                  const isSelected = cohort.id === selectedCohortId;
-                  return (
-                    <button
-                      key={cohort.id}
-                      onClick={() => setSelectedCohortId(cohort.id)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-2 transition ${
-                        isSelected
-                          ? 'bg-indigo-600 text-white shadow-sm'
-                          : isLight
-                          ? 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
-                          : 'bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 border border-zinc-800'
-                      }`}
-                    >
-                      <span>{cohort.avatarIcon}</span>
-                      <span>{cohort.title.split(' ')[1] || cohort.title}</span>
-                    </button>
-                  );
-                })}
+              {/* Top Funnel Ecosystem Banner: Visual Cohort Pipeline */}
+              <div className={`p-5 sm:p-6 rounded-2xl border transition ${
+                isLight
+                  ? 'bg-gradient-to-r from-purple-50/80 via-indigo-50/60 to-emerald-50/80 border-indigo-200/90 shadow-2xs'
+                  : 'bg-gradient-to-r from-[#1c1a2c] via-[#161524] to-[#12191e] border-[#2f2b44] shadow-md'
+              }`}>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-200/60 dark:border-zinc-800/80">
+                  <div className="flex items-center gap-2.5">
+                    <span className="p-2 rounded-xl bg-purple-500/15 text-purple-400 border border-purple-500/25">
+                      <Users className="w-4 h-4" />
+                    </span>
+                    <div>
+                      <h4 className={`text-sm font-bold uppercase tracking-wider font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                        Funnel-Driven Audience Anatomy & Cohort Ecosystem
+                      </h4>
+                      <p className={`text-xs mt-0.5 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                        Every viewer persona serves a mechanical role: driving algorithmic reach, validating technical accuracy, or converting into a $149/mo SaaS store.
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-mono px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold shrink-0 self-start md:self-auto">
+                    4 Personas • TOFU $\rightarrow$ MOFU $\rightarrow$ BOFU
+                  </span>
+                </div>
+
+                {/* 4 Connected Funnel Stage Cohort Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-4">
+                  {AUDIENCE_COHORTS.map((cohort) => {
+                    const isSelected = cohort.id === selectedCohortId;
+                    return (
+                      <button
+                        key={cohort.id}
+                        onClick={() => setSelectedCohortId(cohort.id)}
+                        className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-2.5 relative overflow-hidden ${
+                          isSelected
+                            ? isLight
+                              ? 'bg-white border-indigo-500 ring-2 ring-indigo-500/20 shadow-md'
+                              : 'bg-[#1e1c2e] border-indigo-500 ring-1 ring-indigo-500/40 shadow-lg'
+                            : isLight
+                            ? 'bg-white/90 hover:bg-white border-slate-200/90 shadow-2xs'
+                            : 'bg-black/30 hover:bg-black/50 border-[#28283a]'
+                        }`}
+                      >
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-2xl">{cohort.avatarIcon}</span>
+                            <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md ${cohort.badgeColor}`}>
+                              {cohort.funnelStagePill}
+                            </span>
+                          </div>
+                          <div>
+                            <h5 className={`font-bold font-mono text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                              {cohort.title.split(' ')[1] || cohort.title}
+                            </h5>
+                            <span className="text-[10px] text-purple-400 font-mono font-medium block">
+                              {cohort.tag}
+                            </span>
+                          </div>
+                          <p className={`text-[11px] leading-relaxed line-clamp-2 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                            {cohort.funnelRole}
+                          </p>
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-200/60 dark:border-zinc-800 text-[10px] font-mono flex items-center justify-between text-slate-400">
+                          <span>Inspect Anatomy</span>
+                          <span className={isSelected ? 'text-indigo-400 font-bold' : 'text-slate-400'}>→</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Detailed Active Cohort Card */}
               <div
-                className={`p-6 sm:p-7 rounded-2xl border space-y-6 ${
-                  isLight ? 'bg-white border-slate-200/90 shadow-sm' : 'bg-[#181820] border-[#292934] shadow-md'
+                className={`p-6 sm:p-7 rounded-2xl border space-y-7 ${
+                  isLight ? 'bg-white border-slate-200/90 shadow-sm' : 'bg-[#181822] border-[#292936] shadow-md'
                 }`}
               >
-                {/* Cohort Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100 dark:border-zinc-800">
+                {/* Cohort Header Ribbon */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-100 dark:border-zinc-800">
                   <div className="flex items-center gap-3.5">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-2xl">
+                    <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-3xl shrink-0">
                       {selectedCohort.avatarIcon}
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className={`text-base font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className={`text-lg font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
                           {selectedCohort.title}
                         </h3>
-                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${selectedCohort.badgeColor}`}>
+                        <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded font-bold ${selectedCohort.badgeColor}`}>
                           {selectedCohort.tag}
                         </span>
+                        <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded font-bold ${selectedCohort.funnelStageBadge}`}>
+                          {selectedCohort.funnelStage}
+                        </span>
                       </div>
-                      <p className={`text-xs mt-0.5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                      <p className={`text-xs mt-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                         {selectedCohort.demographics}
                       </p>
                     </div>
                   </div>
 
+                  {/* Commercial Value Badge */}
+                  <div className={`p-3 rounded-xl border max-w-md ${
+                    isLight ? 'bg-indigo-50/50 border-indigo-200' : 'bg-black/25 border-indigo-500/20'
+                  }`}>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-indigo-400 font-bold block mb-0.5">
+                      Commercial Value to Aeethod OS:
+                    </span>
+                    <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                      {selectedCohort.commercialValueToSaaS}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 3-Tier Funnel Trigger Sequence for this Persona */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className={`text-xs font-bold uppercase font-mono tracking-wider flex items-center gap-2 ${
+                      isLight ? 'text-slate-900' : 'text-white'
+                    }`}>
+                      <Filter className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>3-Tier Funnel Journey: How This Persona Moves Through TOFU $\rightarrow$ MOFU $\rightarrow$ BOFU</span>
+                    </h4>
+                    <span className="text-[10px] font-mono text-slate-400">Progression Architecture</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* TOFU Hook */}
+                    <div className={`p-4 rounded-xl border space-y-3 flex flex-col justify-between ${
+                      isLight ? 'bg-purple-50/30 border-purple-200/80 shadow-2xs' : 'bg-purple-950/15 border-purple-500/25'
+                    }`}>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-[10px] font-mono">
+                          <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold">01 • TOFU HOOK</span>
+                          <span className="text-slate-400">Cold Discovery</span>
+                        </div>
+                        <h5 className={`text-xs font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                          {selectedCohort.funnelTriggers.tofuHook.headline}
+                        </h5>
+                        <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                          {selectedCohort.funnelTriggers.tofuHook.mechanism}
+                        </p>
+                      </div>
+
+                      {/* Sample Hook Box */}
+                      <div className={`p-2.5 rounded-lg border space-y-1 ${
+                        isLight ? 'bg-white border-purple-200' : 'bg-black/40 border-purple-500/30'
+                      }`}>
+                        <div className="flex items-center justify-between text-[9px] font-mono uppercase font-bold text-purple-400">
+                          <span>Frame 0 Hook:</span>
+                          <button
+                            onClick={() => handleCopyHook(`cohort-tofu-${selectedCohort.id}`, selectedCohort.funnelTriggers.tofuHook.sampleHook)}
+                            className={`px-1.5 py-0.5 rounded text-[9px] flex items-center gap-1 transition ${
+                              isLight ? 'bg-purple-100 hover:bg-purple-200 text-purple-800' : 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-300'
+                            }`}
+                          >
+                            {copiedHookGapId === `cohort-tofu-${selectedCohort.id}` ? (
+                              <>
+                                <Check className="w-2.5 h-2.5 text-purple-500" />
+                                <span>Copied!</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-2.5 h-2.5" />
+                                <span>Copy</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                        <div className={`text-[11px] italic font-medium leading-snug ${isLight ? 'text-purple-950' : 'text-purple-200'}`}>
+                          "{selectedCohort.funnelTriggers.tofuHook.sampleHook}"
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* MOFU Resonance */}
+                    <div className={`p-4 rounded-xl border space-y-3 flex flex-col justify-between ${
+                      isLight ? 'bg-indigo-50/30 border-indigo-200/80 shadow-2xs' : 'bg-indigo-950/15 border-indigo-500/25'
+                    }`}>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-[10px] font-mono">
+                          <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 font-bold">02 • MOFU RESONANCE</span>
+                          <span className="text-slate-400">Problem Aware</span>
+                        </div>
+                        <h5 className={`text-xs font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                          {selectedCohort.funnelTriggers.mofuResonance.headline}
+                        </h5>
+                        <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                          {selectedCohort.funnelTriggers.mofuResonance.mechanism}
+                        </p>
+                      </div>
+
+                      <div className={`p-2.5 rounded-lg border text-[11px] font-mono ${
+                        isLight ? 'bg-white border-indigo-200 text-indigo-900' : 'bg-black/40 border-indigo-500/30 text-indigo-300'
+                      }`}>
+                        <span className="text-[9px] uppercase text-slate-400 block">Algorithmic Lever:</span>
+                        <strong className="font-semibold">{selectedCohort.funnelTriggers.mofuResonance.targetMetric}</strong>
+                      </div>
+                    </div>
+
+                    {/* BOFU Conversion */}
+                    <div className={`p-4 rounded-xl border space-y-3 flex flex-col justify-between ${
+                      isLight ? 'bg-emerald-50/40 border-emerald-200/80 shadow-2xs' : 'bg-emerald-950/15 border-emerald-500/25'
+                    }`}>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-[10px] font-mono">
+                          <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">03 • BOFU CONVERSION</span>
+                          <span className="text-slate-400">Commercial Action</span>
+                        </div>
+                        <h5 className={`text-xs font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                          {selectedCohort.funnelTriggers.bofuConversion.headline}
+                        </h5>
+                        <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                          {selectedCohort.funnelTriggers.bofuConversion.mechanism}
+                        </p>
+                      </div>
+
+                      <div className={`p-2.5 rounded-lg border text-[11px] font-mono ${
+                        isLight ? 'bg-white border-emerald-200 text-emerald-950' : 'bg-black/40 border-emerald-500/30 text-emerald-300'
+                      }`}>
+                        <span className="text-[9px] uppercase text-slate-400 block">Commercial Conversion:</span>
+                        <strong className="font-semibold">{selectedCohort.funnelTriggers.bofuConversion.action}</strong>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Primary Nightmare vs Primary Desire (Two Columns) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                   {/* Nightmare */}
-                  <div className={`p-4 rounded-xl border space-y-2 ${
+                  <div className={`p-4 sm:p-5 rounded-xl border space-y-2 ${
                     isLight ? 'bg-rose-50/50 border-rose-200/80 text-rose-950' : 'bg-rose-950/15 border-rose-500/20 text-rose-200'
                   }`}>
                     <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] text-rose-500 font-mono">
                       <span>⚠️</span>
-                      <span>Primary Nightmare (Pain / Anxiety Trigger)</span>
+                      <span>Primary Nightmare (Pain / Anxiety Trigger):</span>
                     </div>
                     <p className="leading-relaxed text-[11px]">
                       {selectedCohort.primaryNightmare}
@@ -2231,12 +2407,12 @@ export const ContentManagementView: React.FC = () => {
                   </div>
 
                   {/* Desire */}
-                  <div className={`p-4 rounded-xl border space-y-2 ${
+                  <div className={`p-4 sm:p-5 rounded-xl border space-y-2 ${
                     isLight ? 'bg-emerald-50/50 border-emerald-200/80 text-emerald-950' : 'bg-emerald-950/15 border-emerald-500/20 text-emerald-200'
                   }`}>
                     <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] text-emerald-500 font-mono">
                       <span>🎯</span>
-                      <span>Primary Desire (Greed / Relief Trigger)</span>
+                      <span>Primary Desire (Greed / Relief Trigger):</span>
                     </div>
                     <p className="leading-relaxed text-[11px]">
                       {selectedCohort.greedDesire}
@@ -2244,15 +2420,53 @@ export const ContentManagementView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Algorithmic Interaction Habit */}
-                <div className={`p-4 rounded-xl border space-y-2.5 ${
-                  isLight ? 'bg-slate-50 border-slate-200' : 'bg-black/25 border-[#282834]'
+                {/* Aeethod SaaS Wedge & Objection Handling */}
+                <div className={`p-5 rounded-xl border space-y-3 ${
+                  isLight ? 'bg-slate-50/80 border-slate-200' : 'bg-black/25 border-[#282836]'
                 }`}>
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-[10px] uppercase font-bold text-purple-400">
-                      Algorithmic Distribution Mechanism & Interaction Habit
+                    <span className="font-mono text-xs uppercase font-bold text-indigo-400 flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5" />
+                      <span>Aeethod SaaS Wedge: Objection Buster & Killer Feature</span>
                     </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-pink-500/10 text-pink-400 border border-pink-500/20">
+                    <span className="text-[10px] font-mono text-slate-400">Competitive Moat</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div className={`p-3 rounded-lg border space-y-1 ${
+                      isLight ? 'bg-white border-slate-200' : 'bg-[#151520] border-[#262634]'
+                    }`}>
+                      <span className="text-[10px] font-mono uppercase text-rose-400 font-bold block">
+                        Core Objection to Switching:
+                      </span>
+                      <p className={`text-[11px] italic ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                        "{selectedCohort.objectionToSaaS}"
+                      </p>
+                    </div>
+
+                    <div className={`p-3 rounded-lg border space-y-1 ${
+                      isLight ? 'bg-white border-emerald-200' : 'bg-[#151520] border-emerald-500/30'
+                    }`}>
+                      <span className="text-[10px] font-mono uppercase text-emerald-500 font-bold block">
+                        Aeethod Killer Feature: {selectedCohort.aeethodKillerFeature.name}
+                      </span>
+                      <p className={`text-[11px] ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                        {selectedCohort.aeethodKillerFeature.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Algorithmic Interaction Habit & Keywords */}
+                <div className={`p-5 rounded-xl border space-y-3 ${
+                  isLight ? 'bg-slate-50/80 border-slate-200' : 'bg-black/25 border-[#282834]'
+                }`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <span className="font-mono text-xs uppercase font-bold text-purple-400 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Algorithmic Distribution Mechanism & Interaction Habit</span>
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-pink-500/10 text-pink-400 border border-pink-500/20 shrink-0 self-start sm:self-auto">
                       Target Action: {selectedCohort.keyInteractionTrigger}
                     </span>
                   </div>
@@ -2279,21 +2493,84 @@ export const ContentManagementView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Tested Winning Hooks */}
-                <div className="space-y-2.5">
-                  <span className="text-xs font-bold font-mono uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                    <Play className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>Tested Winning Hooks for This Cohort:</span>
-                  </span>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                {/* Funnel Spoken CTA Blueprint for Video Outros */}
+                <div className={`p-4 rounded-xl border space-y-2 ${
+                  isLight ? 'bg-emerald-50/60 border-emerald-200' : 'bg-emerald-950/15 border-emerald-500/25'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono uppercase font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                      <Target className="w-3.5 h-3.5" />
+                      <span>Funnel Spoken CTA Blueprint: {selectedCohort.funnelCtaBlueprint.ctaType}</span>
+                    </span>
+                    <button
+                      onClick={() => handleCopyHook(`cohort-cta-${selectedCohort.id}`, selectedCohort.funnelCtaBlueprint.spokenScript)}
+                      className={`px-2 py-0.5 rounded text-[10px] font-mono flex items-center gap-1 transition ${
+                        isLight ? 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold' : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300'
+                      }`}
+                    >
+                      {copiedHookGapId === `cohort-cta-${selectedCohort.id}` ? (
+                        <>
+                          <Check className="w-2.5 h-2.5 text-emerald-500" />
+                          <span>Copied Script!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-2.5 h-2.5" />
+                          <span>Copy Script</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <div className={`p-3 rounded-lg border text-xs italic font-medium leading-relaxed ${
+                    isLight ? 'bg-white border-emerald-200 text-emerald-950 font-semibold' : 'bg-black/40 border-emerald-500/30 text-emerald-200'
+                  }`}>
+                    "{selectedCohort.funnelCtaBlueprint.spokenScript}"
+                  </div>
+                </div>
+
+                {/* Tested Winning Hooks Library */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold font-mono uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                      <Play className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>Tested Winning Hooks for This Persona:</span>
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">
+                      3 Field-Tested Openers
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {selectedCohort.winningHooks.map((hook, idx) => (
                       <div
                         key={idx}
-                        className={`p-3 rounded-xl border text-xs italic ${
+                        className={`p-3.5 rounded-xl border space-y-2 flex flex-col justify-between ${
                           isLight ? 'bg-indigo-50/30 border-indigo-200/70 text-slate-800' : 'bg-indigo-950/15 border-indigo-500/20 text-slate-200'
                         }`}
                       >
-                        "{hook}"
+                        <p className="text-xs italic leading-relaxed">
+                          "{hook}"
+                        </p>
+                        <div className="pt-2 border-t border-indigo-200/50 dark:border-indigo-500/20 flex justify-end">
+                          <button
+                            onClick={() => handleCopyHook(`cohort-hook-${selectedCohort.id}-${idx}`, hook)}
+                            className={`px-2 py-0.5 rounded text-[10px] font-mono flex items-center gap-1 transition ${
+                              isLight ? 'bg-indigo-100 hover:bg-indigo-200 text-indigo-800 font-medium' : 'bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300'
+                            }`}
+                          >
+                            {copiedHookGapId === `cohort-hook-${selectedCohort.id}-${idx}` ? (
+                              <>
+                                <Check className="w-2.5 h-2.5 text-emerald-500" />
+                                <span>Copied!</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-2.5 h-2.5" />
+                                <span>Copy Hook</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
