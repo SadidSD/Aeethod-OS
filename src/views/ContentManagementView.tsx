@@ -1713,9 +1713,8 @@ export const ContentManagementView: React.FC = () => {
             const categories = [
               'All',
               'Economics & Operations',
-              'Forensic Science & Grading',
               'Retail & Automation',
-              'Market Dynamics & Consumer Defense'
+              'Market Dynamics & Pricing Defense'
             ];
 
             const filteredGaps = WHITE_SPACE_GAPS.filter((gap) => {
@@ -1734,11 +1733,9 @@ export const ContentManagementView: React.FC = () => {
               switch (cat) {
                 case 'Economics & Operations':
                   return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-                case 'Forensic Science & Grading':
-                  return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
                 case 'Retail & Automation':
                   return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
-                case 'Market Dynamics & Consumer Defense':
+                case 'Market Dynamics & Pricing Defense':
                   return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
                 default:
                   return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
@@ -1762,7 +1759,7 @@ export const ContentManagementView: React.FC = () => {
                       <span>The White Space: Saturated Commodities vs Aeethod's Blue Ocean Radar</span>
                     </h3>
                     <p className={`text-xs mt-0.5 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                      Systematically exploit what 99% of creators ignore: rigorous unit economics, forensic optical grading, retail automation, and market defense.
+                      Systematically exploit what 99% of creators ignore: the 2.5% platform tax, sub-500ms multi-platform sync, 60fps browser card scanning, and wholesale distributor cash traps.
                     </p>
                   </div>
 
