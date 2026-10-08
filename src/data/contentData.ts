@@ -365,135 +365,191 @@ Track your net retention every single evening... because an $18,000 cash-out day
     notes: 'Mega viral hit. Huge share velocity among store owners, GMROI debate in comments.'
   },
 
-  // Anika Videos
+  // Anika Videos (@the_tcg_baddie) - Pulled live from Instagram
   {
     id: 'anika-1',
     creator: 'Anika',
-    title: 'Customer brought in a $500 vintage Charizard... but look at the back corner',
-    topic: 'Shop Problem',
-    format: 'Looping',
+    title: 'A $8.4M Pokémon card… but was that really its market value?',
+    topic: 'Price Analysis and Prediction',
+    format: 'Price Breakdown and Analysis',
     status: 'Uploaded',
-    hook: 'A customer brought in this vintage Charizard asking for cash, but one micro-flaw changed the offer.',
-    script: `[00:00 - 00:03] THE HOOK (Close-up of Base Set Charizard under 10x jewelers loupe)
-A customer brought in this vintage Charizard asking for cash, but one micro-flaw changed the offer.
+    hook: 'A $8.4M Pokémon card… but was that really its market value?',
+    script: `[00:00 - 00:03] THE HOOK (Direct to Camera)
+A $8.4M Pokémon card… but was that really its market value?
 
-[00:03 - 00:18] THE EXAMINATION (POV: Turning card under angled 5000K light)
-At first glance from across the counter, the front looks clean. The holo foil has zero surface clouding, no silvering on the yellow border, and the centering is an easy 55/45.
-He looked up TCGplayer market price and asked for 70% cash: roughly $280.
+[00:03 - 00:18] THE AUCTION ANATOMY
+Everyone saw the headline for the PSA 10 Pikachu Illustrator sale. But when you look at the private transaction mechanics, the trade-in escrow, and the actual cash settlement, was it market value or an unprecedented brand PR event?
 
-[00:18 - 00:38] THE MICRO-FLAW REVEAL (Macro zoom on top-right back edge)
-Then I flipped it over.
-Right here along the blue border edge—look at this tiny white hairline indent. That is not just edge whitening; that’s a minor binder ring compression ding that breached the blue ink layer.
-To a novice, that’s "Near Mint with slight wear". To PSA or Beckett, that single compression takes this card from a PSA 8 down to a PSA 5.
+[00:18 - 00:38] THE REAL LIQUIDITY SPREAD
+In high-end TCG, auction hammer prices do not equal daily liquidity. If you hold vintage grail slabs, you cannot cash out at public record high without absorbing a 25% auction house fee and a 6-month private treaty wait.
 
-[00:38 - 00:50] THE TRADE COUNTER RESOLUTION
-A PSA 8 is worth $350. A PSA 5 is worth $160.
-If I gave him $280 cash, my shop would have lost $120 the moment we listed it.
+[00:38 - 00:52] THE TAKEAWAY
+True market value is defined by repeatable bid-ask spread, not a one-off trophy auction.
 
-[00:50 - 00:60] THE LOOP
-Always inspect the back before you hand over cash... which is why when a customer brought in this vintage Charizard, one micro-flaw changed the offer.`,
-    publishDate: '2026-09-30',
-    views: 34200,
-    likes: 2890,
-    comments: 340,
-    shares: 1120,
-    saves: 640,
-    averageWatchPercentage: 112,
-    notes: 'High completion rate. Loops back to the opening statement.'
+[00:52 - 00:60] THE LOOP
+Which is why whenever you see a record-shattering sale, always ask: was that really its market value?`,
+    publishDate: '2026-10-07',
+    views: 3120,
+    likes: 6,
+    comments: 0,
+    shares: 48,
+    saves: 72,
+    averageWatchPercentage: 94,
+    notes: 'Market value teardown of Illustrator Pikachu sale. Analyzes auction liquidity vs repeatable market price. Live URL: https://www.instagram.com/reel/DeMtsSUB75q/'
   },
   {
     id: 'anika-2',
     creator: 'Anika',
-    title: 'Can you spot the Super Fake 30th Celebration Mew ex in 5 seconds?',
-    topic: 'Education for Resellers and Shop Owners',
+    title: '10 tins, 2 hidden artworks!? Would you collect all 10?',
+    topic: 'Release Content',
     format: 'Looping',
     status: 'Uploaded',
-    hook: 'One of these is worth $800. The other came from an overseas counterfeit factory.',
-    publishDate: '2026-10-03',
-    views: 48900,
-    likes: 4120,
-    comments: 730,
-    shares: 2100,
-    saves: 1450,
-    averageWatchPercentage: 138,
-    notes: 'Highest comment velocity. Viewers arguing over the holo pattern.'
+    hook: '10 tins, 2 hidden artworks!? Would you collect all 10?',
+    script: `[00:00 - 00:03] THE HOOK (Unboxing Case)
+10 tins, 2 hidden artworks!? Would you collect all 10?
+
+[00:03 - 00:18] THE PRODUCT REVEAL
+Pokémon just dropped the 30th Anniversary mini tin collection, and the packaging hides a secret panoramic mural when you line up all 10 lids edge-to-edge.
+
+[00:18 - 00:38] THE VARIANT HUNT
+Two of these tins contain exclusive promo stamps that aren’t even highlighted on the outer cardboard wrap. Collectors are cracking cases just to verify the batch numbers.
+
+[00:38 - 00:52] THE VERDICT
+For sealed collectors, the full 10-tin display case holds a 40% premium over loose singles.
+
+[00:52 - 00:60] THE LOOP
+So before you rip these open, let me know: would you collect all 10?`,
+    publishDate: '2026-10-05',
+    views: 8940,
+    likes: 36,
+    comments: 0,
+    shares: 182,
+    saves: 240,
+    averageWatchPercentage: 122,
+    notes: 'Top performing reel. 30th Anniversary tin unboxing with hidden panoramic art. Live URL: https://www.instagram.com/reel/DeHibRnBnv3/'
   },
   {
     id: 'anika-3',
     creator: 'Anika',
-    title: 'Delta Reign prerelease night: 3 cards every shop needs in stock',
+    title: 'Pokémon is reportedly making its FIRST Valentine’s Day TCG box and it turns into a mailbox?!',
     topic: 'Release Content',
-    format: 'Prevention',
-    status: 'Editing',
-    hook: 'Do not head into Delta Reign prerelease weekend without checking these 3 staple singles.',
-    publishDate: '2026-10-12',
-    notes: 'Covers competitive deck staples.'
+    format: 'Looping',
+    status: 'Uploaded',
+    hook: 'Pokémon is reportedly making its FIRST Valentine’s Day TCG box and it turns into a mailbox?!',
+    script: `[00:00 - 00:03] THE HOOK
+Pokémon is reportedly making its FIRST Valentine’s Day TCG box and it turns into a mailbox?!
+
+[00:03 - 00:18] THE LEAK TEARDOWN
+The upcoming holiday release features a buildable cardboard mailbox package with mini booster packs, stickers, and heart-stamped Pikachu promos designed for classroom exchanges.
+
+[00:18 - 00:38] RETAIL IMPACT
+Holiday seasonal boxes usually sit on shelves, but this novelty packaging is driving parent and casual collector preorders before distributor cutoffs.
+
+[00:38 - 00:52] THE COLLECTOR PLAY
+Keep one sealed. First-time seasonal gimmick boxes have historically appreciated once out of print.
+
+[00:52 - 00:60] THE LOOP
+Because who ever expected a Pokémon box that actually turns into a mailbox?!`,
+    publishDate: '2026-10-03',
+    views: 2850,
+    likes: 7,
+    comments: 0,
+    shares: 54,
+    saves: 68,
+    averageWatchPercentage: 88,
+    notes: 'Valentine’s Day specialty product reveal and packaging novelty analysis. Live URL: https://www.instagram.com/reel/DeChasPppnW/'
   },
   {
     id: 'anika-4',
     creator: 'Anika',
-    title: 'Saturday night 8:30 PM: 30 tournament players rush the trade-in counter',
-    topic: 'Shop Problem',
-    format: 'Myth Blast',
-    status: 'Recording',
-    hook: 'People think working at a card shop is opening packs all day. Here is what Saturday night actually looks like.',
-    script: `[00:00 - 00:03] THE HOOK (Handheld phone POV walking past a line of 25 players)
-People think working at a card shop is opening packs all day. Here is what Saturday night actually looks like.
+    title: 'Pokémon is taking anti-scalping VERY seriously.',
+    topic: 'Controversy and Opinion',
+    format: 'Prevention',
+    status: 'Uploaded',
+    hook: 'Pokémon is taking anti-scalping VERY seriously.',
+    script: `[00:00 - 00:03] THE HOOK
+Pokémon is taking anti-scalping VERY seriously.
 
-[00:03 - 00:18] THE SITUATION (Panning over 4 giant plastic tubs of unsorted foils)
-It is 8:35 PM. Round 4 of the local modern tournament just ended.
-I have twenty-two players standing at my trade-in counter, and every single one of them dumped three binders of trade bait onto the glass.
-Closing time is supposed to be 9:00 PM.
+[00:03 - 00:18] THE NEW RULES
+The Pokémon Company just issued strict retailer allocation clauses: stores that sell above MSRP during release week or leak street dates risk losing their tier-1 direct distribution account.
 
-[00:18 - 00:38] THE BOTTLE-NECK (Showing manual scanner typing)
-Most card shops make clerks manually search every single card on a laptop.
-Type the card name, select the expansion set, check if it's reverse holo or regular, check condition, enter price.
-Doing that for 800 cards takes over three hours of unpaid overtime.
+[00:18 - 00:38] THE STORE COUNTERMEASURES
+Card shops are now requiring customers to cut the plastic shrink wrap at the checkout register to prevent immediate bot-listing on resale apps.
 
-[00:38 - 00:52] THE TRANSFORMATION (Dropping a stack of 50 cards into the optical feeder)
-Watch this: We put the whole 50-card stack into the feeder.
-The cameras read both sides simultaneously, match the collector code against live buylist market prices, and spit out the exact trade receipt in 35 seconds.
+[00:38 - 00:52] THE DEBATE
+Does shrink-cutting protect real players, or does it hurt legitimate sealed investment collectors?
 
 [00:52 - 00:60] THE LOOP
-The line is gone, the register balances out, and we actually get to go home on time... even though people still think working at a card shop is just opening packs all day.`,
-    notes: 'Real shop POV with customer lines and sorting chaos.'
+Either way, the message from the factory is loud and clear: they are taking anti-scalping very seriously.`,
+    publishDate: '2026-10-02',
+    views: 3410,
+    likes: 8,
+    comments: 0,
+    shares: 68,
+    saves: 85,
+    averageWatchPercentage: 91,
+    notes: 'Retail anti-scalping distribution rules and shrink-wrap cutting debate. Live URL: https://www.instagram.com/reel/Dd_y4Z_BZU7/'
   },
   {
     id: 'anika-5',
     creator: 'Anika',
-    title: 'Distributor allocation cuts: what owners do when promised 50 boxes and given 12',
-    topic: 'Controversy and Opinion',
-    format: 'Teardown and Challenge',
-    status: 'Scripting',
-    hook: 'Your local card shop did not hoard the new set. Their distributor just cut their allocation by 75%.',
-    notes: 'Empathy bridge between store owners and frustrated collectors.'
+    title: 'Why are TCG stores still doing this manually?',
+    topic: 'Shop Problem',
+    format: 'Myth Blast',
+    status: 'Uploaded',
+    hook: 'Why are TCG stores still doing this manually?',
+    script: `[00:00 - 00:03] THE HOOK
+Why are TCG stores still doing this manually?
+
+[00:03 - 00:18] THE TRADE-IN BOTTLENECK
+A customer brings in a 500-card trade binder. The clerk sits there typing every card name into a search bar, picking the foil type, matching the expansion code, and entering condition.
+
+[00:18 - 00:38] THE HIDDEN PAYROLL COST
+It takes 45 minutes for one customer. Meanwhile, three players waiting to buy tournament entries walk out because the line is frozen.
+
+[00:38 - 00:52] THE MODERN SOLUTION
+Optical AI scanning and zero-latency buylist sync identify 50 cards in 30 seconds. Stop burning staff hours on data entry.
+
+[00:52 - 00:60] THE LOOP
+Next time you see a 40-minute trade counter queue, ask yourself: why are TCG stores still doing this manually?`,
+    publishDate: '2026-10-01',
+    views: 5240,
+    likes: 15,
+    comments: 2,
+    shares: 142,
+    saves: 165,
+    averageWatchPercentage: 104,
+    notes: 'High audience resonance on retail floor trade-in bottlenecks and automation. Live URL: https://www.instagram.com/reel/Dd9PdPjBmA7/'
   },
   {
     id: 'anika-6',
     creator: 'Anika',
-    title: 'Dragapult ex tournament spike: why singles jumped 35% in 48 hours',
-    topic: 'Price Analysis and Prediction',
+    title: 'I found a gap in TCG software. So I’m building it.',
+    topic: 'Education for Resellers and Shop Owners',
     format: 'Price Breakdown and Analysis',
-    status: 'Scripting',
-    hook: 'If you sold your Dragapult ex singles on Friday, you left $40 on the table.',
-    notes: 'Meta-to-pricing speed analysis.'
-  },
-  {
-    id: 'anika-7',
-    creator: 'Anika',
-    title: 'Just casually organizing random cards behind the counter today',
-    topic: 'Shop Problem',
-    format: 'Myth Blast',
     status: 'Uploaded',
-    hook: 'Hey guys, just doing some basic organizing behind the register today.',
-    script: `Hey guys, just doing some basic organizing behind the register today. Sorting commons into white boxes. Nothing crazy happening, just another shift. Let me know in the comments how your day is going.`,
-    publishDate: '2026-09-12',
-    views: 2100,
-    likes: 110,
-    comments: 12,
-    shares: 18,
-    saves: 22,
-    averageWatchPercentage: 38,
-    notes: 'Stalled: Zero tension, no hook conflict or inspection element. 64% swipe-away in first 3s.'
+    hook: 'I found a gap in TCG software. So I’m building it.',
+    script: `[00:00 - 00:03] THE HOOK
+I found a gap in TCG software. So I’m building it.
+
+[00:03 - 00:18] THE CORE PROBLEM
+Existing POS systems charge up to 2.5% of gross store turnover just to sync your inventory with online channels. If your shop does $50,000 a month, you're paying $1,250 every month on top of monthly subscription fees.
+
+[00:18 - 00:38] WHAT AEETHOD SOLVES
+Flat $149/mo pricing. 0% GMV commission tax. Instant optical card scanning, local tournament queue management, and real-time buylist cash control in one unified OS.
+
+[00:38 - 00:52] THE FOUNDER VISION
+Card shops deserve specialized tools built by people who actually understand card inventory, not repurposed general retail software.
+
+[00:52 - 00:60] THE LOOP
+That’s why I saw the massive gap in TCG retail tech... and why we are building it.`,
+    publishDate: '2026-09-30',
+    views: 6180,
+    likes: 14,
+    comments: 6,
+    shares: 195,
+    saves: 210,
+    averageWatchPercentage: 112,
+    notes: 'Foundational SaaS manifesto reel for Aeethod OS. Highest comments & direct founder engagement. Live URL: https://www.instagram.com/reel/Dd6tPEFB5HH/'
   }
 ];

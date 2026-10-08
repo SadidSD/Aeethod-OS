@@ -286,10 +286,24 @@ export const ContentManagementView: React.FC = () => {
     }
   };
 
-  // Video State synced with persistent store / Supabase
-  const videos: VideoRecord[] = (db && db.content_videos && db.content_videos.length > 0)
-    ? db.content_videos
-    : INITIAL_VIDEO_RECORDS;
+  // Video State synced with persistent store / Supabase with @the_tcg_baddie live sync
+  const videos: VideoRecord[] = useMemo(() => {
+    if (db && db.content_videos && db.content_videos.length > 0) {
+      // Check if Anika's videos in DB are missing real views or using legacy placeholders
+      const anikaPublishedCount = db.content_videos.filter(
+        (v) => v.creator === 'Anika' && v.views !== undefined && v.views > 0
+      ).length;
+
+      if (anikaPublishedCount === 0) {
+        // Upgrade Anika's videos with the verified @the_tcg_baddie live records
+        const sadidVideos = db.content_videos.filter((v) => v.creator !== 'Anika');
+        const anikaVerifiedVideos = INITIAL_VIDEO_RECORDS.filter((v) => v.creator === 'Anika');
+        return [...sadidVideos, ...anikaVerifiedVideos];
+      }
+      return db.content_videos;
+    }
+    return INITIAL_VIDEO_RECORDS;
+  }, [db]);
 
   // Filters
   const [topicFilter, setTopicFilter] = useState<string>('all');
@@ -647,13 +661,13 @@ export const ContentManagementView: React.FC = () => {
               <div className="flex items-center gap-2">
                 <h2 className={`text-base font-semibold tracking-tight ${isLight ? 'text-[#1a1a1a]' : 'text-white'}`}>{creator}'s Studio</h2>
                 <span className={`text-[11px] font-mono ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                  {isSadid ? '@sadid_aeethod' : '@anika_tcgops'}
+                  {isSadid ? '@sadid_aeethod' : '@the_tcg_baddie'}
                 </span>
               </div>
               <p className={`text-xs ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                 {isSadid
                   ? 'Financial auditing, unit economics & zero-latency POS inventory'
-                  : 'Retail floor POV, card inspection & trade-in counter workflows'}
+                  : 'TCG market analysis, 30th anniversary tins & retail software founder'}
               </p>
             </div>
           </div>
@@ -4845,7 +4859,7 @@ export const ContentManagementView: React.FC = () => {
                       Script Studio
                     </span>
                     <span className={`text-[11px] font-mono ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                      @{activeScriptVideo.creator === 'Sadid' ? 'sadid_aeethod' : 'anika_tcgops'}
+                      @{activeScriptVideo.creator === 'Sadid' ? 'sadid_aeethod' : 'the_tcg_baddie'}
                     </span>
                     <span className="text-slate-500 text-xs">•</span>
                     <span className={`text-[11px] font-medium ${TOPIC_CONFIG[activeScriptVideo.topic].text}`}>
