@@ -1396,40 +1396,86 @@ export const ContentManagementView: React.FC = () => {
             ? 'bg-gradient-to-br from-white via-indigo-50/40 to-purple-50/30 border-indigo-200/90 shadow-xs'
             : 'bg-gradient-to-br from-[#1b1928] via-[#151420] to-[#111018] border-[#2e2a40] shadow-xl'
         }`}>
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1.5">
+          <div className="space-y-6">
+            {/* Top Text Content - Full Width & Clean Flow */}
+            <div className="space-y-2.5 max-w-4xl">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1.5 whitespace-nowrap">
                   <Filter className="w-3 h-3" />
                   <span>SaaS Revenue Conversion Engine</span>
                 </span>
-                <span className="text-xs text-slate-400">• Organic Short-Form to $149/mo B2B Subscribers</span>
+                <span className={`text-xs ${isLight ? 'text-slate-500 font-medium' : 'text-slate-400'}`}>
+                  • Organic Short-Form to $149/mo B2B Subscribers
+                </span>
               </div>
               <h2 className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
                 TCG Conversion Funnel Architecture: TOFU, MOFU & BOFU
               </h2>
-              <p className={`text-xs sm:text-sm max-w-3xl leading-relaxed ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
-                Why traditional B2B SaaS marketing (whitepapers, cold LinkedIn outreach) completely fails in the collectibles industry: <strong className={isLight ? 'text-slate-900' : 'text-white'}>LGS owners don't read enterprise whitepapers.</strong> They scroll short-form video on Instagram Reels and YouTube Shorts at midnight after closing their physical shops. Aeethod's funnel converts cold curiosity into active paying software subscriptions.
+              <p className={`text-xs sm:text-sm leading-relaxed ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
+                Why traditional B2B SaaS marketing (whitepapers, cold LinkedIn outreach) completely fails in the collectibles industry: <strong className={isLight ? 'text-slate-900 font-semibold' : 'text-white font-semibold'}>LGS owners don't read enterprise whitepapers.</strong> They scroll short-form video on Instagram Reels and YouTube Shorts at midnight after closing their physical shops. Aeethod's funnel converts cold curiosity into active paying software subscriptions.
               </p>
             </div>
 
-            {/* Macro Industry Stats Ribbon */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 font-mono shrink-0">
-              <div className={`p-3 rounded-xl border text-center ${isLight ? 'bg-white border-indigo-200 shadow-2xs' : 'bg-black/30 border-indigo-500/20'}`}>
-                <span className="text-[10px] uppercase text-slate-400 block">Collectibles GMV</span>
-                <strong className="text-sm font-bold text-indigo-400">{TCG_INDUSTRY_ANALYSIS.macroMarketOverview.totalEstimatedGmv.split('(')[0].trim()}</strong>
+            {/* 4 Macro Industry Metric Cards - Full Width Responsive Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-4 border-t border-slate-200/60 dark:border-zinc-800/80">
+              <div className={`p-3.5 rounded-xl border flex flex-col justify-between ${isLight ? 'bg-white border-indigo-200 shadow-2xs' : 'bg-black/30 border-indigo-500/20'}`}>
+                <div>
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
+                    <span>Collectibles GMV</span>
+                    <span className="text-indigo-400 font-bold">TAM</span>
+                  </div>
+                  <div className="text-lg sm:text-xl font-black font-mono text-indigo-400">
+                    $12.5B+
+                  </div>
+                </div>
+                <div className="text-[11px] text-slate-400 mt-1 line-clamp-1">
+                  Annual Global Trading Cards
+                </div>
               </div>
-              <div className={`p-3 rounded-xl border text-center ${isLight ? 'bg-white border-purple-200 shadow-2xs' : 'bg-black/30 border-purple-500/20'}`}>
-                <span className="text-[10px] uppercase text-slate-400 block">Retail Stores</span>
-                <strong className="text-sm font-bold text-purple-400">{TCG_INDUSTRY_ANALYSIS.macroMarketOverview.activeStoresGlobal.split('(')[0].trim()}</strong>
+
+              <div className={`p-3.5 rounded-xl border flex flex-col justify-between ${isLight ? 'bg-white border-purple-200 shadow-2xs' : 'bg-black/30 border-purple-500/20'}`}>
+                <div>
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
+                    <span>Retail Stores</span>
+                    <span className="text-purple-400 font-bold">LGS</span>
+                  </div>
+                  <div className="text-lg sm:text-xl font-black font-mono text-purple-400">
+                    8,500 – 12k
+                  </div>
+                </div>
+                <div className="text-[11px] text-slate-400 mt-1 line-clamp-1">
+                  Brick-and-Mortar Card Shops
+                </div>
               </div>
-              <div className={`p-3 rounded-xl border text-center ${isLight ? 'bg-white border-emerald-200 shadow-2xs' : 'bg-black/30 border-emerald-500/20'}`}>
-                <span className="text-[10px] uppercase text-slate-400 block">Power Sellers</span>
-                <strong className="text-sm font-bold text-emerald-400">{TCG_INDUSTRY_ANALYSIS.macroMarketOverview.powerSellersCount.split('(')[0].trim()}</strong>
+
+              <div className={`p-3.5 rounded-xl border flex flex-col justify-between ${isLight ? 'bg-white border-emerald-200 shadow-2xs' : 'bg-black/30 border-emerald-500/20'}`}>
+                <div>
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
+                    <span>Power Sellers</span>
+                    <span className="text-emerald-400 font-bold">Direct</span>
+                  </div>
+                  <div className="text-lg sm:text-xl font-black font-mono text-emerald-400">
+                    45,000+
+                  </div>
+                </div>
+                <div className="text-[11px] text-slate-400 mt-1 line-clamp-1">
+                  Multi-Channel Volume Resellers
+                </div>
               </div>
-              <div className={`p-3 rounded-xl border text-center ${isLight ? 'bg-white border-pink-200 shadow-2xs' : 'bg-black/30 border-pink-500/20'}`}>
-                <span className="text-[10px] uppercase text-slate-400 block">B2B Content</span>
-                <strong className="text-sm font-bold text-pink-400">&lt;1% (Blue Ocean)</strong>
+
+              <div className={`p-3.5 rounded-xl border flex flex-col justify-between ${isLight ? 'bg-white border-pink-200 shadow-2xs' : 'bg-black/30 border-pink-500/20'}`}>
+                <div>
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
+                    <span>B2B Content Gap</span>
+                    <span className="text-pink-400 font-bold">Opportunity</span>
+                  </div>
+                  <div className="text-lg sm:text-xl font-black font-mono text-pink-400">
+                    &lt; 1% Share
+                  </div>
+                </div>
+                <div className="text-[11px] text-slate-400 mt-1 line-clamp-1">
+                  Uncontested Blue Ocean Reach
+                </div>
               </div>
             </div>
           </div>
@@ -1438,7 +1484,7 @@ export const ContentManagementView: React.FC = () => {
         {/* Interactive Funnel Simulator & Revenue Calculator */}
         <div className={`p-6 rounded-2xl border space-y-5 ${
           isLight
-            ? 'bg-gradient-to-r from-indigo-50/40 via-purple-50/30 to-emerald-50/40 border-indigo-200'
+            ? 'bg-gradient-to-r from-indigo-50/50 via-purple-50/30 to-emerald-50/50 border-indigo-200 shadow-2xs'
             : 'bg-gradient-to-r from-[#171626] via-[#1a1728] to-[#141b22] border-[#2c2840]'
         }`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1457,15 +1503,15 @@ export const ContentManagementView: React.FC = () => {
             </div>
 
             {/* Quick View Presets */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 shrink-0">
               <span className="text-[10px] font-mono uppercase text-slate-400 mr-1">Presets:</span>
               {[50000, 100000, 250000, 500000].map((preset) => (
                 <button
                   key={preset}
                   onClick={() => setSimMonthlyViews(preset)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-mono transition ${
+                  className={`px-2.5 py-1 rounded-lg text-xs font-mono transition font-medium ${
                     simMonthlyViews === preset
-                      ? 'bg-indigo-600 text-white font-bold'
+                      ? 'bg-indigo-600 text-white font-bold shadow-xs'
                       : isLight
                       ? 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
                       : 'bg-[#1e1e2c] hover:bg-[#28283a] text-slate-300 border border-[#2d2d3e]'
@@ -1478,70 +1524,78 @@ export const ContentManagementView: React.FC = () => {
           </div>
 
           {/* Calculator Inputs & Outputs Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Step 1: TOFU Views */}
-            <div className={`p-4 rounded-xl border space-y-2 ${
-              isLight ? 'bg-white border-slate-200' : 'bg-black/25 border-[#28283a]'
+            <div className={`p-4 rounded-xl border space-y-2 flex flex-col justify-between ${
+              isLight ? 'bg-white border-slate-200 shadow-2xs' : 'bg-black/25 border-[#28283a]'
             }`}>
-              <div className="text-[10px] font-mono text-purple-400 uppercase font-bold flex items-center justify-between">
-                <span>1. Monthly TOFU Views</span>
-                <span>100% Top</span>
+              <div className="space-y-1">
+                <div className="text-[10px] font-mono text-purple-400 uppercase font-bold flex items-center justify-between">
+                  <span>1. Monthly TOFU Views</span>
+                  <span className="px-1.5 py-0.2 rounded bg-purple-500/10 text-purple-400">100% Top</span>
+                </div>
+                <div className={`text-xl font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                  {simMonthlyViews.toLocaleString()}
+                </div>
               </div>
-              <div className={`text-xl font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                {simMonthlyViews.toLocaleString()}
-              </div>
-              <p className="text-[10px] text-slate-400 leading-tight">
+              <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                 Cold organic viewers reached via Reels & Shorts across collectors, players & shop owners.
               </p>
             </div>
 
             {/* Step 2: MOFU Engaged Operators */}
-            <div className={`p-4 rounded-xl border space-y-2 ${
-              isLight ? 'bg-white border-slate-200' : 'bg-black/25 border-[#28283a]'
+            <div className={`p-4 rounded-xl border space-y-2 flex flex-col justify-between ${
+              isLight ? 'bg-white border-slate-200 shadow-2xs' : 'bg-black/25 border-[#28283a]'
             }`}>
-              <div className="text-[10px] font-mono text-indigo-400 uppercase font-bold flex items-center justify-between">
-                <span>2. MOFU Engaged Operators</span>
-                <span>8% Save / DM</span>
+              <div className="space-y-1">
+                <div className="text-[10px] font-mono text-indigo-400 uppercase font-bold flex items-center justify-between">
+                  <span>2. MOFU Engaged Operators</span>
+                  <span className="px-1.5 py-0.2 rounded bg-indigo-500/10 text-indigo-400">8% Save/DM</span>
+                </div>
+                <div className={`text-xl font-bold font-mono ${isLight ? 'text-indigo-600' : 'text-indigo-400'}`}>
+                  {mofuViewers.toLocaleString()}
+                </div>
               </div>
-              <div className={`text-xl font-bold font-mono text-indigo-400`}>
-                {mofuViewers.toLocaleString()}
-              </div>
-              <p className="text-[10px] text-slate-400 leading-tight">
+              <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                 Active store owners & flippers saving fee tables or DMs forwarding to business partners.
               </p>
             </div>
 
             {/* Step 3: BOFU High Intent */}
-            <div className={`p-4 rounded-xl border space-y-2 ${
-              isLight ? 'bg-white border-slate-200' : 'bg-black/25 border-[#28283a]'
+            <div className={`p-4 rounded-xl border space-y-2 flex flex-col justify-between ${
+              isLight ? 'bg-white border-slate-200 shadow-2xs' : 'bg-black/25 border-[#28283a]'
             }`}>
-              <div className="text-[10px] font-mono text-pink-400 uppercase font-bold flex items-center justify-between">
-                <span>3. BOFU High-Intent Inquiries</span>
-                <span>5% Profile Clicks</span>
+              <div className="space-y-1">
+                <div className="text-[10px] font-mono text-pink-400 uppercase font-bold flex items-center justify-between">
+                  <span>3. BOFU High-Intent Inquiries</span>
+                  <span className="px-1.5 py-0.2 rounded bg-pink-500/10 text-pink-400">5% Clicks</span>
+                </div>
+                <div className={`text-xl font-bold font-mono ${isLight ? 'text-pink-600' : 'text-pink-400'}`}>
+                  {bofuViewers.toLocaleString()}
+                </div>
               </div>
-              <div className={`text-xl font-bold font-mono text-pink-400`}>
-                {bofuViewers.toLocaleString()}
-              </div>
-              <p className="text-[10px] text-slate-400 leading-tight">
+              <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                 Store owners tapping bio link, inspecting migration docs, or asking software pricing.
               </p>
             </div>
 
             {/* Step 4: Net Commercial SaaS Added */}
-            <div className={`p-4 rounded-xl border space-y-2 ${
-              isLight ? 'bg-emerald-50 border-emerald-200' : 'bg-emerald-950/20 border-emerald-500/30'
+            <div className={`p-4 rounded-xl border space-y-2 flex flex-col justify-between ${
+              isLight ? 'bg-emerald-50/90 border-emerald-300 shadow-2xs' : 'bg-emerald-950/20 border-emerald-500/30'
             }`}>
-              <div className="text-[10px] font-mono text-emerald-400 uppercase font-bold flex items-center justify-between">
-                <span>4. New Aeethod Subscriptions</span>
-                <span>8% Demo to Paid</span>
+              <div className="space-y-1">
+                <div className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 uppercase font-bold flex items-center justify-between">
+                  <span>4. New Aeethod Subscriptions</span>
+                  <span className="px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">8% Paid</span>
+                </div>
+                <div className={`text-xl font-bold font-mono ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>
+                  +{newSaaSStores} Stores / mo
+                </div>
+                <div className={`text-xs font-mono font-semibold ${isLight ? 'text-emerald-800' : 'text-emerald-300'}`}>
+                  +${addedMRR.toLocaleString()}/mo MRR (+${addedARR.toLocaleString()}/yr ARR)
+                </div>
               </div>
-              <div className="text-xl font-bold font-mono text-emerald-400">
-                +{newSaaSStores} Stores / mo
-              </div>
-              <div className="text-[11px] font-mono text-emerald-300 font-semibold">
-                +${addedMRR.toLocaleString()}/mo MRR (+${addedARR.toLocaleString()}/yr ARR)
-              </div>
-              <div className="text-[10px] text-slate-400 border-t border-emerald-500/20 pt-1">
+              <div className={`text-[10px] border-t pt-1.5 ${isLight ? 'border-emerald-200 text-slate-700' : 'border-emerald-500/20 text-slate-300'}`}>
                 Client stores save <strong>${clientStoresSavings.toLocaleString()}/mo</strong> vs BinderPOS 2.5% tax.
               </div>
             </div>
@@ -1561,16 +1615,16 @@ export const ContentManagementView: React.FC = () => {
                 className={`p-5 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between gap-3 ${
                   isSelected
                     ? isLight
-                      ? 'bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-500 shadow-md ring-2 ring-indigo-500/20'
+                      ? 'bg-gradient-to-br from-indigo-50/90 to-purple-50/90 border-indigo-500 shadow-md ring-2 ring-indigo-500/20'
                       : 'bg-gradient-to-br from-[#1a1a2c] to-[#1e1c2f] border-indigo-500/80 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/40'
                     : isLight
-                    ? 'bg-white hover:bg-slate-50 border-slate-200'
+                    ? 'bg-white hover:bg-slate-50 border-slate-200 shadow-2xs'
                     : 'bg-[#151520] hover:bg-[#1b1b28] border-[#262638]'
                 }`}
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-black/20 text-slate-300">
+                    <span className="text-[10px] font-mono font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-black/10 dark:bg-black/20 text-slate-700 dark:text-slate-300">
                       {stageStep}
                     </span>
                     <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${stage.badgeColor}`}>
@@ -1581,7 +1635,7 @@ export const ContentManagementView: React.FC = () => {
                     <h4 className={`text-sm font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
                       {stage.stageName}
                     </h4>
-                    <p className="text-xs text-purple-400 font-medium">
+                    <p className={`text-xs font-semibold ${isLight ? 'text-purple-700' : 'text-purple-400'}`}>
                       {stage.funnelLabel}
                     </p>
                   </div>
@@ -1590,9 +1644,9 @@ export const ContentManagementView: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-slate-200/50 dark:border-zinc-800 flex items-center justify-between text-[10px] font-mono">
-                  <span className="text-slate-400">Target Conversion:</span>
-                  <span className="font-bold text-indigo-400">{stage.callToAction.ctaType}</span>
+                <div className="pt-2.5 border-t border-slate-200/60 dark:border-zinc-800 flex items-center justify-between text-[10px] font-mono">
+                  <span className={isLight ? 'text-slate-500' : 'text-slate-400'}>Target Conversion:</span>
+                  <span className={`font-bold ${isLight ? 'text-indigo-600' : 'text-indigo-400'}`}>{stage.callToAction.ctaType}</span>
                 </div>
               </button>
             );
@@ -1615,14 +1669,16 @@ export const ContentManagementView: React.FC = () => {
                 </h4>
               </div>
               <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-slate-300'} max-w-4xl leading-relaxed`}>
-                <strong className="text-indigo-400 font-mono">Core Strategic Objective: </strong>
+                <strong className={`font-mono ${isLight ? 'text-indigo-600' : 'text-indigo-400'}`}>Core Strategic Objective: </strong>
                 {currentStage.strategicObjective}
               </p>
             </div>
 
-            <div className="px-3 py-1.5 rounded-xl bg-black/20 border border-slate-700/40 text-xs font-mono text-slate-300 shrink-0">
+            <div className={`px-3 py-1.5 rounded-xl border text-xs font-mono shrink-0 ${
+              isLight ? 'bg-slate-100 border-slate-200 text-slate-800' : 'bg-black/20 border-slate-700/40 text-slate-300'
+            }`}>
               <span className="text-slate-400 block text-[10px] uppercase">Target Audience:</span>
-              <strong className="text-white text-xs">{currentStage.targetAudience}</strong>
+              <strong className={`text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>{currentStage.targetAudience}</strong>
             </div>
           </div>
 
@@ -1636,7 +1692,11 @@ export const ContentManagementView: React.FC = () => {
               {currentStage.psychologicalTriggers.map((trig, tIdx) => (
                 <span
                   key={tIdx}
-                  className="px-2.5 py-1 rounded-lg text-xs font-mono bg-purple-500/10 text-purple-300 border border-purple-500/20"
+                  className={`px-2.5 py-1 rounded-lg text-xs font-mono border ${
+                    isLight
+                      ? 'bg-purple-50 text-purple-700 border-purple-200'
+                      : 'bg-purple-500/10 text-purple-300 border border-purple-500/20'
+                  }`}
                 >
                   ✓ {trig}
                 </span>
@@ -1661,10 +1721,10 @@ export const ContentManagementView: React.FC = () => {
                 <div
                   key={fIdx}
                   className={`p-4 rounded-xl border space-y-3 flex flex-col justify-between ${
-                    isLight ? 'bg-slate-50/70 border-slate-200' : 'bg-[#14141e] border-[#252535]'
+                    isLight ? 'bg-slate-50/70 border-slate-200 shadow-2xs' : 'bg-[#14141e] border-[#252535]'
                   }`}
                 >
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
                       <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold">
                         {fmt.runtime}
@@ -1681,16 +1741,22 @@ export const ContentManagementView: React.FC = () => {
                     </p>
 
                     {/* Tested Hook Box */}
-                    <div className="p-2.5 rounded-lg bg-black/40 border border-emerald-500/30 space-y-1">
-                      <div className="flex items-center justify-between text-[9px] font-mono text-emerald-400 uppercase font-bold">
+                    <div className={`p-2.5 rounded-lg border space-y-1 ${
+                      isLight ? 'bg-emerald-50/70 border-emerald-200' : 'bg-black/40 border-emerald-500/30'
+                    }`}>
+                      <div className="flex items-center justify-between text-[9px] font-mono uppercase font-bold text-emerald-600 dark:text-emerald-400">
                         <span>Tested Opening Hook:</span>
                         <button
                           onClick={() => handleCopyHook(`funnel-${activeFunnelStage}-${fIdx}`, fmt.testedHookExample)}
-                          className="px-1.5 py-0.2 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[9px] flex items-center gap-1 transition"
+                          className={`px-1.5 py-0.5 rounded text-[9px] flex items-center gap-1 transition ${
+                            isLight
+                              ? 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800'
+                              : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300'
+                          }`}
                         >
                           {copiedHookGapId === `funnel-${activeFunnelStage}-${fIdx}` ? (
                             <>
-                              <Check className="w-2.5 h-2.5 text-emerald-400" />
+                              <Check className="w-2.5 h-2.5 text-emerald-500" />
                               <span>Copied!</span>
                             </>
                           ) : (
@@ -1701,7 +1767,9 @@ export const ContentManagementView: React.FC = () => {
                           )}
                         </button>
                       </div>
-                      <div className="text-[11px] italic text-emerald-200 font-medium leading-snug">
+                      <div className={`text-[11px] italic font-medium leading-snug ${
+                        isLight ? 'text-emerald-950 font-semibold' : 'text-emerald-200'
+                      }`}>
                         "{fmt.testedHookExample}"
                       </div>
                     </div>
@@ -1717,7 +1785,7 @@ export const ContentManagementView: React.FC = () => {
             <div className={`p-4 rounded-xl border space-y-3 ${
               isLight ? 'bg-indigo-50/40 border-indigo-200' : 'bg-black/25 border-[#282838]'
             }`}>
-              <div className="flex items-center gap-2 text-xs font-bold font-mono text-indigo-400 uppercase">
+              <div className="flex items-center gap-2 text-xs font-bold font-mono text-indigo-500 dark:text-indigo-400 uppercase">
                 <Zap className="w-3.5 h-3.5" />
                 <span>Algorithmic Retention Gates for {currentStage.stageName}:</span>
               </div>
@@ -1726,14 +1794,14 @@ export const ContentManagementView: React.FC = () => {
                   <div
                     key={gIdx}
                     className={`p-2.5 rounded-lg border text-xs flex flex-col gap-0.5 ${
-                      isLight ? 'bg-white border-slate-200' : 'bg-[#151520] border-[#272738]'
+                      isLight ? 'bg-white border-slate-200 shadow-2xs' : 'bg-[#151520] border-[#272738]'
                     }`}
                   >
                     <div className="flex items-center justify-between font-mono text-[11px]">
-                      <span className="font-bold text-purple-400">{gate.gate}</span>
-                      <span className="font-bold text-emerald-400">{gate.metricTarget}</span>
+                      <span className={`font-bold ${isLight ? 'text-purple-700' : 'text-purple-400'}`}>{gate.gate}</span>
+                      <span className={`font-bold ${isLight ? 'text-emerald-600' : 'text-emerald-400'}`}>{gate.metricTarget}</span>
                     </div>
-                    <p className="text-[10px] text-slate-400">{gate.mechanism}</p>
+                    <p className={`text-[10px] ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{gate.mechanism}</p>
                   </div>
                 ))}
               </div>
@@ -1741,31 +1809,35 @@ export const ContentManagementView: React.FC = () => {
 
             {/* Exact CTA Blueprint */}
             <div className={`p-4 rounded-xl border space-y-3 ${
-              isLight ? 'bg-emerald-50/40 border-emerald-200' : 'bg-emerald-950/15 border-emerald-500/25'
+              isLight ? 'bg-emerald-50/50 border-emerald-200' : 'bg-emerald-950/15 border-emerald-500/25'
             }`}>
-              <div className="flex items-center gap-2 text-xs font-bold font-mono text-emerald-400 uppercase">
+              <div className="flex items-center gap-2 text-xs font-bold font-mono text-emerald-600 dark:text-emerald-400 uppercase">
                 <Target className="w-3.5 h-3.5" />
                 <span>Conversion Call-to-Action (CTA) Blueprint:</span>
               </div>
 
-              <div className="space-y-2 text-xs">
-                <div className="space-y-1">
+              <div className="space-y-2.5 text-xs">
+                <div className="space-y-0.5">
                   <span className="text-[10px] font-mono text-slate-400 uppercase block">CTA Mechanism:</span>
-                  <span className="font-mono font-bold text-emerald-300 text-xs">
+                  <span className={`font-mono font-bold text-xs ${isLight ? 'text-emerald-800' : 'text-emerald-300'}`}>
                     {currentStage.callToAction.ctaType}
                   </span>
                 </div>
 
                 <div className="space-y-1">
                   <span className="text-[10px] font-mono text-slate-400 uppercase block">Spoken Video Script / Outro:</span>
-                  <div className="p-2.5 rounded-lg bg-black/40 border border-emerald-500/30 text-[11px] italic text-emerald-200 font-medium">
+                  <div className={`p-2.5 rounded-lg border text-[11px] italic font-medium leading-relaxed ${
+                    isLight
+                      ? 'bg-white border-emerald-200 text-emerald-950 shadow-2xs font-semibold'
+                      : 'bg-black/40 border-emerald-500/30 text-emerald-200'
+                  }`}>
                     {currentStage.callToAction.sampleCopy}
                   </div>
                 </div>
 
-                <div className="space-y-1 pt-1 border-t border-emerald-500/20">
+                <div className="space-y-0.5 pt-1.5 border-t border-emerald-500/20">
                   <span className="text-[10px] font-mono text-slate-400 uppercase block">Target Conversion Asset:</span>
-                  <span className="font-mono text-xs text-white">
+                  <span className={`font-mono text-xs font-semibold ${isLight ? 'text-slate-900' : 'text-white'}`}>
                     {currentStage.callToAction.conversionAsset}
                   </span>
                 </div>
@@ -1788,40 +1860,40 @@ export const ContentManagementView: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
             <div className={`p-4 rounded-xl border space-y-2 ${
-              isLight ? 'bg-white border-slate-200' : 'bg-black/30 border-[#252538]'
+              isLight ? 'bg-white border-slate-200 shadow-2xs' : 'bg-black/30 border-[#252538]'
             }`}>
               <div className="flex items-center justify-between text-[10px] font-mono">
                 <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold">DAY 01 • TOFU</span>
                 <span className="text-slate-400">Cold Curiosity</span>
               </div>
-              <div className="font-bold font-mono text-slate-200">The 11:30 PM Midnight Scroll</div>
-              <p className="text-[11px] text-slate-400 leading-relaxed">
+              <div className={`font-bold font-mono ${isLight ? 'text-slate-900' : 'text-slate-100'}`}>The 11:30 PM Midnight Scroll</div>
+              <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                 An exhausted card shop owner scrolls Instagram Reels in bed after closing. They see: <em>"Can vision AI spot the difference between Revised and Unlimited MTG in 0.5s?"</em> They watch it twice (APW &gt;140%) because it's visually arresting.
               </p>
             </div>
 
             <div className={`p-4 rounded-xl border space-y-2 ${
-              isLight ? 'bg-white border-slate-200' : 'bg-black/30 border-[#252538]'
+              isLight ? 'bg-white border-slate-200 shadow-2xs' : 'bg-black/30 border-[#252538]'
             }`}>
               <div className="flex items-center justify-between text-[10px] font-mono">
                 <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 font-bold">DAY 04 • MOFU</span>
                 <span className="text-slate-400">Financial Outrage</span>
               </div>
-              <div className="font-bold font-mono text-slate-200">The 2.5% Commission Autopsy</div>
-              <p className="text-[11px] text-slate-400 leading-relaxed">
+              <div className={`font-bold font-mono ${isLight ? 'text-slate-900' : 'text-slate-100'}`}>The 2.5% Commission Autopsy</div>
+              <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                 The algorithm serves them Sadid's ledger audit: <em>"If you sell $60k/mo, your software vendor steals $1,500 every 30 days."</em> They check their BinderPOS bill ($1,420) and immediately DM the video to their co-owner: <em>"Look at this. We're bleeding cash."</em>
               </p>
             </div>
 
             <div className={`p-4 rounded-xl border space-y-2 ${
-              isLight ? 'bg-white border-slate-200' : 'bg-black/30 border-[#252538]'
+              isLight ? 'bg-white border-slate-200 shadow-2xs' : 'bg-black/30 border-[#252538]'
             }`}>
               <div className="flex items-center justify-between text-[10px] font-mono">
                 <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">DAY 07 • BOFU</span>
                 <span className="text-slate-400">Commercial Conversion</span>
               </div>
-              <div className="font-bold font-mono text-slate-200">The 320ms Redis Delist Demo</div>
-              <p className="text-[11px] text-slate-400 leading-relaxed">
+              <div className={`font-bold font-mono ${isLight ? 'text-slate-900' : 'text-slate-100'}`}>The 320ms Redis Delist Demo</div>
+              <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                 They tap Aeethod's profile, watch the pinned split-screen demo delisting a $400 slab across eBay in 320ms with 0% GMV flat pricing, click the bio link, and book a 15-minute migration demo to switch platforms.
               </p>
             </div>
@@ -1845,7 +1917,7 @@ export const ContentManagementView: React.FC = () => {
                   isLight ? 'bg-white border-slate-200 shadow-2xs' : 'bg-[#151520] border-[#262636]'
                 }`}
               >
-                <div className="flex items-center gap-1.5 text-rose-400 font-mono text-xs font-bold uppercase">
+                <div className="flex items-center gap-1.5 text-rose-500 font-mono text-xs font-bold uppercase">
                   <span>✕</span>
                   <span>{trap.trapName}</span>
                 </div>
@@ -1853,8 +1925,8 @@ export const ContentManagementView: React.FC = () => {
                   {trap.trapFlaw}
                 </p>
                 <div className="pt-2 border-t border-slate-200/50 dark:border-zinc-800 text-[11px]">
-                  <span className="text-emerald-400 font-mono font-bold block text-[10px] uppercase">Aeethod Solution:</span>
-                  <span className={isLight ? 'text-slate-700' : 'text-slate-300'}>{trap.aeethodCounterMove}</span>
+                  <span className={`font-mono font-bold block text-[10px] uppercase ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>Aeethod Solution:</span>
+                  <span className={isLight ? 'text-slate-800 font-medium' : 'text-slate-300'}>{trap.aeethodCounterMove}</span>
                 </div>
               </div>
             ))}
@@ -2069,7 +2141,7 @@ export const ContentManagementView: React.FC = () => {
                   <button
                     key={m.id}
                     onClick={() => setStrategyModule(m.id as any)}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
+                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition whitespace-nowrap ${
                       isActive
                         ? 'bg-purple-600 text-white shadow-sm'
                         : isLight
