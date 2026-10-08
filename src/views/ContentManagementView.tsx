@@ -174,8 +174,10 @@ export const ContentManagementView: React.FC = () => {
 
   // White Space Content Spaces State
   const [gapCategoryFilter, setGapCategoryFilter] = useState<string>('All');
+  const [spaceFunnelFilter, setSpaceFunnelFilter] = useState<'All' | 'TOFU' | 'MOFU' | 'BOFU'>('All');
   const [gapSearchQuery, setGapSearchQuery] = useState('');
   const [copiedHookGapId, setCopiedHookGapId] = useState<string | null>(null);
+  const [copiedCtaSpaceId, setCopiedCtaSpaceId] = useState<string | null>(null);
   const [expandedSpaces, setExpandedSpaces] = useState<Record<string, boolean>>({
     'cs-margin-tax': true,
     'cs-intake-velocity': true
@@ -193,6 +195,14 @@ export const ContentManagementView: React.FC = () => {
       navigator.clipboard.writeText(hook);
       setCopiedHookGapId(gapId);
       setTimeout(() => setCopiedHookGapId(null), 2200);
+    }
+  };
+
+  const handleCopyCta = (spaceId: string, script: string) => {
+    if (navigator?.clipboard) {
+      navigator.clipboard.writeText(script);
+      setCopiedCtaSpaceId(spaceId);
+      setTimeout(() => setCopiedCtaSpaceId(null), 2200);
     }
   };
 
@@ -2593,11 +2603,21 @@ export const ContentManagementView: React.FC = () => {
 
             const filteredSpaces = CONTENT_SPACES.filter((space) => {
               const matchesCat = gapCategoryFilter === 'All' || space.category === gapCategoryFilter;
+              const matchesFunnel =
+                spaceFunnelFilter === 'All' ||
+                space.funnelStagePill.includes(spaceFunnelFilter) ||
+                space.funnelStage.includes(spaceFunnelFilter);
               const matchesSearch =
                 !gapSearchQuery ||
                 space.title.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
                 space.tagline.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
                 space.strategicDomain.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
+                space.funnelStage.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
+                space.cohortsServed.some(
+                  (c) =>
+                    c.cohortName.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
+                    c.cohortRole.toLowerCase().includes(gapSearchQuery.toLowerCase())
+                ) ||
                 space.aeethodSaaSAnchor.featureName.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
                 space.recurringSeries.some((s) => s.title.toLowerCase().includes(gapSearchQuery.toLowerCase())) ||
                 space.videoAnglesLibrary.some(
@@ -2605,7 +2625,7 @@ export const ContentManagementView: React.FC = () => {
                     a.title.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
                     a.hook.toLowerCase().includes(gapSearchQuery.toLowerCase())
                 );
-              return matchesCat && matchesSearch;
+              return matchesCat && matchesFunnel && matchesSearch;
             });
 
             const getCategoryColor = (cat: string) => {
@@ -2620,6 +2640,21 @@ export const ContentManagementView: React.FC = () => {
                   return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
                 default:
                   return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+              }
+            };
+
+            const getFunnelBadgeColor = (pill: string) => {
+              switch (pill) {
+                case 'TOFU':
+                  return 'bg-fuchsia-500/15 text-fuchsia-400 border-fuchsia-500/30';
+                case 'TOFU-MOFU':
+                  return 'bg-purple-500/15 text-purple-400 border-purple-500/30';
+                case 'MOFU':
+                  return 'bg-sky-500/15 text-sky-400 border-sky-500/30';
+                case 'BOFU':
+                  return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
+                default:
+                  return 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30';
               }
             };
 
@@ -2728,39 +2763,78 @@ export const ContentManagementView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Category Filter Chips */}
-                  <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-200/40 dark:border-zinc-800/60">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mr-1">
-                      Category Domain:
-                    </span>
-                    {categories.map((cat) => {
-                      const isActive = gapCategoryFilter === cat;
-                      const count =
-                        cat === 'All'
-                          ? CONTENT_SPACES.length
-                          : CONTENT_SPACES.filter((g) => g.category === cat).length;
+                  {/* Funnel Tier & Category Filter Controls */}
+                  <div className="space-y-2.5 pt-2 border-t border-slate-200/40 dark:border-zinc-800/60">
+                    {/* Funnel Stage Filter */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1">
+                        <Filter className="w-3 h-3 text-purple-400" />
+                        <span>Funnel Stage:</span>
+                      </span>
+                      {(['All', 'TOFU', 'MOFU', 'BOFU'] as const).map((tier) => {
+                        const isActive = spaceFunnelFilter === tier;
+                        const count =
+                          tier === 'All'
+                            ? CONTENT_SPACES.length
+                            : CONTENT_SPACES.filter((s) => s.funnelStagePill.includes(tier) || s.funnelStage.includes(tier)).length;
 
-                      return (
-                        <button
-                          key={cat}
-                          onClick={() => setGapCategoryFilter(cat)}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-mono transition flex items-center gap-1.5 ${
-                            isActive
-                              ? 'bg-indigo-600 text-white font-bold shadow-xs'
-                              : isLight
-                              ? 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-200'
-                              : 'bg-[#1e1e28] hover:bg-[#282838] text-slate-300 border border-[#2d2d3e]'
-                          }`}
-                        >
-                          <span>{cat}</span>
-                          <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                            isActive ? 'bg-white/20 text-white' : 'bg-black/20 text-slate-400'
-                          }`}>
-                            {count}
-                          </span>
-                        </button>
-                      );
-                    })}
+                        return (
+                          <button
+                            key={tier}
+                            onClick={() => setSpaceFunnelFilter(tier)}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-mono transition flex items-center gap-1.5 ${
+                              isActive
+                                ? 'bg-purple-600 text-white font-bold shadow-xs'
+                                : isLight
+                                ? 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-200'
+                                : 'bg-[#1e1e28] hover:bg-[#282838] text-slate-300 border border-[#2d2d3e]'
+                            }`}
+                          >
+                            <span>{tier === 'All' ? 'All Stages' : `${tier} Stage`}</span>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                              isActive ? 'bg-white/20 text-white' : 'bg-black/20 text-slate-400'
+                            }`}>
+                              {count}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Category Filter Chips */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mr-1">
+                        Category Domain:
+                      </span>
+                      {categories.map((cat) => {
+                        const isActive = gapCategoryFilter === cat;
+                        const count =
+                          cat === 'All'
+                            ? CONTENT_SPACES.length
+                            : CONTENT_SPACES.filter((g) => g.category === cat).length;
+
+                        return (
+                          <button
+                            key={cat}
+                            onClick={() => setGapCategoryFilter(cat)}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-mono transition flex items-center gap-1.5 ${
+                              isActive
+                                ? 'bg-indigo-600 text-white font-bold shadow-xs'
+                                : isLight
+                                ? 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-200'
+                                : 'bg-[#1e1e28] hover:bg-[#282838] text-slate-300 border border-[#2d2d3e]'
+                            }`}
+                          >
+                            <span>{cat}</span>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                              isActive ? 'bg-white/20 text-white' : 'bg-black/20 text-slate-400'
+                            }`}>
+                              {count}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
@@ -2806,6 +2880,9 @@ export const ContentManagementView: React.FC = () => {
                                 <div className="flex flex-wrap items-center gap-2">
                                   <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-md font-bold bg-indigo-600 text-white">
                                     SPACE 0{space.spaceNumber}
+                                  </span>
+                                  <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full border uppercase tracking-wider font-bold ${getFunnelBadgeColor(space.funnelStagePill)}`}>
+                                    🎯 {space.funnelStage}
                                   </span>
                                   <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full border uppercase tracking-wider font-bold ${getCategoryColor(space.category)}`}>
                                     {space.category}
@@ -2855,6 +2932,99 @@ export const ContentManagementView: React.FC = () => {
                           </div>
 
                           <div className="p-5 sm:p-6 space-y-6">
+                            {/* Audience Cohorts & Funnel Conversion Bridge */}
+                            <div className="space-y-3">
+                              {/* Audience Cohorts Served */}
+                              <div className={`p-4 rounded-xl border space-y-3 ${
+                                isLight ? 'bg-purple-50/40 border-purple-200' : 'bg-purple-950/10 border-purple-500/25'
+                              }`}>
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2">
+                                    <Users className="w-4 h-4 text-purple-400" />
+                                    <span className="text-xs font-bold font-mono uppercase tracking-wider text-purple-400">
+                                      Audience Anatomy: Cohorts Served in This Space
+                                    </span>
+                                  </div>
+                                  <span className="text-[10px] font-mono text-slate-400">
+                                    Primary Persona: <strong className="text-purple-300 uppercase">{space.primaryCohortId.replace('_', ' ')}</strong>
+                                  </span>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                                  {space.cohortsServed.map((cohort, cIdx) => (
+                                    <div
+                                      key={cIdx}
+                                      className={`p-3 rounded-lg border flex items-start gap-2.5 transition ${
+                                        isLight
+                                          ? 'bg-white border-purple-100/80 shadow-xs'
+                                          : 'bg-[#151520] border-[#29293c]'
+                                      }`}
+                                    >
+                                      <span className="text-xl shrink-0 mt-0.5">{cohort.icon}</span>
+                                      <div className="space-y-1 min-w-0">
+                                        <div className={`text-xs font-bold font-mono truncate ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                                          {cohort.cohortName}
+                                        </div>
+                                        <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                                          {cohort.cohortRole}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Funnel Progression Roadmap */}
+                              <div className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                                isLight ? 'bg-indigo-50/40 border-indigo-200' : 'bg-indigo-950/15 border-indigo-500/25'
+                              }`}>
+                                <div className="space-y-1">
+                                  <div className="text-[10px] font-mono uppercase tracking-wider text-indigo-400 font-bold flex items-center gap-1.5">
+                                    <ArrowRightLeft className="w-3.5 h-3.5 text-indigo-400" />
+                                    <span>Funnel Progression Mechanism ({space.funnelStagePill} Tier)</span>
+                                  </div>
+                                  <p className={`text-xs ${isLight ? 'text-slate-700' : 'text-slate-200'} font-mono leading-relaxed`}>
+                                    {space.funnelProgressionMechanism}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Spoken Outro CTA Script */}
+                              <div className={`p-4 rounded-xl border space-y-2.5 ${
+                                isLight ? 'bg-emerald-50/50 border-emerald-200' : 'bg-emerald-950/15 border-emerald-500/30'
+                              }`}>
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                  <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-400 uppercase">
+                                    <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                                    <span>Tested Spoken Outro CTA: {space.spokenCtaOutro.ctaType}</span>
+                                  </div>
+                                  <button
+                                    onClick={() => handleCopyCta(space.id, space.spokenCtaOutro.script)}
+                                    className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-mono text-xs flex items-center gap-1.5 transition shrink-0 self-start sm:self-auto"
+                                  >
+                                    {copiedCtaSpaceId === space.id ? (
+                                      <>
+                                        <Check className="w-3 h-3 text-emerald-400" />
+                                        <span>Copied Script!</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Copy className="w-3 h-3" />
+                                        <span>Copy Spoken CTA</span>
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
+                                <div className={`text-xs italic font-mono leading-relaxed p-3 rounded-lg border ${
+                                  isLight
+                                    ? 'bg-white/80 border-emerald-200 text-emerald-900'
+                                    : 'bg-black/40 border-emerald-500/20 text-emerald-200'
+                                }`}>
+                                  "{space.spokenCtaOutro.script}"
+                                </div>
+                              </div>
+                            </div>
+
                             {/* 2. Side-by-Side: Saturated Red Ocean vs Blue Ocean Strategic Moat */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                               {/* Red Ocean Trap */}

@@ -79,6 +79,22 @@ export interface ContentSpace {
   strategicDomain: string;
   category: 'Economics & Operations' | 'Retail & Automation' | 'Market Dynamics & Pricing Defense' | 'Live Operations & Conventions';
   viralMultiplier: '5x DM Share' | '4x Save / Bookmark' | 'APW >120% Loop' | 'High Debate Comments';
+
+  // Funnel & Cohort Alignment
+  funnelStage: 'TOFU (Viral Curiosity)' | 'TOFU-MOFU (Validation Bridge)' | 'MOFU (Margin & Operations)' | 'BOFU (Speed & SaaS Conversion)';
+  funnelStagePill: 'TOFU' | 'MOFU' | 'BOFU' | 'TOFU-MOFU' | 'MOFU-BOFU';
+  primaryCohortId: 'lgs_owner' | 'reseller' | 'collector' | 'dreamer';
+  cohortsServed: {
+    cohortName: string;
+    cohortRole: string;
+    icon: string;
+  }[];
+  funnelProgressionMechanism: string;
+  spokenCtaOutro: {
+    ctaType: string;
+    script: string;
+  };
+
   targetAudienceB2B: string;
   whyItIsAWhiteSpace: {
     competitorBlindSpot: string;
@@ -441,6 +457,28 @@ export const CONTENT_SPACES: ContentSpace[] = [
     strategicDomain: 'Card Shop Margin Math, 2.5% GMV Incumbent Taxes, Distributor Tie-In Ratios & Cash Conversion Cycles',
     category: 'Economics & Operations',
     viralMultiplier: '5x DM Share',
+    funnelStage: 'MOFU (Margin & Operations)',
+    funnelStagePill: 'MOFU',
+    primaryCohortId: 'lgs_owner',
+    cohortsServed: [
+      {
+        cohortName: 'The Overworked LGS Owner & Store Manager',
+        cohortRole: 'Primary SaaS Buyer — Audits the $1,500/mo BinderPOS 2.5% GMV tax bleed and calculates annual margin recovery.',
+        icon: '🏢'
+      },
+      {
+        cohortName: 'The Full-Time Reseller & Power Flipper',
+        cohortRole: 'Margin Optimizer — Calculates true net cash-flow after platform commissions, shipping, and packaging decay.',
+        icon: '📦'
+      }
+    ],
+    funnelProgressionMechanism:
+      'Viewer watches 2.5% fee autopsy -> Shares to business partner / co-owner (5x DM multiplier) -> Realizes Aeethod saves $1,250/mo flat -> Books 15-minute migration demo.',
+    spokenCtaOutro: {
+      ctaType: 'Ledger Audit & Savings Calculator',
+      script:
+        'If your software vendor takes 2.5% of your card sales, DM us "AUDIT" or tap the link in bio to calculate how much net profit you are losing every 30 days.'
+    },
     targetAudienceB2B: 'LGS Owners, Store Partners, Operations Directors & Power Flippers',
     whyItIsAWhiteSpace: {
       competitorBlindSpot:
@@ -583,6 +621,28 @@ export const CONTENT_SPACES: ContentSpace[] = [
     strategicDomain: 'Automated Optical Ingestion, Card Sorting Economics, Clerk Payroll Burn & Variant Identification',
     category: 'Retail & Automation',
     viralMultiplier: '5x DM Share',
+    funnelStage: 'BOFU (Speed & SaaS Conversion)',
+    funnelStagePill: 'BOFU',
+    primaryCohortId: 'lgs_owner',
+    cohortsServed: [
+      {
+        cohortName: 'The Overworked LGS Owner & Store Manager',
+        cohortRole: 'Primary SaaS Buyer — Slashes 40 clerk hours of sorting payroll ($600+ monthly burn) and halts backroom inventory depreciation.',
+        icon: '🏢'
+      },
+      {
+        cohortName: 'The Full-Time Reseller & Power Flipper',
+        cohortRole: 'High-Velocity Ingest — Scans 500-card convention hauls in 15 minutes right from phone browser without manual typing.',
+        icon: '📦'
+      }
+    ],
+    funnelProgressionMechanism:
+      'Viewer watches 30s split-screen stopwatch battle (clerk typing vs browser vision scanner) -> Bookmarks/saves video for store operations -> Tests optical camera scan on live demo -> Upgrades store to Aeethod OS to eliminate clerk intake payroll.',
+    spokenCtaOutro: {
+      ctaType: 'Optical Scanner Interactive Demo',
+      script:
+        'Want to scan 100 cards in 90 seconds right from your phone browser without installing an app? DM us "SCAN" or test our optical engine live at aeethod.com/scan.'
+    },
     targetAudienceB2B: 'Inventory Managers, Head Clerks, Warehouse Breakers & High-Volume Sorting Staff',
     whyItIsAWhiteSpace: {
       competitorBlindSpot:
@@ -726,6 +786,28 @@ export const CONTENT_SPACES: ContentSpace[] = [
     strategicDomain: 'Sub-500ms Multi-Marketplace Syncing, Double-Selling Prevention, eBay Defect Defense & Arbitrage Protection',
     category: 'Market Dynamics & Pricing Defense',
     viralMultiplier: '5x DM Share',
+    funnelStage: 'BOFU (Speed & SaaS Conversion)',
+    funnelStagePill: 'BOFU',
+    primaryCohortId: 'lgs_owner',
+    cohortsServed: [
+      {
+        cohortName: 'The Overworked LGS Owner & Store Manager',
+        cohortRole: 'Primary SaaS Buyer — Protects Top Rated Seller status, eliminates double-selling defects, and defends $150k catalog from 5% fee penalties.',
+        icon: '🏢'
+      },
+      {
+        cohortName: 'The Full-Time Reseller & Power Flipper',
+        cohortRole: 'Multi-Channel Arbitrageur — Prevents overselling across simultaneous eBay, TCGplayer, and webstore listings during market spikes.',
+        icon: '📦'
+      }
+    ],
+    funnelProgressionMechanism:
+      'Viewer watches live 320ms Redis delist demo (physical POS scan -> instant eBay delist) -> Audits 15-minute polling bug in current POS -> Realizes defect penalty risk -> Books Aeethod migration call.',
+    spokenCtaOutro: {
+      ctaType: 'Platform Migration & Concurrency Audit',
+      script:
+        'If your store sells on eBay and in-person and you still fear double-selling cards, DM us "SYNC" to see how our sub-320ms engine protects your Top Rated Seller status.'
+    },
     targetAudienceB2B: 'E-commerce Directors, High-Volume Multi-Channel Sellers, eBay PowerSellers & LGS Owners',
     whyItIsAWhiteSpace: {
       competitorBlindSpot:
@@ -869,6 +951,33 @@ export const CONTENT_SPACES: ContentSpace[] = [
     strategicDomain: 'Buylist Turnaround Times, Customer Trade-In Friction, Self-Service Kiosks & Secondhand Legal Compliance',
     category: 'Retail & Automation',
     viralMultiplier: 'High Debate Comments',
+    funnelStage: 'TOFU-MOFU (Validation Bridge)',
+    funnelStagePill: 'TOFU-MOFU',
+    primaryCohortId: 'collector',
+    cohortsServed: [
+      {
+        cohortName: 'The Serious Collector & High-End Buyer',
+        cohortRole: 'Validation Bridge — Engages with condition grading debates, optical loupe surface scans, and fair trade-in transparency.',
+        icon: '💎'
+      },
+      {
+        cohortName: 'The Overworked LGS Owner & Store Manager',
+        cohortRole: 'Retail Operator — Solves the Friday 7:30 PM $1,200 walk-out crisis and replaces angry counter arguments with automated self-service kiosks.',
+        icon: '🏢'
+      },
+      {
+        cohortName: 'The Hobby Dreamer & Casual Fan',
+        cohortRole: 'Curiosity Engine — Hooks into counter trade drama, pack value realization, and "$50 Cash vs $85 Store Credit" dilemmas.',
+        icon: '🎮'
+      }
+    ],
+    funnelProgressionMechanism:
+      'Collector/clerk engages with front-counter trade drama or grading debate in comments -> Discovers self-service kiosk workflow solving register line locks -> Store owner realizes kiosk stops customer walk-outs -> Requests kiosk demo.',
+    spokenCtaOutro: {
+      ctaType: 'Buylist Calculator & Kiosk Guide',
+      script:
+        'Want our exact mathematical formula that turns angry buylist walk-outs into 85% store credit buyers? DM us "BUYLIST" or download the counter breakdown guide in our bio.'
+    },
     targetAudienceB2B: 'Store Managers, Counter Staff, Retail Clerks & Front-Desk Cashiers',
     whyItIsAWhiteSpace: {
       competitorBlindSpot:
@@ -1012,6 +1121,28 @@ export const CONTENT_SPACES: ContentSpace[] = [
     strategicDomain: 'Local Game Store Webstores, 60-Card Decklist Ingestion, Faceted Search Speeds & Cart Abandonment',
     category: 'Retail & Automation',
     viralMultiplier: '5x DM Share',
+    funnelStage: 'MOFU (Margin & Operations)',
+    funnelStagePill: 'MOFU',
+    primaryCohortId: 'lgs_owner',
+    cohortsServed: [
+      {
+        cohortName: 'The Overworked LGS Owner & Store Manager',
+        cohortRole: 'Primary SaaS Buyer — Recovers the 82% cart abandonment rate of local tournament players who abandon sluggish Shopify webstores.',
+        icon: '🏢'
+      },
+      {
+        cohortName: 'The Serious Collector & Competitive Player',
+        cohortRole: 'High-LTV Buyer — Demands frictionless 1-click 60-card tournament decklist ingestion and express Friday night in-store pickup.',
+        icon: '💎'
+      }
+    ],
+    funnelProgressionMechanism:
+      'Store owner or competitive player watches 30s checkout race (Shopify 25 mins vs Aeethod 3s decklist ingest) -> Discovers why local players buy on TCGplayer instead of shop webstore -> Tests decklist ingest tool -> Upgrades webstore engine.',
+    spokenCtaOutro: {
+      ctaType: 'Decklist Ingest Benchmark & Webstore Audit',
+      script:
+        'Tired of losing 80% of your local tournament singles sales to TCGplayer Cart Optimizer? DM us "DECK" or tap the link in bio to test our 1-click decklist checkout engine.'
+    },
     targetAudienceB2B: 'LGS Webstore Managers, Tournament Organizers, E-Commerce Directors & Modern Retailers',
     whyItIsAWhiteSpace: {
       competitorBlindSpot:
@@ -1155,6 +1286,33 @@ export const CONTENT_SPACES: ContentSpace[] = [
     strategicDomain: 'Card Conventions, Pop-Up Vendor Logistics, Wi-Fi Failures, Offline POS Hardware & Multi-Item Trade Math',
     category: 'Live Operations & Conventions',
     viralMultiplier: '4x Save / Bookmark',
+    funnelStage: 'TOFU (Viral Curiosity)',
+    funnelStagePill: 'TOFU',
+    primaryCohortId: 'reseller',
+    cohortsServed: [
+      {
+        cohortName: 'The Full-Time Reseller & Power Flipper',
+        cohortRole: 'Primary Target & Save Driver — Survives convention floor Wi-Fi crashes, trades six-figure slab briefcases, and reconciles 3-day cash flow.',
+        icon: '📦'
+      },
+      {
+        cohortName: 'The Hobby Dreamer & Casual Fan',
+        cohortRole: 'Curiosity Engine — Mesmerized by high-stakes convention floor adrenaline, airplane-mode transactions, and $50k deal drama.',
+        icon: '🎮'
+      },
+      {
+        cohortName: 'The Overworked LGS Owner & Store Manager',
+        cohortRole: 'Offsite Pop-Up Operator — Needs bulletproof mobile point-of-sale for regional championships without desyncing physical shop stock.',
+        icon: '🏢'
+      }
+    ],
+    funnelProgressionMechanism:
+      'High-energy hook on convention floor Wi-Fi collapse / airplane-mode cash deal ignites broad watch loops (TOFU) -> Resellers and traveling dealers bookmark video (4x Save multiplier) -> Transition into Aeethod Offline PWA and omnichannel inventory syncing (MOFU/BOFU).',
+    spokenCtaOutro: {
+      ctaType: 'Convention Resilience Checklist & PWA Test',
+      script:
+        'Traveling to your next card show or convention? DM us "SHOW" or grab our free Traveling Dealer Offline Checklist to make sure your POS never crashes when Wi-Fi drops.'
+    },
     targetAudienceB2B: 'Traveling Card Show Dealers, Regional Vendors, Convention Booth Operators & Pop-Up Sellers',
     whyItIsAWhiteSpace: {
       competitorBlindSpot:
