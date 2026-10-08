@@ -194,113 +194,6 @@ export const ContentManagementView: React.FC = () => {
     return videos.find((v) => v.id === activeScriptVideoId) || null;
   }, [videos, activeScriptVideoId]);
 
-  const getFormatTemplate = (format: ReelFormat, hook: string) => {
-    const hookText = hook ? hook : 'First spoken line with card or visual prop in hand';
-    switch (format) {
-      case 'Looping':
-        return `[00:00 - 00:03] THE HOOK (Direct to Camera + Close-up of Card)
-${hookText}
-
-[00:03 - 00:15] THE SETUP & CONFLICT (POV: Counter / B-Roll)
-Here is the context: A customer or seller brings in something that looks completely normal... until you inspect it under raking light.
-
-[00:15 - 00:35] THE CORE VALUE BREAKDOWN
-1. The micro-defect or math trap that 95% of people miss.
-2. What happens to your store margin if you accept this raw card.
-
-[00:35 - 00:50] THE FIX / HARD FACT
-Here is how professional stores protect themselves in under 5 seconds: ...
-
-[00:50 - 00:60] THE LOOP ENDING (Transitions seamlessly into first sentence)
-Always check before handing over cash... which is why ${hookText.toLowerCase()}`;
-
-      case 'Price Breakdown and Analysis':
-        return `[00:00 - 00:03] THE FINANCIAL HOOK
-${hookText}
-
-[00:03 - 00:18] THE SPREADSHEET TEARDOWN (Receipt / Calculator on screen)
-Let's run the exact transaction math:
-- Gross Sale Price: $...
-- Platform Transaction Fee: -$...
-- Payment Processing Fee: -$...
-- Packaging & Tracked Bubble Mailer: -$...
-- Real Take-Home Cash: $...
-
-[00:18 - 00:40] THE MARKET LOGIC
-Why this margin compression exists and why high revenue is deceptive: ...
-
-[00:40 - 00:55] ACTIONABLE STRATEGY
-Stop subsidizing the marketplace. Shift inventory to: ...
-
-[00:55 - 00:60] CALL TO ACTION
-Share this with a card seller who needs to audit their real margins.`;
-
-      case 'Myth Blast':
-        return `[00:00 - 00:03] THE MYTH STATEMENT
-${hookText}
-
-[00:03 - 00:20] THE FALSE BELIEF
-Everyone in the hobby repeats this rule without looking at the underlying data or print run ratios.
-
-[00:20 - 00:42] THE PROOF & HARD DATA (Loupe close-up / Historical charts)
-Here is the raw proof that completely disproves it: ...
-
-[00:42 - 00:55] WHAT SMART STORES DO INSTEAD
-Instead of tying up cash, reallocate to high-turnover inventory: ...
-
-[00:55 - 00:60] CALL TO ACTION
-What's your take? Drop your experience in the comments.`;
-
-      case 'Prevention':
-        return `[00:00 - 00:03] URGENT WARNING
-${hookText}
-
-[00:03 - 00:18] THE COSTLY MISTAKE
-If you don't catch this at the trade counter, you're looking at an instant $200 chargeback or buyer dispute.
-
-[00:18 - 00:42] THE 3-STEP AUDIT CHECKLIST
-- Step 1: Check the back edge under 5000K angled light
-- Step 2: Verify the set code and collector number on live API
-- Step 3: Run the 70% buylist formula
-
-[00:42 - 00:55] REAL-WORLD EXAMPLE
-We saved $600 yesterday using this exact intake protocol.
-
-[00:55 - 00:60] SAVE & BOOKMARK
-Save this reel so you have the checklist ready before your next trade night rush.`;
-
-      case 'Teardown and Challenge':
-        return `[00:00 - 00:04] THE DIRECT CHALLENGE
-${hookText}
-
-[00:04 - 00:20] THE STATUS QUO NIGHTMARE
-Why manual 45-second spreadsheets and guess-work pricing are bleeding retail profits: ...
-
-[00:20 - 00:42] THE HEAD-TO-HEAD SPEED TEST
-Old manual way: takes 4 minutes per card.
-Modern automated flow: takes 0.5 seconds per card.
-
-[00:42 - 00:55] THE BOTTOM-LINE IMPACT
-That's 20 hours of clerk labor saved every single weekend.
-
-[00:55 - 00:60] CALL TO ACTION
-Are you still running your trade counter on spreadsheets? Let's talk in the comments.`;
-
-      default:
-        return `[00:00 - 00:03] THE HOOK
-${hookText}
-
-[00:03 - 00:20] THE SETUP & AGITATION
-...
-
-[00:20 - 00:45] THE VALUE & DEMONSTRATION
-...
-
-[00:45 - 00:60] THE CLOSING / CALL TO ACTION
-...`;
-    }
-  };
-
   const updateVideo = (id: string, updates: Partial<VideoRecord>) => {
     update('content_videos', id, updates);
   };
@@ -753,16 +646,10 @@ ${hookText}
                                 />
 
                                 <div className="flex items-center justify-between text-[10px]">
-                                  {!vid.script ? (
-                                    <button
-                                      type="button"
-                                      onClick={() => updateVideo(vid.id, { script: getFormatTemplate(vid.format, vid.hook) })}
-                                      className="text-indigo-400 hover:underline font-mono flex items-center gap-1"
-                                    >
-                                      <span>⚡ Insert {vid.format} script outline template</span>
-                                    </button>
+                                  {vid.script ? (
+                                    <span className="text-slate-400 font-mono">Autosaved to database</span>
                                   ) : (
-                                    <span className="text-slate-400">Autosaved to database</span>
+                                    <span className="text-slate-500 font-mono">Spoken script & teleprompter text</span>
                                   )}
 
                                   <button
@@ -1549,18 +1436,9 @@ ${hookText}
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className={`block text-[11px] font-mono uppercase ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                    Whole Video Script (Optional)
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setNewVideoScript(getFormatTemplate(newVideoFormat, newVideoHook))}
-                    className="text-[10px] text-indigo-400 hover:underline font-mono"
-                  >
-                    + Insert {newVideoFormat} Outline
-                  </button>
-                </div>
+                <label className={`block text-[11px] font-mono uppercase mb-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                  Whole Video Script (Optional)
+                </label>
                 <textarea
                   rows={4}
                   value={newVideoScript}
@@ -1836,18 +1714,6 @@ ${hookText}
                         {btn.label}
                       </button>
                     ))}
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        updateVideo(activeScriptVideo.id, {
-                          script: getFormatTemplate(activeScriptVideo.format, activeScriptVideo.hook)
-                        })
-                      }
-                      className="text-[10px] font-mono px-2.5 py-1 rounded-md bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 transition ml-auto"
-                    >
-                      ⚡ Insert {activeScriptVideo.format} Outline
-                    </button>
                   </div>
 
                   {/* Main Script Textarea */}
