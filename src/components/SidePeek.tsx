@@ -62,7 +62,7 @@ export const SidePeek: React.FC = () => {
       topicId: task.topicId,
       parentId: task.id,
       title: newSubtaskTitle.trim(),
-      status: isDev ? 'ready' : 'todo',
+      status: isDev ? 'backlog' : 'todo',
       priority: task.priority,
       assignee: task.assignee,
     });
@@ -470,7 +470,7 @@ export const SidePeek: React.FC = () => {
                             checked={st.status === 'done'}
                             onChange={(e) =>
                               update('tasks', st.id, {
-                                status: e.target.checked ? 'done' : isDev ? 'ready' : 'todo',
+                                status: e.target.checked ? 'done' : isDev ? 'backlog' : 'todo',
                               })
                             }
                             className="accent-indigo-500 rounded"

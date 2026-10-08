@@ -40,7 +40,7 @@ export const QuickAddTask: React.FC = () => {
       topicId,
       title: title.trim(),
       description: description.trim(),
-      status: isDev ? 'ready' : 'todo',
+      status: isDev ? 'backlog' : 'todo',
       priority,
       assignee,
       dueDate: dueDate || null,

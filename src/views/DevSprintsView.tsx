@@ -43,7 +43,7 @@ export const DevSprintsView: React.FC = () => {
       topicId: 'dev',
       sprintId: sprintId,
       title: title,
-      status: 'ready',
+      status: 'backlog',
       type: 'feature',
       priority: 'normal',
       assignee: db.settings.team[0] || '',

@@ -55,7 +55,7 @@ export const TaskModal: React.FC = () => {
       topicId: task.topicId,
       parentId: task.id,
       title: newSubtaskTitle.trim(),
-      status: isDev ? 'ready' : 'todo',
+      status: isDev ? 'backlog' : 'todo',
       priority: task.priority,
       assignee: task.assignee,
     });
@@ -213,7 +213,7 @@ export const TaskModal: React.FC = () => {
                         checked={st.status === 'done'}
                         onChange={(e) =>
                           update('tasks', st.id, {
-                            status: e.target.checked ? 'done' : isDev ? 'ready' : 'todo',
+                            status: e.target.checked ? 'done' : isDev ? 'backlog' : 'todo',
                           })
                         }
                         className="rounded border-ink-600 text-indigo-600 focus:ring-indigo-500 w-4 h-4 bg-ink-800"
