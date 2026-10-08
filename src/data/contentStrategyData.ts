@@ -17,6 +17,9 @@ export interface AudienceCohort {
 export interface WhiteSpaceGap {
   id: string;
   niche: string;
+  category: 'Economics & Operations' | 'Forensic Science & Grading' | 'Retail & Automation' | 'Market Dynamics & Consumer Defense';
+  viralMultiplier: '5x DM Share' | '4x Save / Bookmark' | 'APW >120% Loop' | 'High Debate Comments';
+  primaryFormat: string;
   redOceanTrap: {
     title: string;
     flaw: string;
@@ -26,8 +29,10 @@ export interface WhiteSpaceGap {
     title: string;
     advantage: string;
     algorithmicMoat: string;
+    exampleHook: string;
     creator: 'Sadid' | 'Anika' | 'Both';
   };
+  tacticalChecklist: string[];
 }
 
 export interface CompetitorAnalysis {
@@ -157,49 +162,204 @@ export const AUDIENCE_COHORTS: AudienceCohort[] = [
 
 export const WHITE_SPACE_GAPS: WhiteSpaceGap[] = [
   {
-    id: 'ws-1',
-    niche: 'Card Shop Profitability & Economics',
+    id: 'ws-economics',
+    niche: 'Card Shop Unit Economics & Balance Sheet Realism',
+    category: 'Economics & Operations',
+    viralMultiplier: '5x DM Share',
+    primaryFormat: '45s Rapid Receipt Audit / Animated Fee Breakdown',
     redOceanTrap: {
-      title: 'Gross Revenue Bragging & Box Ripping',
-      flaw: 'Creators boast about selling $50,000 of cards in a month or scream at opening booster packs.',
-      consequence: 'Zero business trust, no B2B conversion, viewed as pure dopamine brain-rot.'
+      title: 'Gross Revenue Bragging & Manufactured Hype',
+      flaw: 'Creators boast about selling $50,000 of cards in a month or scream opening packs without deducting a single dollar of overhead.',
+      consequence: 'Zero business trust, no B2B conversion, dismissed by serious sellers as vanity brain-rot.'
     },
     blueOceanWedge: {
       title: 'The Brutal Balance Sheet Audit',
-      advantage: 'Sadid breaks down receipt by receipt: wholesale cost, platform fees, payment fees, packaging overhead, and actual net cash ($100 -> $26.70).',
-      algorithmicMoat: 'Triggers intense DM share velocity among business partners and store co-owners.',
+      advantage: 'Sadid performs receipt-level autopsies: wholesale COGS, marketplace commissions (10.75-13.25%), USPS shipping loss, packaging overhead, payment processing fees, and actual net cash ($100 gross -> $26.70 net cash).',
+      algorithmicMoat: 'Triggers intense DM share velocity between store partners, co-owners, and flippers ("Watch this—this is why our margins are bleeding").',
+      exampleHook: 'Selling a $100 card on a marketplace does NOT give you $100 in the bank. Here is the receipt.',
       creator: 'Sadid'
-    }
+    },
+    tacticalChecklist: [
+      'Frame 0: Drop a physical $100 bill or receipt paper onto the inspection mat with loud audio.',
+      'Second 3: Flash animated fee deduction bars (-$13.25 platform, -$4.20 shipping, -$3.10 tax/materials).',
+      'Second 20: Reveal net cash ($26.70) vs customer expectation.',
+      'Ending: Loop final sentence into the opening hook without an outro screen.'
+    ]
   },
   {
-    id: 'ws-2',
-    niche: 'Card Grading & Triage Inspection',
+    id: 'ws-forensics',
+    niche: 'Forensic Counterfeit & Optical Micro-Authentication',
+    category: 'Forensic Science & Grading',
+    viralMultiplier: 'APW >120% Loop',
+    primaryFormat: '30s 40x Jeweler Loupe Macro CSI Zoom',
     redOceanTrap: {
-      title: 'Shaky Handheld Card Show Tours',
-      flaw: 'Creators walk down convention aisles showing glass cases without stakes or forensic details.',
-      consequence: '65% swipe-away in seconds 0–3, low completion, zero evergreen saves.'
+      title: 'Blurry Handheld "Spot The Fake" Guessing Games',
+      flaw: 'Creators show low-res phone camera footage of obvious cheap fakes with giant bad fonts or missing holo stars.',
+      consequence: '65% swipe-away in seconds 0–3, low completion, zero evergreen saves from serious collectors.'
     },
     blueOceanWedge: {
-      title: 'Forensic Trade Counter CSI',
-      advantage: 'Anika zooms in under 10x jeweler loupe under 5000K angled lighting to expose micro-flaws that swing pricing by hundreds of dollars.',
-      algorithmicMoat: 'Viewers replay 1.3x to spot the flaw before the reveal, pushing APW >120%.',
+      title: 'Forensic CSI Micro-Loupe Lab',
+      advantage: 'Anika zooms in under 40x jeweler loupe under 5000K angled lighting to expose rosette print matrices vs flat inkjet dots, 365nm UV paper reactions, and 280µm vs 320µm micrometer thickness traps.',
+      algorithmicMoat: 'Viewers replay 1.4x to inspect the rosette pattern before the answer is revealed, pushing Average Percentage Watched >120%.',
+      exampleHook: 'One of these is worth $800. The other came from an overseas counterfeit factory. Can you spot it in 3 seconds?',
       creator: 'Anika'
-    }
+    },
+    tacticalChecklist: [
+      'Frame 0: Side-by-side macro view of two identical-looking cards under bright white LED.',
+      'Second 2: On-screen 3-second countdown timer with rhythmic ticking audio.',
+      'Second 10: 40x loupe zoom revealing authentic rosette print pattern vs counterfeit inkjet bleed.',
+      'Ending: Instant snap back to opening cards for seamless looping.'
+    ]
   },
   {
-    id: 'ws-3',
-    niche: 'Retail Technology & Automation',
+    id: 'ws-counter-psychology',
+    niche: 'Trade Counter Psychology & Valuation Transparency',
+    category: 'Economics & Operations',
+    viralMultiplier: 'High Debate Comments',
+    primaryFormat: '40s First-Person Trade Counter POV',
+    redOceanTrap: {
+      title: 'Staged Trade Night Flexes & Aggressive Lowballing',
+      flaw: 'Vendors flexing stacks of cash with trap music, or predatory lowballing that makes sellers feel intimidated and cheated.',
+      consequence: 'Viewers feel alienated; creates hostility toward game stores; zero actionable educational takeaway.'
+    },
+    blueOceanWedge: {
+      title: 'Behind-the-Counter Live Triage & Valuation Transparency',
+      advantage: 'Transparently explaining the exact mathematical deduction: "This vintage Venusaur is market $140 at Near Mint, but this microscopic 0.4mm binder-dent drops it to Moderately Played ($45). Here is our 70% cash offer ($31.50) vs 80% store credit ($36)."',
+      algorithmicMoat: 'Radical honesty builds generational customer trust. Fierce comments debating whether the customer should take cash or grade the card.',
+      exampleHook: 'A customer brought in this vintage Charizard asking for cash, but one micro-flaw changed the offer.',
+      creator: 'Both'
+    },
+    tacticalChecklist: [
+      'Frame 0: Card placed on rubber playmat with price tag overlay ($250).',
+      'Second 4: Tilt card under 45-degree light to reveal hidden surface binder impression.',
+      'Second 15: Show the live buylist calculation matrix on screen (NM $250 -> MP $95 -> 70% Cash $66.50).',
+      'Second 30: Ask the audience: "Would you take the $66 cash or crack and risk grading?"'
+    ]
+  },
+  {
+    id: 'ws-card-doctoring',
+    niche: '"Card Doctoring" & Fraudulent Restoration vs Preservation',
+    category: 'Forensic Science & Grading',
+    viralMultiplier: 'High Debate Comments',
+    primaryFormat: '35s UV Blacklight & Digital Caliper Investigation',
+    redOceanTrap: {
+      title: 'Unethical "Card Cleaning Hacks" & Quick Fix Guides',
+      flaw: 'Creators showing viewers how to wipe cards with baby oil, iron foils with heat, or wax scratches to artificially pass PSA grading.',
+      consequence: 'Spreads illegal alteration methods, creates buyer distrust, and results in rejected "Altered Authentic" submissions.',
+      },
+    blueOceanWedge: {
+      title: 'The Card Doctor Forensic Autopsy',
+      advantage: 'Anika demonstrates how altered, pressed, trimmed, and chemically cleaned cards are detected under oblique UV lighting and edge thickness calipers, saving collectors from $500 slab traps.',
+      algorithmicMoat: 'High-stakes controversy between hobby conservation vs outright fraud. High save rate from collectors inspecting high-value raw cards before purchase.',
+      exampleHook: 'Someone used chemical oil and an iron on this vintage card to trick PSA. Here is how our UV light caught it instantly.',
+      creator: 'Anika'
+    },
+    tacticalChecklist: [
+      'Frame 0: Split view of an apparently flawless vintage card under standard light vs under 365nm UV blacklight.',
+      'Second 5: Highlight unnatural chemical sheen and fluorescence residue on card border.',
+      'Second 18: Digital caliper measurement showing 0.2mm edge shrinkage from illegal razor trimming.',
+      'Ending: Warning prompt: "Save this checklist before buying raw vintage at your next card show."'
+    ]
+  },
+  {
+    id: 'ws-mystery-ev',
+    niche: 'Mystery Box & "Rip-and-Ship" Expected Value (EV) Deconstruction',
+    category: 'Market Dynamics & Consumer Defense',
+    viralMultiplier: '5x DM Share',
+    primaryFormat: '40s Financial Forensic Audit with Live Spreadsheet Overlay',
+    redOceanTrap: {
+      title: 'Hype Blind Purchases & Gambling Sensationalism',
+      flaw: 'Influencers blindly buying $200 mystery bags on Whatnot or TikTok Shop, screaming at filler packs and pretending they got rich.',
+      consequence: 'Glorifies gambling to teenagers, promotes bulk-dumping schemes, and burns viewer trust when viewers lose money.',
+    },
+    blueOceanWedge: {
+      title: 'The Expected Value (EV) Mathematical Autopsy',
+      advantage: 'Sadid buys viral mystery packs, catalogs every card onto a live spreadsheet with TCGplayer low prices, and calculates the exact Expected Value ($18.40) vs Purchase Price ($65.00), exposing repacks as bulk-dumping vehicles.',
+      algorithmicMoat: 'Consumer advocacy + mathematical truth. Viewers share the video with friends to warn them against buying rip-and-ship repack boxes.',
+      exampleHook: 'I spent $300 on viral TikTok "Mystery Slabs" so you don\'t have to. Here is the exact mathematical loss.',
+      creator: 'Sadid'
+    },
+    tacticalChecklist: [
+      'Frame 0: Cut open viral mystery package with large price tag "$99 Mystery Box".',
+      'Second 4: Catalog all cards onto an on-screen live spreadsheet with TCGplayer low prices.',
+      'Second 20: Tally total realized value ($28.40) and display net margin loss (-71.6%).',
+      'Second 32: Conclude with the golden rule of repacks: If EV was positive, the seller would open it themselves.'
+    ]
+  },
+  {
+    id: 'ws-automation-tech',
+    niche: 'Retail Chaos vs Computer Vision Optical Automation',
+    category: 'Retail & Automation',
+    viralMultiplier: '5x DM Share',
+    primaryFormat: '30s Visual Split-Screen Showdown',
     redOceanTrap: {
       title: 'Dry Corporate POS Software Demos',
-      flaw: 'Boring screencasts demonstrating inventory software with robotic narration.',
-      consequence: 'Instant viewer bounce, zero emotional connection.'
+      flaw: 'Boring 20-minute screen recordings of someone typing into inventory fields with robotic narration.',
+      consequence: 'Instant viewer bounce, zero emotional connection, viewed as boring commercial ads.'
     },
     blueOceanWedge: {
       title: 'Chaos vs Engineering Showdown',
-      advantage: 'Direct visual split-screen: Clerk suffering through 3 hours of manual laptop typing vs 50 cards fed into optical scanner in 35 seconds.',
-      algorithmicMoat: 'Emotional relief and shock contrast driving software signups and inquiries.',
+      advantage: 'Direct visual split-screen: Clerk suffering through 3 hours of manual laptop typing vs 50 cards fed into optical scanner in 35 seconds with instant multi-platform inventory sync.',
+      algorithmicMoat: 'Visceral, high-contrast visual shock that triggers store owners to immediately DM their managers: "We need this in our shop."',
+      exampleHook: 'Why does every card shop in America still pay a clerk $18/hr to manually type card numbers into a laptop?',
       creator: 'Both'
-    }
+    },
+    tacticalChecklist: [
+      'Frame 0: Split-screen clock running at 00:00:00.',
+      'Second 5: Contrast the frustration of manual typing vs cards rapidly flying through optical camera intake.',
+      'Second 20: Left screen finishes 4 cards; right screen finishes 100 cards and automatically updates eBay, TCGplayer, and Shopify POS.',
+      'Second 28: Call to action: "Stop burning payroll on manual intake."'
+    ]
+  },
+  {
+    id: 'ws-meta-arbitrage',
+    niche: 'Market Spike Anatomy: Tournament Meta Shocks to Buylist Arbitrage',
+    category: 'Market Dynamics & Consumer Defense',
+    viralMultiplier: '4x Save / Bookmark',
+    primaryFormat: '35s Market Spike Ticker & Tournament Replay',
+    redOceanTrap: {
+      title: 'Vague "Top 10 Cards to Buy" Speculation',
+      flaw: 'Creators posting outdated speculative lists that mislead collectors into buying at peak hype right before a reprint crash.',
+      consequence: 'Viewers lose money following bad advice; zero understanding of the underlying economic mechanism.'
+    },
+    blueOceanWedge: {
+      title: 'The 48-Hour Meta Transmission Chain',
+      advantage: 'Sadid breaks down the exact transmission chain from Sunday Regional Championship Top 8 decklists to Tuesday morning bulk buyout, showing how automated buylists dynamically reprice before stores get cleaned out by arbitrage bots.',
+      algorithmicMoat: 'High utility for both competitive players and card shop owners. High bookmark rate as viewers use the framework to predict the next spike.',
+      exampleHook: 'A rogue deck won in Japan yesterday at 6:00 AM. By 9:00 AM, these 3 twenty-cent bulk cards were selling out at $7 across America.',
+      creator: 'Sadid'
+    },
+    tacticalChecklist: [
+      'Frame 0: Slam the obscure tournament card on desk: "This was a 15-cent bulk card on Friday."',
+      'Second 4: Show the tournament Twitch stream winning play and the 1,400% price chart vertical spike.',
+      'Second 18: Show how online arbitrage bots buy out TCGplayer inventory in 20 minutes.',
+      'Second 28: Explain how smart store buylists protect against being drained by automated repricing.'
+    ]
+  },
+  {
+    id: 'ws-logistics-fees',
+    niche: 'Packaging, Shipping & Logistics Friction Breakdown',
+    category: 'Economics & Operations',
+    viralMultiplier: '4x Save / Bookmark',
+    primaryFormat: '30s Packaging Scale & Shipping Fee Breakdown',
+    redOceanTrap: {
+      title: 'Aesthetic "Pack An Order With Me" Vlogs',
+      flaw: 'Cute videos with stickers, pastel tissue paper, and lo-fi music that ignore shipping weights, postal rates, and margin viability.',
+      consequence: 'Teaches aspiring sellers unprofitable packing habits that guarantee negative net income on low-value cards.'
+    },
+    blueOceanWedge: {
+      title: 'The $1.20 Shipping Slip That Kills E-Commerce Margins',
+      advantage: 'Demonstrating the physics and economics of PWE (Plain White Envelope) vs Bubble Mailer with Tracking vs Slab Armor, showing how a 2-ounce weight miscalculation or non-machinable USPS surcharge destroys profits on single cards under $10.',
+      algorithmicMoat: 'Actionable operational education for the 100,000+ eBay and TCGplayer power sellers. High save and comment interaction discussing postage rates.',
+      exampleHook: 'If you ship raw cards under $15 inside bubble mailers with $4 tracking, you are literally paying the post office to work.',
+      creator: 'Sadid'
+    },
+    tacticalChecklist: [
+      'Frame 0: Put a single $8 card inside a padded bubble envelope with a $4.85 shipping label sticker.',
+      'Second 4: Show math: $8 Sale - $1.04 TCG Fee - $4.85 Shipping - $0.60 Mailer = $1.51 Net Cash (before cost of goods).',
+      'Second 16: Demonstrate the proper rigid semi-rigid mailer PWE setup at $0.69 postage with non-machinable stamp.',
+      'Second 26: "Save this before you pack your next 20 orders."'
+    ]
   }
 ];
 
@@ -266,6 +426,26 @@ export const DEMAND_SUPPLY_MATRIX: DemandSupplyMatrixItem[] = [
         topic: 'Optical Scanner vs Manual Typing',
         mechanism: '35-second automated intake vs 3 hours of clerk burnout.',
         hookPreview: 'Why does every card shop in America still tolerate a 45-second inventory sync delay?'
+      },
+      {
+        topic: 'Mystery Box EV Autopsies',
+        mechanism: 'Monte Carlo pull simulations cataloging repack loss.',
+        hookPreview: 'I spent $300 on viral TikTok "Mystery Slabs" so you don\'t have to. Here is the exact mathematical loss.'
+      },
+      {
+        topic: 'Card Doctor Forensic Traps',
+        mechanism: 'Exposing chemical oils, edge trimming, and UV residue.',
+        hookPreview: 'Someone used chemical oil and an iron on this vintage card to trick PSA. Here is how our UV light caught it instantly.'
+      },
+      {
+        topic: '48-Hour Tournament Meta Arbitrage',
+        mechanism: 'Connecting Sunday stream wins to Tuesday bulk buyouts.',
+        hookPreview: 'A rogue deck won in Japan yesterday at 6:00 AM. By 9:00 AM, these 3 twenty-cent bulk cards were selling out at $7 across America.'
+      },
+      {
+        topic: 'E-Commerce Logistics & PWE Economics',
+        mechanism: 'Physics of mailers vs bubble packaging margin suicide.',
+        hookPreview: 'If you ship raw cards under $15 inside bubble mailers with $4 tracking, you are literally paying the post office to work.'
       }
     ]
   },
