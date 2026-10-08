@@ -179,8 +179,8 @@ export const ContentManagementView: React.FC = () => {
   const [copiedHookGapId, setCopiedHookGapId] = useState<string | null>(null);
   const [copiedCtaSpaceId, setCopiedCtaSpaceId] = useState<string | null>(null);
   const [expandedSpaces, setExpandedSpaces] = useState<Record<string, boolean>>({
-    'cs-margin-tax': true,
-    'cs-intake-velocity': true
+    'cs-tcg-whistleblower': true,
+    'cs-counter-buylist': true
   });
 
   const toggleSpaceExpanded = (id: string) => {
@@ -2678,23 +2678,27 @@ export const ContentManagementView: React.FC = () => {
                         <Compass className="w-4 h-4" />
                       </span>
                       <h3 className={`text-sm font-bold uppercase tracking-wider font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                        The 6 Strategic Content Spaces: Macro Territories, Not Single Topics
+                        The 4 Strategic Content Spaces: 70% TOFU / 30% BOFU Talking Head Blueprint
                       </h3>
                     </div>
                     <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-slate-400'} max-w-4xl leading-relaxed`}>
-                      <strong className={isLight ? 'text-slate-900' : 'text-white'}>A Topic is for 1 video. A Content Space is an evergreen domain</strong> where multiple recurring video series, continuous angles, and retail problem-solving formats are generated over months and years for Aeethod SaaS.
+                      <strong className={isLight ? 'text-slate-900' : 'text-white'}>70% Top Funnel (Mass Reach & Founder Authority) + 30% Bottom Funnel (Aeethod SaaS Conversion)</strong>. Optimized exclusively for talking head videos with physical props, real-time screen teardowns, and copyable outro CTAs.
                     </p>
                   </div>
 
                   {/* Summary Metric Pills */}
                   <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <span className="px-3 py-1.5 rounded-xl border font-mono text-xs font-bold bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/25 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>70% TOFU / 30% BOFU</span>
+                    </span>
                     <span className="px-3 py-1.5 rounded-xl border font-mono text-xs font-bold bg-purple-500/10 text-purple-400 border-purple-500/25 flex items-center gap-1.5">
                       <Layers className="w-3.5 h-3.5" />
                       <span>{CONTENT_SPACES.length} Strategic Spaces</span>
                     </span>
                     <span className="px-3 py-1.5 rounded-xl border font-mono text-xs font-bold bg-indigo-500/10 text-indigo-400 border-indigo-500/25 flex items-center gap-1.5">
                       <Clapperboard className="w-3.5 h-3.5" />
-                      <span>{totalSeriesCount} Recurring Series</span>
+                      <span>{totalSeriesCount} Recurring Shows</span>
                     </span>
                     <span className="px-3 py-1.5 rounded-xl border font-mono text-xs font-bold bg-emerald-500/10 text-emerald-400 border-emerald-500/25 flex items-center gap-1.5">
                       <Zap className="w-3.5 h-3.5" />
@@ -2973,6 +2977,54 @@ export const ContentManagementView: React.FC = () => {
                                   ))}
                                 </div>
                               </div>
+
+                              {/* Talking Head Studio Blueprint & Personal Brand Role */}
+                              {space.talkingHeadFormat && (
+                                <div className={`p-4 rounded-xl border space-y-2.5 ${
+                                  isLight ? 'bg-amber-50/50 border-amber-200' : 'bg-amber-950/15 border-amber-500/25'
+                                }`}>
+                                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2">
+                                      <Clapperboard className="w-4 h-4 text-amber-400" />
+                                      <span className="text-xs font-bold font-mono uppercase tracking-wider text-amber-400">
+                                        Talking Head Production Blueprint & Personal Brand Role
+                                      </span>
+                                    </div>
+                                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold self-start sm:self-auto">
+                                      {space.talkingHeadFormat.funnelAllocation}
+                                    </span>
+                                  </div>
+
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs">
+                                    <div className={`p-2.5 rounded-lg border space-y-1 ${
+                                      isLight ? 'bg-white border-amber-100 shadow-xs' : 'bg-[#161622] border-[#2d2d3e]'
+                                    }`}>
+                                      <div className="text-[10px] font-mono uppercase text-amber-400 font-bold">Founder Brand Role</div>
+                                      <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                                        {space.talkingHeadFormat.founderRole}
+                                      </p>
+                                    </div>
+
+                                    <div className={`p-2.5 rounded-lg border space-y-1 ${
+                                      isLight ? 'bg-white border-amber-100 shadow-xs' : 'bg-[#161622] border-[#2d2d3e]'
+                                    }`}>
+                                      <div className="text-[10px] font-mono uppercase text-amber-400 font-bold">Camera & Mic Framing</div>
+                                      <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                                        {space.talkingHeadFormat.cameraSetup}
+                                      </p>
+                                    </div>
+
+                                    <div className={`p-2.5 rounded-lg border space-y-1 ${
+                                      isLight ? 'bg-white border-amber-100 shadow-xs' : 'bg-[#161622] border-[#2d2d3e]'
+                                    }`}>
+                                      <div className="text-[10px] font-mono uppercase text-amber-400 font-bold">Physical Props in Hand</div>
+                                      <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                                        {space.talkingHeadFormat.propsInHand}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
 
                               {/* Funnel Progression Roadmap */}
                               <div className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${

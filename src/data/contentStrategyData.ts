@@ -95,6 +95,14 @@ export interface ContentSpace {
     script: string;
   };
 
+  // Talking Head & Personal Brand Alignment
+  talkingHeadFormat?: {
+    cameraSetup: string;
+    propsInHand: string;
+    founderRole: string;
+    funnelAllocation: string;
+  };
+
   targetAudienceB2B: string;
   whyItIsAWhiteSpace: {
     competitorBlindSpot: string;
@@ -450,53 +458,409 @@ export const AUDIENCE_COHORTS: AudienceCohort[] = [
 
 export const CONTENT_SPACES: ContentSpace[] = [
   {
-    id: 'cs-margin-tax',
+    id: 'cs-tcg-whistleblower',
     spaceNumber: 1,
-    title: 'Retail Financial Forensics & Platform Tax Space',
-    tagline: 'The Store Margin, Commission Audit & Ledger Space',
-    strategicDomain: 'Card Shop Margin Math, 2.5% GMV Incumbent Taxes, Distributor Tie-In Ratios & Cash Conversion Cycles',
+    title: 'The TCG Whistleblower & Market Reality Space',
+    tagline: 'The Industry Black Box, Distributor Traps & Market Math Space',
+    strategicDomain: 'Distributor Allocation Mafias, Distributor Tie-In Ratios, Modern Sealed Liquidity Traps, Pop-Report Manipulation & Marketplace Hidden Fees',
     category: 'Economics & Operations',
     viralMultiplier: '5x DM Share',
-    funnelStage: 'MOFU (Margin & Operations)',
-    funnelStagePill: 'MOFU',
+    funnelStage: 'TOFU (Viral Curiosity)',
+    funnelStagePill: 'TOFU',
     primaryCohortId: 'lgs_owner',
     cohortsServed: [
       {
         cohortName: 'The Overworked LGS Owner & Store Manager',
-        cohortRole: 'Primary SaaS Buyer — Audits the $1,500/mo BinderPOS 2.5% GMV tax bleed and calculates annual margin recovery.',
+        cohortRole: 'Wholesale Truth — Discovers how distributor tie-in ratios and dead board games quietly strangle store liquidity.',
         icon: '🏢'
       },
       {
         cohortName: 'The Full-Time Reseller & Power Flipper',
-        cohortRole: 'Margin Optimizer — Calculates true net cash-flow after platform commissions, shipping, and packaging decay.',
+        cohortRole: 'Margin Defense — Audits marketplace commission cascades, shipping loss, and sealed product liquidity traps.',
+        icon: '📦'
+      },
+      {
+        cohortName: 'The Serious Collector & Investor',
+        cohortRole: 'Reality Check — Deconstructs grading pop-report drops and the financial illusion of modern sealed compounding.',
+        icon: '💎'
+      }
+    ],
+    funnelProgressionMechanism:
+      'Shocking distributor invoice autopsy or marketplace fee teardown hooks broad TCG audience -> Shared to business partner / co-owner (5x DM multiplier) -> Viewers identify founder as the only unbought industry whistleblower -> Transitions into Aeethod SaaS operational solutions.',
+    spokenCtaOutro: {
+      ctaType: 'Wholesale Allocation & Fee Calculator',
+      script:
+        'If you want to see our free wholesale allocation calculator that proves which distributor products are draining your store\'s cash flow, DM me "TRUTH" or check the link in bio.'
+    },
+    talkingHeadFormat: {
+      cameraSetup: 'Direct-to-camera eye contact, desktop Shure SM7B mic in frame, crisp studio lighting, fast rhetorical cadence',
+      propsInHand: 'Real printed wholesale distributor invoices, red marker, physical sealed booster boxes, and desktop calculator',
+      founderRole: 'The Unbought Industry Whistleblower — Exposing the hidden predatory math that sponsored influencers and distributors hide',
+      funnelAllocation: '35% of Total Content Output (Top Funnel / TOFU)'
+    },
+    targetAudienceB2B: 'LGS Owners, Store Partners, Power Resellers & TCG Capital Allocators',
+    whyItIsAWhiteSpace: {
+      competitorBlindSpot:
+        'Competitor creators only post consumer pack openings or vague "investing in cards" hype, while SaaS vendors post sterile feature tables with zero human voice.',
+      audiencePainAndDemand:
+        'Card store owners and resellers are exhausted by distributor blackmail, pre-order allocation cuts, and marketplace fees eating 30% of their gross cash. They crave an unbought insider who validates their reality.',
+      strategicMoat:
+        'Zero creators speak with real ledger-level mathematical precision. Dropping real numbers and distributor invoices creates immediate authority and viral DM velocity.'
+    },
+    aeethodSaaSAnchor: {
+      featureName: 'Pre-Order Allocation Modeler & Wholesale PO Safeguard',
+      productAdvantage:
+        'Links customer pre-orders directly to verified distributor POs and margin floors, preventing stores from taking capital hostage on dead allocation lines.',
+      commercialPayoff: 'Protects $20,000–$50,000 in working capital from getting locked in slow-moving distributor tie-in stock.'
+    },
+    recurringSeries: [
+      {
+        seriesId: 'series-distributor-desk',
+        title: 'The Wholesale Distributor Ratio Desk',
+        format: '45s Invoice Breakdown with physical paperwork',
+        cadence: 'Bi-Weekly Evergreen',
+        description:
+          'Exposing distributor tie-in ratios, pre-order allocation traps, and working capital deadlocks across major set releases.'
+      },
+      {
+        seriesId: 'series-liquidity-trap',
+        title: 'The Modern Sealed Liquidity Trap',
+        format: '40s Whiteboard Cash Flow Reality',
+        cadence: 'Weekly Tactical',
+        description:
+          'Deconstructing why holding 40 cases of modern booster boxes is an illiquid dead-capital trap compared to inventory turns.'
+      },
+      {
+        seriesId: 'series-fee-autopsies',
+        title: 'Marketplace Fee Autopsies',
+        format: '35s Desktop Deduction Calculator Breakdown',
+        cadence: 'Bi-Weekly Deep Dive',
+        description:
+          'Auditing real transaction statements across eBay, TCGplayer Direct, and payment processors showing true net profit margins.'
+      }
+    ],
+    videoAnglesLibrary: [
+      {
+        angleId: 'ang-1-1',
+        seriesTitle: 'The Wholesale Distributor Ratio Desk',
+        title: 'The $30,000 Distributor Allocation Lie',
+        targetAudience: 'Card Shop Owners & Sealed Investors',
+        hook: 'Ordering $30,000 in sealed product does NOT mean you\'re getting 30 cases. Here is the distributor ratio they won\'t tell you.',
+        coreMechanism:
+          'Auditing a wholesale allocation invoice on camera: Showing how distributors force stores to purchase 40% slow-moving board games to get tier allocations of Pokémon 151.',
+        executionChecklist: [
+          'Frame 0: Hold up actual distributor wholesale invoice with -$30,000 highlighted.',
+          'Second 4: Break down ratio: $30,000 spent = $6,200 actual chase product + $23,800 slow stock.',
+          'Second 18: Explain how Aeethod\'s Allocation Modeler calculates true blended break-even.',
+          'Ending: Seamless audio replay loop into opening hook.'
+        ]
+      },
+      {
+        angleId: 'ang-1-2',
+        seriesTitle: 'Marketplace Fee Autopsies',
+        title: 'The $2.49 TCGplayer Direct Labor Drain',
+        targetAudience: 'High-Volume TCGplayer Power Sellers',
+        hook: 'If you sell raw cards under $2.49 on TCGplayer Direct, you are literally donating your clerk\'s hourly labor to Jeff Bezos.',
+        coreMechanism:
+          'Tossing three 75-cent uncommon singles into trash on desk, calculating Direct intake fees, sorting labor, and packaging netting negative 12 cents per card.',
+        executionChecklist: [
+          'Frame 0: Hold three 75-cent uncommon singles to camera; slam $1 bill into trash can.',
+          'Second 5: Calculate fee cascade: 13% commission + $0.30 fixed fee + $0.50 envelope + 3 mins clerk time.',
+          'Second 17: Show how shifting bulk uncommons to local decklist pickup recovers 85% gross margin.',
+          'Ending: "Which is why selling sub-$3 singles on national marketplaces is..."'
+        ]
+      },
+      {
+        angleId: 'ang-1-3',
+        seriesTitle: 'The Modern Sealed Liquidity Trap',
+        title: 'Why 40 Cases in Your Closet Won\'t Make You Rich',
+        targetAudience: 'Sealed Product Investors & Resellers',
+        hook: 'Before you put another $5,000 into modern sealed booster boxes, let me show you the liquidity trap nobody on YouTube warns you about.',
+        coreMechanism:
+          'Whiteboard breakdown: Comparing the 3-year carrying cost, shipping weight fee ($18/case), marketplace fee (13%), and zero cash flow vs 12x singles turns.',
+        executionChecklist: [
+          'Frame 0: Sit in front of stacked sealed booster cases; tap calculator with $5,000 layout.',
+          'Second 6: Walk through selling 20 cases on eBay: 13.25% fee + $40 insured shipping + buyer scam risk.',
+          'Second 18: Contrast with turning $5,000 through local singles buylists every 30 days.',
+          'Ending: Loop back to opening question.'
+        ]
+      },
+      {
+        angleId: 'ang-1-4',
+        seriesTitle: 'Marketplace Fee Autopsies',
+        title: 'The Real Reason 90% of Card Shops Are Quietly Broke',
+        targetAudience: 'LGS Owners & Prospective Shop Founders',
+        hook: 'A local game store doing $1,000,000 in gross sales can easily lose $20,000 net profit by December. Here is the exact ledger math.',
+        coreMechanism:
+          'Dismantling a $1M card shop P&L on whiteboard: $680k wholesale COGS, $140k rent & utilities, $150k payroll, and $45k platform/merchant fees.',
+        executionChecklist: [
+          'Frame 0: Write $1,000,000 on whiteboard in green; strike through with red line to -$20,000.',
+          'Second 5: Step through the four major cash leaks that kill retail game shops.',
+          'Second 17: Reveal why software GMV commissions are the single easiest leak to eliminate.',
+          'Ending: Seamless loop into opening statement.'
+        ]
+      },
+      {
+        angleId: 'ang-1-5',
+        seriesTitle: 'The Wholesale Distributor Ratio Desk',
+        title: 'The Pre-Order Working Capital Hostage Crisis',
+        targetAudience: 'Store Owners launching new set pre-orders',
+        hook: 'Collecting $40,000 in customer pre-orders can bankrupt your card shop before release day. Here is the math.',
+        coreMechanism:
+          'Explaining distributor allocation cuts: Store collects 200 pre-orders, distributor slashes allocation by 55%, forcing refund fees and emergency market buys.',
+        executionChecklist: [
+          'Frame 0: Hold up customer pre-order spreadsheet next to red "ALLOCATION SLASHED 55%" notice.',
+          'Second 5: Detail merchant processing chargeback fees on refunds and damaged customer trust.',
+          'Second 17: Show how Aeethod links allocation caps directly to confirmed distributor POs.',
+          'Ending: Loop back to hook.'
+        ]
+      },
+      {
+        angleId: 'ang-1-6',
+        seriesTitle: 'The Modern Sealed Liquidity Trap',
+        title: 'The PSA 10 Population Drop Illusion',
+        targetAudience: 'High-End Graded Slab Collectors & Flippers',
+        hook: 'You think PSA 10 gem rates are dropping because cards are worse quality? Here is the financial incentive behind pop-report tightening.',
+        coreMechanism:
+          'Connecting grading company fee structures to secondary market slab liquidity: Why artificial population scarcity drives repeat submissions.',
+        executionChecklist: [
+          'Frame 0: Hold two identical graded slabs to camera; point to population report on phone.',
+          'Second 5: Explain the submission volume flywheel and upcharge tiers on high-grade cards.',
+          'Second 17: How to audit true liquidity before buying low-pop modern cards.',
+          'Ending: "Which is why blind pop-report investing is..."'
+        ]
+      }
+    ]
+  },
+  {
+    id: 'cs-counter-buylist',
+    spaceNumber: 2,
+    title: 'Behind-The-Counter Forensics & Buylist Psychology Space',
+    tagline: 'The Retail Counter, Buylist Psychology & Collection Valuation Space',
+    strategicDomain: 'Buylist Formulas (60% Cash vs 85% Credit), Customer Lowball Psychology, Friday Night Line Freezes, LP vs NM Grading Disputes & Collection Appraisals',
+    category: 'Retail & Automation',
+    viralMultiplier: 'High Debate Comments',
+    funnelStage: 'TOFU (Viral Curiosity)',
+    funnelStagePill: 'TOFU',
+    primaryCohortId: 'collector',
+    cohortsServed: [
+      {
+        cohortName: 'The Serious Collector & High-End Buyer',
+        cohortRole: 'Grading Truth — Engages with microscopic foil scratch debates, objective condition standards, and fair trade math.',
+        icon: '💎'
+      },
+      {
+        cohortName: 'The Overworked LGS Owner & Store Manager',
+        cohortRole: 'Counter Sanity — Learns how to mathematically de-escalate "you lowballed me" shouting matches and save peak-hour sales.',
+        icon: '🏢'
+      },
+      {
+        cohortName: 'The Hobby Dreamer & Casual Fan',
+        cohortRole: 'Curiosity & Drama — Captivated by what really happens when someone drops a $10,000 collection on a card shop counter.',
+        icon: '🎮'
+      }
+    ],
+    funnelProgressionMechanism:
+      'Talking head card debate or counter dispute hooks massive comment arguments (High Debate) -> Viewers respect founder\'s master-level retail competence -> Store owners recognize the Friday night line freeze crisis -> Primes interest for Aeethod\'s self-service buylist kiosk.',
+    spokenCtaOutro: {
+      ctaType: 'Buylist Formula & Trade-In Breakdown Guide',
+      script:
+        'Want our exact 1-page buylist formula that explains 70% cash and 85% credit mathematically so customers never feel insulted? DM me "BUYLIST" or grab it from the link in bio.'
+    },
+    talkingHeadFormat: {
+      cameraSetup: 'Intimate eye-level desk shot with overhead inspection light, rapid zoom-ins on physical cards',
+      propsInHand: 'Two identical raw cards, 10x jeweler\'s loupe, high-res magnification lens, customer buylist intake ticket',
+      founderRole: 'The Master Retail Operator — Demystifies retail friction, defending store clerks while educating collectors with mathematical fairness',
+      funnelAllocation: '35% of Total Content Output (Top Funnel / TOFU)'
+    },
+    targetAudienceB2B: 'Store Managers, Counter Staff, Retail Clerks, Card Graders & Serious Collectors',
+    whyItIsAWhiteSpace: {
+      competitorBlindSpot:
+        'YouTube trade content consists of sensationalized staged pawn-shop shouting matches or amateur card grading. Nobody explains the economic formula behind counter trade-ins.',
+      audiencePainAndDemand:
+        'Clerks dread binder drop-offs during tournament rush. Customers feel insulted by 60% cash offers. Retail owners lose thousands in walked-out booster box sales.',
+      strategicMoat:
+        'Explaining the retail math transparently transforms angry customer sentiment into trust, establishing the founder as the undisputed operational voice in TCG retail.'
+    },
+    aeethodSaaSAnchor: {
+      featureName: 'Customer-Facing Self-Service Buylist Kiosk & Compliance Engine',
+      productAdvantage:
+        'Customer iPad station that lets sellers self-scan submissions, calculates tier payouts, and handles ID compliance in 2 minutes without locking the cashier register.',
+      commercialPayoff: 'Eliminates peak-hour register freezes and stops $1,200/night in retail customer walk-outs.'
+    },
+    recurringSeries: [
+      {
+        seriesId: 'series-shop-said-no',
+        title: 'Why Your Local Shop Said "No"',
+        format: '40s Collection Rejection & Appraisal Teardown',
+        cadence: 'Weekly Tactical',
+        description:
+          'Teardowns of why cards get rejected or lowballed: Liquidity drag, condition damage, reprint risk, and capital velocity.'
+      },
+      {
+        seriesId: 'series-buylist-formula',
+        title: 'The 70% Cash vs 85% Credit Formula',
+        format: '35s Whiteboard Margin Multiplier',
+        cadence: 'Bi-Weekly Evergreen',
+        description:
+          'The mathematical proof showing why store credit generates 18% higher net margins while making customers happier.'
+      },
+      {
+        seriesId: 'series-condition-wars',
+        title: 'Condition Wars: NM vs LP Under 10x Light',
+        format: '30s Close-Up Optical Loupe Challenge',
+        cadence: 'Weekly Viral Debate',
+        description:
+          'Showing invisible micro-scratches and edge wear under desk lighting that turn a $200 Near Mint card into a $90 Lightly Played card.'
+      }
+    ],
+    videoAnglesLibrary: [
+      {
+        angleId: 'ang-2-1',
+        seriesTitle: 'The 70% Cash vs 85% Credit Formula',
+        title: 'The Friday 7:30 PM $1,200 Trade Walk-Out',
+        targetAudience: 'LGS Owners with crowded weekend tournaments',
+        hook: 'How one customer trading in a binder at 7:30 PM just cost your game store $1,200 in lost Friday night sales.',
+        coreMechanism:
+          'Talking head breakdown: A 100-card trade locks your only cashier for 40 minutes while 6 paying retail customers put down booster boxes and walk out.',
+        executionChecklist: [
+          'Frame 0: Address camera with urgency: "Friday night 7:30 PM. Your store is packed."',
+          'Second 4: Breakdown math: $400 in abandoned booster boxes + 45 mins of clerk wages spent on 1 customer.',
+          'Second 17: Introduce the self-service iPad station concept where customers submit trades independently.',
+          'Ending: "Stop letting trade binders lock your front registers."'
+        ]
+      },
+      {
+        angleId: 'ang-2-2',
+        seriesTitle: 'The 70% Cash vs 85% Credit Formula',
+        title: 'Why 65% Cash for Your Collection Isn\'t a Robbery',
+        targetAudience: 'Collectors complaining about buylist payouts',
+        hook: 'When a card shop offers you 65% cash for your collection, they aren\'t robbing you. Here is where the other 35% actually goes.',
+        coreMechanism:
+          'Deduction math on desk: 13.25% eBay fee + $4 tracked shipping + $3 clerk inspection + 60 days price depreciation risk.',
+        executionChecklist: [
+          'Frame 0: Hand $65 cash across table for a $100 raw card; look directly into camera.',
+          'Second 5: Subtract the real commercial deductions on a desktop calculator: net store profit is only $11.75.',
+          'Second 18: Explain why store credit at 85% is the true win-win for both parties.',
+          'Ending: Loop seamlessly back into opening hook.'
+        ]
+      },
+      {
+        angleId: 'ang-2-3',
+        seriesTitle: 'The 70% Cash vs 85% Credit Formula',
+        title: 'The 85% Store Credit Margin Multiplier',
+        targetAudience: 'Store Owners managing cash flow',
+        hook: 'Why offering 85% store credit instead of 65% cash actually increases your net retail profit margin by 18%.',
+        coreMechanism:
+          'Tracing the cash cycle: Store credit stays in the ecosystem and gets spent on sealed product with 40% retail markup.',
+        executionChecklist: [
+          'Frame 0: Hold $65 cash bill in left hand, $85 store credit voucher in right hand.',
+          'Second 5: Map where the $85 credit goes: spent on booster boxes with wholesale COGS of $51.',
+          'Second 17: Show how the store acquired a $100 single for only $51 cash equivalent.',
+          'Ending: Loop back to hook.'
+        ]
+      },
+      {
+        angleId: 'ang-2-4',
+        seriesTitle: 'Condition Wars: NM vs LP Under 10x Light',
+        title: 'Micro-Scratch Wars: The $150 Condition Disagreement',
+        targetAudience: 'Counter Clerks & Card Collectors',
+        hook: 'A customer swore this Charizard was Near Mint. Look at what happens when I put it under a 10x inspection light.',
+        coreMechanism:
+          'Close-up camera zoom: Showing invisible foil clouding and back-edge silvering that drops card value from NM to MP.',
+        executionChecklist: [
+          'Frame 0: Hold up pristine-looking holographic card to lens; looks NM under room light.',
+          'Second 4: Angle under 10x inspection light: reveal micro-scratches across holographic window.',
+          'Second 16: Show how transparent customer displays de-escalate arguments without feelings hurt.',
+          'Ending: "Which is why judging condition with the naked eye is..."'
+        ]
+      },
+      {
+        angleId: 'ang-2-5',
+        seriesTitle: 'Why Your Local Shop Said "No"',
+        title: 'What Happens When Someone Drops a $25,000 Estate Collection',
+        targetAudience: 'Card Resellers & Shop Owners',
+        hook: 'A walk-in just dropped a $25,000 vintage collection on your counter. Here are the 4 legal steps before you touch a dollar.',
+        coreMechanism:
+          'Walking through high-stakes collection appraisals: Cash flow reserve requirements, secondhand dealer laws, and consignment options.',
+        executionChecklist: [
+          'Frame 0: Point to a heavy vintage binder on counter: "25 thousand dollars in raw vintage."',
+          'Second 5: Explain working capital rules: Never commit more than 20% of monthly cash reserves to 1 buy.',
+          'Second 17: Detail statutory police hold requirements on high-value collection cash payouts.',
+          'Ending: Loop back to hook.'
+        ]
+      },
+      {
+        angleId: 'ang-2-6',
+        seriesTitle: 'Why Your Local Shop Said "No"',
+        title: 'Secondhand Dealer Laws & The Police Confiscation Trap',
+        targetAudience: 'LGS Owners buying collections over the counter',
+        hook: 'Buying cards over the counter without these 2 legal steps could result in local police confiscating $10,000 of your inventory.',
+        coreMechanism:
+          'Detailing municipal pawn/secondhand dealer requirements: Government ID verification, thumbprints, and statutory 14-day hold periods.',
+        executionChecklist: [
+          'Frame 0: Hold up red municipal police violation notice overlay on card counter.',
+          'Second 5: Explain stolen collection tracing and secondhand dealer reporting mandates.',
+          'Second 16: Show Aeethod\'s built-in ID scanner and legal hold vault tracking compliance automatically.',
+          'Ending: "Protect your shop from stolen collection liability."'
+        ]
+      }
+    ]
+  },
+  {
+    id: 'cs-anti-commission-saas',
+    spaceNumber: 3,
+    title: 'The Anti-Commission SaaS Manifesto Space',
+    tagline: 'The 0% GMV Revolution, Incumbent Fee Audits & SaaS ROI Space',
+    strategicDomain: '2.5% GMV Incumbent Software Taxes, BinderPOS/Crystal Commerce Commission Bleed, Flat $149/mo SaaS Architecture & Card Shop Net Margin Recovery',
+    category: 'Economics & Operations',
+    viralMultiplier: '5x DM Share',
+    funnelStage: 'BOFU (Speed & SaaS Conversion)',
+    funnelStagePill: 'BOFU',
+    primaryCohortId: 'lgs_owner',
+    cohortsServed: [
+      {
+        cohortName: 'The Overworked LGS Owner & Store Manager',
+        cohortRole: 'Primary SaaS Buyer — Audits the $1,500/mo BinderPOS 2.5% tax bleed and books an Aeethod migration demo.',
+        icon: '🏢'
+      },
+      {
+        cohortName: 'The Full-Time Reseller & Power Flipper',
+        cohortRole: 'High-Volume Merchant — Calculates net profit recovery from eliminating gross revenue take-rates.',
         icon: '📦'
       }
     ],
     funnelProgressionMechanism:
-      'Viewer watches 2.5% fee autopsy -> Shares to business partner / co-owner (5x DM multiplier) -> Realizes Aeethod saves $1,250/mo flat -> Books 15-minute migration demo.',
+      'Talking head slams real merchant statement with -$1,500 platform fee circled in red -> Explains why Aeethod charges flat $149/mo with 0% GMV tax -> Store owner realizes they save $15k-$45k/yr -> DMs "AUDIT" or books 15-minute migration demo.',
     spokenCtaOutro: {
-      ctaType: 'Ledger Audit & Savings Calculator',
+      ctaType: 'Platform Fee Audit & Migration Demo',
       script:
-        'If your software vendor takes 2.5% of your card sales, DM us "AUDIT" or tap the link in bio to calculate how much net profit you are losing every 30 days.'
+        'If your current card store software takes 2.5% of your gross sales, DM me "AUDIT" or go to aeethod.com to see how our flat $149/mo system saves you $1,250 every single month.'
     },
-    targetAudienceB2B: 'LGS Owners, Store Partners, Operations Directors & Power Flippers',
+    talkingHeadFormat: {
+      cameraSetup: 'Clean high-authority founder framing, screen overlay showing real merchant statements and fee comparators',
+      propsInHand: 'Physical monthly software invoices with -$1,500 circled in bright red marker, printed comparison sheet',
+      founderRole: 'The Founder Champion of Retailers — The tech founder taking a fearless stand against predatory software take-rates to protect shop margins',
+      funnelAllocation: '15% of Total Content Output (Bottom Funnel / BOFU)'
+    },
+    targetAudienceB2B: 'LGS Owners, Multi-Store Operators, General Managers & High-Volume Singles Sellers',
     whyItIsAWhiteSpace: {
       competitorBlindSpot:
-        'Competitor creators only talk about consumer pack pulls or vague "investing in cards", while SaaS providers post generic sterile pricing grids with zero viewer retention.',
+        'Incumbent software vendors hide their 2.5% GMV commission behind complicated pricing tiers. No founder dares to call out the exact dollar extraction on social video.',
       audiencePainAndDemand:
-        'Card store owners work 70-hour weeks but have empty bank accounts. They are desperate for transparent mathematical autopsies showing where their gross revenue bleeds into commissions, distributor dead stock, and fees.',
+        'Card store owners work 70 hours a week with razor-thin net profits. Discovering that their software vendor is taking $18,000/year of their net margin creates instant outrage and demand for alternatives.',
       strategicMoat:
-        'Zero creators talk about cold retail ledger forensics. Revealing exact math triggers instant DM share velocity among business partners and store co-owners.'
+        'Our flat $149/mo model is an unassailable commercial moat. Showing real P&L math makes staying with BinderPOS mathematically indefensible.'
     },
     aeethodSaaSAnchor: {
       featureName: '0% GMV Flat SaaS Architecture ($149/mo)',
       productAdvantage:
-        'Flat-rate cloud POS and webstore engine that takes 0% commission on merchant revenue, eliminating the 2.5% BinderPOS tax and £1,000 TCG Sync setup ransom.',
-      commercialPayoff: 'Returns $15,000 to $45,000 directly to net profit annually for stores doing $50,000+/mo in singles.'
+        'Flat-rate cloud POS and webstore engine with 0% take-rate, eliminating the 2.5% BinderPOS commission and £1,000 setup ransoms.',
+      commercialPayoff: 'Returns $15,000 to $45,000 directly to store net profits annually.'
     },
     recurringSeries: [
       {
-        seriesId: 'series-pnl-audit',
+        seriesId: 'series-commission-autopsy',
         title: 'The 2.5% Commission Autopsy',
         format: '45s Rapid P&L Audit / Screen Recording',
         cadence: 'Bi-Weekly Evergreen',
@@ -504,432 +868,102 @@ export const CONTENT_SPACES: ContentSpace[] = [
           'Tearing down real merchant statements showing exactly how much cash legacy POS platforms extract each month from store gross sales.'
       },
       {
-        seriesId: 'series-lgs-ledger',
-        title: 'Real Store Financial Forensics',
-        format: '60s Whiteboard Balance Sheet Teardown',
+        seriesId: 'series-founder-manifesto',
+        title: 'Why I Built Aeethod OS',
+        format: '60s Founder Ethics & SaaS Philosophy',
         cadence: 'Monthly Deep Dive',
         description:
-          'Dismantling a $1M/yr card shop P&L: Rent, payroll, wholesale COGS, dead inventory carrying costs, and true net profit.'
+          'Direct-to-camera founder talks explaining why taking a cut of a store\'s inventory revenue is fundamentally broken.'
       },
       {
-        seriesId: 'series-wholesale-desk',
-        title: 'The Wholesale Distributor Ratio Desk',
-        format: '35s Distributor Invoice Audit',
-        cadence: 'Post-Release Window',
+        seriesId: 'series-pnl-recovery',
+        title: 'The Card Shop P&L Recovery Playbook',
+        format: '40s Store Turnaround Case Study',
+        cadence: 'Bi-Weekly Showcase',
         description:
-          'Exposing distributor tie-in ratios, pre-order allocation traps, and working capital deadlocks across major set releases.'
+          'Real case studies showing how card shops redirected thousands in recovered software fees into high-margin inventory.'
       }
     ],
     videoAnglesLibrary: [
       {
-        angleId: 'ang-1-1',
+        angleId: 'ang-3-1',
         seriesTitle: 'The 2.5% Commission Autopsy',
         title: 'The 3-Year $45,000 Commission Bleed',
         targetAudience: 'LGS Owners with >$40k/mo singles GMV',
         hook: 'If your card shop sells $60,000 a month in singles, your software vendor is quietly stealing $1,500 of your net profit every 30 days.',
         coreMechanism:
-          'Slamming a real store P&L statement on desk, circling -$1,500 in red, and contrasting the 3-year compounding loss of 2.5% GMV vs flat $149/mo software.',
+          'Slamming a real store P&L statement on desk, circling -$1,500 in red marker, and contrasting the 3-year compounding loss of 2.5% GMV vs flat $149/mo software.',
         executionChecklist: [
           'Frame 0: Slam physical monthly invoice on counter with -$1,500 circled in bright red marker.',
-          'Second 3: Flash incumbent fee table: BinderPOS 2.5% vs TCG Sync 2% + £1,000 vs Aeethod 0%.',
-          'Second 18: Project 3-year compounding cash loss ($45,000) reinvested into high-margin inventory.',
+          'Second 4: Flash incumbent fee table: BinderPOS 2.5% vs TCG Sync 2% + £1,000 vs Aeethod 0%.',
+          'Second 17: Project 3-year compounding cash loss ($45,000) reinvested into high-margin inventory.',
           'Ending: Seamless replay loop into opening hook sentence.'
         ]
       },
       {
-        angleId: 'ang-1-2',
-        seriesTitle: 'The Wholesale Distributor Ratio Desk',
-        title: 'Distributor Tie-In Ratios & The Dead Stock Trap',
-        targetAudience: 'Store Owners ordering sealed allocations',
-        hook: 'Ordering $30,000 in sealed product does NOT mean you\'re getting 30 cases. Here is the distributor ratio they won\'t tell you.',
+        angleId: 'ang-3-2',
+        seriesTitle: 'Why I Built Aeethod OS',
+        title: 'Why I Refuse to Charge a 2.5% Take-Rate on Your Card Shop',
+        targetAudience: 'Store Owners frustrated with software vendors',
+        hook: 'I built Aeethod because I think charging a 2.5% commission on a card shop\'s gross singles revenue is criminal. Here is why.',
         coreMechanism:
-          'Auditing a wholesale allocation invoice: Showing how distributors force stores to purchase 40% slow-moving board games to get tier allocations of Pokémon 151.',
+          'Founder talking head: Explaining why software compute costs are flat, so charging percentage-based GMV tax is pure rent-seeking.',
         executionChecklist: [
-          'Frame 0: Draw distributor invoice formula on whiteboard: $30,000 order = $6,200 actual chase product.',
-          'Second 4: Explain the hidden carrying cost of dead stock sitting on shelves for 9 months.',
-          'Second 18: Demonstrate how Aeethod\'s Pre-Order Allocation Modeler prevents liquidity starvation.',
-          'Ending: Loop seamlessly back into opening question.'
+          'Frame 0: Direct eye contact: "I built Aeethod because charging 2.5% of your gross sales is wrong."',
+          'Second 6: Explain tech reality: Cloud servers don\'t work harder when you sell a $500 card vs a $5 card.',
+          'Second 17: Reiterate Aeethod\'s pledge: $149 flat per month, 0% commission, forever.',
+          'Ending: Loop back to opening statement.'
         ]
       },
       {
-        angleId: 'ang-1-3',
-        seriesTitle: 'Real Store Financial Forensics',
-        title: 'The 70% Buylist Margin Illusion',
-        targetAudience: 'Shop Owners & Counter Clerks',
-        hook: 'Paying 60% cash for a collection feels like an easy 40% profit. Here is why it\'s actually margin suicide.',
+        angleId: 'ang-3-3',
+        seriesTitle: 'The Card Shop P&L Recovery Playbook',
+        title: 'How One Store Recovered $14,200 in 12 Months',
+        targetAudience: 'Mid-sized Game Stores ($500k/yr singles GMV)',
+        hook: 'Here is how a game store owner in Texas saved $14,200 in software fees in 12 months simply by switching to a flat $149 plan.',
         coreMechanism:
-          'Step-by-step mathematical deduction: Factoring sales tax, marketplace commission, shipping supplies, clerk grading labor, and 60-day price decay.',
+          'Before-and-after ledger walkthrough: Showing exact fee statements before and after migrating from BinderPOS to Aeethod OS.',
         executionChecklist: [
-          'Frame 0: Hand a customer a $60 cash bill for a $100 card, then slap down a digital deduction calculator.',
-          'Second 5: Deduct 13.25% eBay fee, $4 tracked shipping, $3 clerk grading time, and $8 carrying depreciation.',
-          'Second 18: Reveal the net in-pocket cash: $11.75 on a $60 risk capital layout.',
-          'Ending: "Which is why blind 60% cash payouts are..."'
+          'Frame 0: Split-screen graphic showing old fee statement ($1,350/mo) vs Aeethod ($149/mo).',
+          'Second 5: Trace where the owner invested the recovered $1,200/mo: into local collection buylists.',
+          'Second 17: Show net revenue growth resulting from reinvested trade capital.',
+          'Ending: "Stop paying software taxes."'
         ]
       },
       {
-        angleId: 'ang-1-4',
+        angleId: 'ang-3-4',
         seriesTitle: 'The 2.5% Commission Autopsy',
-        title: 'The $2.49 TCGplayer Direct Death Spiral',
-        targetAudience: 'High-Volume TCGplayer Power Sellers',
-        hook: 'If you sell raw cards under $2.49 on TCGplayer Direct, you are literally donating your clerk\'s hourly labor to Jeff Bezos.',
+        title: 'The £1,000 Setup Ransom & The Vendor Lock-In Trap',
+        targetAudience: 'Store Owners considering legacy software',
+        hook: 'Before you sign a contract with legacy POS providers, watch out for the £1,000 data setup ransom hidden in page 4.',
         coreMechanism:
-          'Unpacking TCGplayer Direct micro-fees, replacement card fees, and handling deductions on sub-$3 uncommons.',
+          'Exposing how legacy platforms charge massive setup fees and make data export nearly impossible to trap stores.',
         executionChecklist: [
-          'Frame 0: Hold up three 75-cent uncommon singles and toss a $1 bill into the trash.',
-          'Second 4: Calculate the Direct intake fee + sorting time + commission netting negative 12 cents per card.',
-          'Second 16: Show how shifting bulk uncommons to local webstore decklist pickup restores 85% gross margin.',
-          'Ending: Seamless audio loop to opening statement.'
+          'Frame 0: Hold up page 4 of a legacy SaaS contract with £1,000 setup fee underlined.',
+          'Second 5: Explain vendor lock-in mechanisms and data hostage policies.',
+          'Second 17: Show Aeethod\'s 1-click free CSV catalog importer transferring 20,000 items in 3 minutes.',
+          'Ending: Loop back to hook.'
         ]
       },
       {
-        angleId: 'ang-1-5',
-        seriesTitle: 'Real Store Financial Forensics',
-        title: 'GMROI: The Single Metric That Saves Local Card Shops',
+        angleId: 'ang-3-5',
+        seriesTitle: 'The Card Shop P&L Recovery Playbook',
+        title: 'GMROI: The Metric That Saves Local Card Shops',
         targetAudience: 'LGS Owners & Retail Managers',
         hook: 'Card shops don\'t go bankrupt from lack of sales. They go bankrupt from high revenue and zero GMROI.',
         coreMechanism:
-          'Explaining Gross Margin Return on Investment: Why a card that sells in 3 days at 25% margin generates 4x more profit than a slab sitting for 10 months at 60% margin.',
+          'Explaining Gross Margin Return on Investment: Why modern singles turning 12x/yr produce 4x more profit than slabs sitting for 10 months.',
         executionChecklist: [
-          'Frame 0: Point to a dusty $1,000 vintage graded slab sitting in glass display case for 11 months.',
+          'Frame 0: Point to a dusty $1,000 vintage graded slab sitting on shelf for 11 months.',
           'Second 5: Compare inventory turns: 12x turns on modern singles vs 1x turn on vintage trophy assets.',
           'Second 18: Demonstrate Aeethod GMROI automated inventory tagging flagging dead capital.',
           'Ending: Loop into start.'
         ]
       },
       {
-        angleId: 'ang-1-6',
-        seriesTitle: 'The Wholesale Distributor Ratio Desk',
-        title: 'The Pre-Order Working Capital Hostage Crisis',
-        targetAudience: 'Store Owners launching set pre-orders',
-        hook: 'Collecting $40,000 in customer pre-orders can bankrupt your card shop before release day. Here is the math.',
-        coreMechanism:
-          'Showing what happens when distributor product allocations get slashed 50% after the store already collected customer funds and spent capital on distributor deposits.',
-        executionChecklist: [
-          'Frame 0: Flash 200 customer pre-order emails notification on screen next to a red "ALLOCATION CUT 55%" distributor notice.',
-          'Second 5: Detail the refund chargeback fees and cash shortfall that strangles store liquidity.',
-          'Second 17: Show Aeethod\'s Dynamic Pre-Order Safeguard linking allocation caps directly to verified distributor POs.',
-          'Ending: Loop back to hook.'
-        ]
-      }
-    ]
-  },
-  {
-    id: 'cs-intake-velocity',
-    spaceNumber: 2,
-    title: 'Backroom Intake, Vision AI & Inventory Velocity Space',
-    tagline: 'The Operations, Labor Economics & Optical Ingest Space',
-    strategicDomain: 'Automated Optical Ingestion, Card Sorting Economics, Clerk Payroll Burn & Variant Identification',
-    category: 'Retail & Automation',
-    viralMultiplier: '5x DM Share',
-    funnelStage: 'BOFU (Speed & SaaS Conversion)',
-    funnelStagePill: 'BOFU',
-    primaryCohortId: 'lgs_owner',
-    cohortsServed: [
-      {
-        cohortName: 'The Overworked LGS Owner & Store Manager',
-        cohortRole: 'Primary SaaS Buyer — Slashes 40 clerk hours of sorting payroll ($600+ monthly burn) and halts backroom inventory depreciation.',
-        icon: '🏢'
-      },
-      {
-        cohortName: 'The Full-Time Reseller & Power Flipper',
-        cohortRole: 'High-Velocity Ingest — Scans 500-card convention hauls in 15 minutes right from phone browser without manual typing.',
-        icon: '📦'
-      }
-    ],
-    funnelProgressionMechanism:
-      'Viewer watches 30s split-screen stopwatch battle (clerk typing vs browser vision scanner) -> Bookmarks/saves video for store operations -> Tests optical camera scan on live demo -> Upgrades store to Aeethod OS to eliminate clerk intake payroll.',
-    spokenCtaOutro: {
-      ctaType: 'Optical Scanner Interactive Demo',
-      script:
-        'Want to scan 100 cards in 90 seconds right from your phone browser without installing an app? DM us "SCAN" or test our optical engine live at aeethod.com/scan.'
-    },
-    targetAudienceB2B: 'Inventory Managers, Head Clerks, Warehouse Breakers & High-Volume Sorting Staff',
-    whyItIsAWhiteSpace: {
-      competitorBlindSpot:
-        'Competitors sell $15,000–$30,000 mechanical sorters that jam on warped foils, or post boring vlogs of amateurs opening envelopes for 2 hours with no speed benchmark.',
-      audiencePainAndDemand:
-        'Every LGS has 10,000 to 50,000 cards sitting in unsorted shoeboxes behind the counter. Entering them manually takes 40 clerk hours ($600+ payroll), while market prices crash 30% before the cards go live.',
-      strategicMoat:
-        'Demonstrating zero-hardware, 60fps browser neural vision on raw cards produces instant visual shock value and visceral relief for exhausted store clerks.'
-    },
-    aeethodSaaSAnchor: {
-      featureName: 'Zero-Hardware 60fps Browser Neural Vision Scanner',
-      productAdvantage:
-        'Real-time optical card scanner running in any standard web browser or iPad webcam at 0.2s/card, instantly detecting set, card number, finish (foil/reverse), and language without typing.',
-      commercialPayoff:
-        'Cuts intake labor cost from $0.27/card (manual keyboard typing) to $0.02/card, processing 1,000 cards in 15 minutes.'
-    },
-    recurringSeries: [
-      {
-        seriesId: 'series-speed-trials',
-        title: 'The Intake Speed Trials',
-        format: '30s Split-Screen Stopwatch Battle',
-        cadence: 'Weekly Evergreen',
-        description:
-          'Side-by-side timer face-offs: Manual keyboard data entry vs $20k mechanical sorter vs Aeethod browser camera neural vision.'
-      },
-      {
-        seriesId: 'series-variant-traps',
-        title: 'Variant & Foil Identification Traps',
-        format: '35s Optical Accuracy Test',
-        cadence: 'Bi-Weekly Tech Spotlight',
-        description:
-          'Putting browser AI to the test on the hardest visual distinctions: Masterball vs Pokéball, Unlimited vs Revised, 1st Edition stamps, and texture foils.'
-      },
-      {
-        seriesId: 'series-shoebox-backlog',
-        title: 'The Shoebox Backlog Teardown',
-        format: '40s Operational Audit',
-        cadence: 'Monthly Retail Reality',
-        description:
-          'Calculating the compounding cash loss of dead inventory sitting in backroom shoeboxes waiting for clerk sorting hours.'
-      }
-    ],
-    videoAnglesLibrary: [
-      {
-        angleId: 'ang-2-1',
-        seriesTitle: 'The Intake Speed Trials',
-        title: 'The $0.27 vs $0.02 Intake Labor Battle',
-        targetAudience: 'LGS Owners paying hourly clerk wages',
-        hook: 'Every unsorted shoebox behind your register is burning $450 in clerk payroll while the card prices crash 40%.',
-        coreMechanism:
-          'Stopwatch challenge: Clerk manually typing set numbers into Shopify (30 hrs for 3k cards = $0.27/card) vs iPad webcam scanning 40 cards in 15 seconds directly into live inventory.',
-        executionChecklist: [
-          'Frame 0: Drop a dusty 3,200-count cardboard card box on counter with a physical digital stopwatch.',
-          'Second 4: Calculate clerk payroll math: 30 hours of typing @ $18/hr = $540 before card #1 sells.',
-          'Second 14: Show camera scanning 40 cards in 15 seconds with green bounding boxes live into POS.',
-          'Ending: "Stop burning payroll on manual intake."'
-        ]
-      },
-      {
-        angleId: 'ang-2-2',
-        seriesTitle: 'Variant & Foil Identification Traps',
-        title: 'Masterball vs Pokéball Reverse Foil AI Test',
-        targetAudience: 'Pokemon Retailers & Trade Clerks',
-        hook: 'A clerk mistaking a Masterball holo for a regular reverse holo just lost your store an $85 margin swing in 2 seconds.',
-        coreMechanism:
-          'Testing human eye under store fluorescent lighting vs Aeethod neural vision detecting the micro-pattern stamp in 0.18s.',
-        executionChecklist: [
-          'Frame 0: Hold up two virtually identical Japanese 151 reverse holos under counter light.',
-          'Second 4: Point out why tired clerks mislabel them after 6 hours on their feet.',
-          'Second 15: Slide cards under iPad webcam: Aeethod flags Masterball stamp and auto-prices at $92.50.',
-          'Ending: Loop seamlessly into opening statement.'
-        ]
-      },
-      {
-        angleId: 'ang-2-3',
-        seriesTitle: 'The Intake Speed Trials',
-        title: 'Why $15,000 Robotic Card Sorters Jam and Fail',
-        targetAudience: 'Store Owners debating buying robotic sorters',
-        hook: 'Before you spend $15,000 on a robotic card sorting machine, watch what happens when a card is slightly warped.',
-        coreMechanism:
-          'Demonstrating the mechanical jam crisis of physical feed rollers on curled foils vs non-contact optical browser scanning.',
-        executionChecklist: [
-          'Frame 0: Show close-up of a curled foil card jamming a mechanical belt feeder.',
-          'Second 5: Breakdown the true ROI: $15k hardware + annual maintenance contracts + mechanical jams.',
-          'Second 16: Show Aeethod\'s software-only optical scanner working on any phone or iPad camera with zero jams.',
-          'Ending: Loop back to hook.'
-        ]
-      },
-      {
-        angleId: 'ang-2-4',
-        seriesTitle: 'Variant & Foil Identification Traps',
-        title: 'Revised vs Unlimited MTG Under 0.5 Seconds',
-        targetAudience: 'Vintage MTG Sellers & Store Owners',
-        hook: 'Unlimited vs Revised: One is a $600 dual land, the other is $300. Can neural vision spot the difference faster than your best clerk?',
-        coreMechanism:
-          'Testing optical boundary analysis: Bevel edge line and copyright dates recognized instantly without loupe manual squinting.',
-        executionChecklist: [
-          'Frame 0: Place two vintage Dual Lands side-by-side with identical artwork.',
-          'Second 5: Explain the bevel edge and copyright spacing that causes human clerk misgrades.',
-          'Second 16: Scan with Aeethod: Instant correct set identification and auto-populated buylist value.',
-          'Ending: "Which is why manual vintage intake is..."'
-        ]
-      },
-      {
-        angleId: 'ang-2-5',
-        seriesTitle: 'The Shoebox Backlog Teardown',
-        title: 'The 14-Day Price Depreciation Trap',
-        targetAudience: 'Store Managers with intake backlogs',
-        hook: 'That 5,000-card collection you bought last Monday has already lost $1,200 in value because nobody had time to enter it.',
-        coreMechanism:
-          'Illustrating the secondary market decay curve: Release week singles losing 8% per day while sitting in backlog boxes.',
-        executionChecklist: [
-          'Frame 0: Slap a calendar with dates crossed out next to an unopened bulk collection box.',
-          'Second 5: Show the price chart dropping from $45 to $22 over 10 days of intake delay.',
-          'Second 17: Show Aeethod batch intake completing the entire box before the end of the shift.',
-          'Ending: Loop to start.'
-        ]
-      },
-      {
-        angleId: 'ang-2-6',
-        seriesTitle: 'The Intake Speed Trials',
-        title: 'From Collection Drop-Off to Webstore in 4 Minutes',
-        targetAudience: 'Fast-Turnaround Card Flippers & LGS Owners',
-        hook: 'A customer dropped off 60 high-end singles at 2:00 PM. By 2:04 PM, all 60 are live on Shopify, eBay, and TCGplayer.',
-        coreMechanism:
-          'End-to-end continuous workflow: Camera scans cards -> AI grades condition -> Sync engine publishes across 3 channels in 240 seconds.',
-        executionChecklist: [
-          'Frame 0: Customer slides a deck box across counter; start countdown timer on screen: 04:00.',
-          'Second 6: Rapid camera sweep scans 60 cards into pending intake queue.',
-          'Second 18: One-tap bulk publish pushes live listings to webstore and eBay with sub-500ms sync.',
-          'Ending: Seamless replay loop into opening hook.'
-        ]
-      }
-    ]
-  },
-  {
-    id: 'cs-concurrency-sync',
-    spaceNumber: 3,
-    title: 'Omnichannel Concurrency & Marketplace Defense Space',
-    tagline: 'The Software Engineering, Concurrency & Market Defense Space',
-    strategicDomain: 'Sub-500ms Multi-Marketplace Syncing, Double-Selling Prevention, eBay Defect Defense & Arbitrage Protection',
-    category: 'Market Dynamics & Pricing Defense',
-    viralMultiplier: '5x DM Share',
-    funnelStage: 'BOFU (Speed & SaaS Conversion)',
-    funnelStagePill: 'BOFU',
-    primaryCohortId: 'lgs_owner',
-    cohortsServed: [
-      {
-        cohortName: 'The Overworked LGS Owner & Store Manager',
-        cohortRole: 'Primary SaaS Buyer — Protects Top Rated Seller status, eliminates double-selling defects, and defends $150k catalog from 5% fee penalties.',
-        icon: '🏢'
-      },
-      {
-        cohortName: 'The Full-Time Reseller & Power Flipper',
-        cohortRole: 'Multi-Channel Arbitrageur — Prevents overselling across simultaneous eBay, TCGplayer, and webstore listings during market spikes.',
-        icon: '📦'
-      }
-    ],
-    funnelProgressionMechanism:
-      'Viewer watches live 320ms Redis delist demo (physical POS scan -> instant eBay delist) -> Audits 15-minute polling bug in current POS -> Realizes defect penalty risk -> Books Aeethod migration call.',
-    spokenCtaOutro: {
-      ctaType: 'Platform Migration & Concurrency Audit',
-      script:
-        'If your store sells on eBay and in-person and you still fear double-selling cards, DM us "SYNC" to see how our sub-320ms engine protects your Top Rated Seller status.'
-    },
-    targetAudienceB2B: 'E-commerce Directors, High-Volume Multi-Channel Sellers, eBay PowerSellers & LGS Owners',
-    whyItIsAWhiteSpace: {
-      competitorBlindSpot:
-        'Legacy POS providers claim "multi-channel sync" while secretly running 15-to-45-minute cron batch polling. Creators never explain the technical architecture behind why stores get penalized.',
-      audiencePainAndDemand:
-        'Double-selling a 1-of-1 $400 card across eBay and the physical store is every merchant\'s nightmare. It triggers eBay Out-of-Stock Defects, 5% fee penalties across their ENTIRE catalog, and bans from TCGplayer Direct.',
-      strategicMoat:
-        'Live split-screen demonstrations proving sub-500ms distributed Redis locking delivers visual proof that establishes Aeethod as an elite engineering platform.'
-    },
-    aeethodSaaSAnchor: {
-      featureName: 'Distributed Redis Locking & Sub-500ms Multi-Platform Delist Engine',
-      productAdvantage:
-        'When a barcode is scanned at the register, Aeethod locks the SKU and delists it across Shopify, eBay, and TCGplayer in under 350ms, before the receipt printer even triggers.',
-      commercialPayoff:
-        'Completely eliminates double-selling defects, protects Top Rated Seller status, and defends against 5% marketplace defect fee penalties.'
-    },
-    recurringSeries: [
-      {
-        seriesId: 'series-concurrency-test',
-        title: 'The Concurrency Stress Test',
-        format: '35s Live Split-Screen Stress Demo',
-        cadence: 'Bi-Weekly Showcase',
-        description:
-          'In-store POS scan vs live screen capture of eBay/TCGplayer delisting simultaneously in real time with milliseconds counter.'
-      },
-      {
-        seriesId: 'series-defect-autopsy',
-        title: 'Marketplace Account Autopsies',
-        format: '40s Forensic Policy Breakdown',
-        cadence: 'Monthly Risk Management',
-        description:
-          'Breaking down real seller suspensions, eBay Out-of-Stock Defect cascades, and the compounding financial penalty of sync latency.'
-      },
-      {
-        seriesId: 'series-bot-defense',
-        title: '6:00 AM Bot Arbitrage Defense',
-        format: '35s Market Spike Ticker Breakdown',
-        cadence: 'Post-Tournament Window',
-        description:
-          'Showing real case studies of scraping bots draining underpriced webstore inventory during international tournament metagame shifts.'
-      }
-    ],
-    videoAnglesLibrary: [
-      {
-        angleId: 'ang-3-1',
-        seriesTitle: 'The Concurrency Stress Test',
-        title: 'The $400 Out-of-Stock Death Spiral',
-        targetAudience: 'Multi-channel sellers on eBay & Shopify',
-        hook: 'Selling the same $400 slab in your shop and on eBay at the exact same minute is NOT bad luck. It\'s a 15-minute polling bug in your software.',
-        coreMechanism:
-          'Simulating an in-store barcode scan with live screen recording of eBay and TCGplayer delisting simultaneously in 320ms via Aeethod Redis locking.',
-        executionChecklist: [
-          'Frame 0: Hold up an eBay "Transaction Defect: Item Out of Stock" cancellation notice on mobile screen.',
-          'Second 4: Explain the 15-minute cron job vulnerability that legacy software (BinderPOS/Crystal) relies on.',
-          'Second 15: Run live split-screen test: Barcode scanned at register -> sub-350ms instant delist on eBay/Shopify.',
-          'Ending: Seamless loop into opening hook.'
-        ]
-      },
-      {
-        angleId: 'ang-3-2',
-        seriesTitle: 'Marketplace Account Autopsies',
-        title: 'How a 1% eBay Defect Rate Costs You $8,000 in Fees',
-        targetAudience: 'Top Rated eBay Card Sellers',
-        hook: 'If you cancel just 3 out-of-stock orders on eBay this month, eBay will increase fees by 5% across your entire $150,000 store inventory.',
-        coreMechanism:
-          'Auditing eBay Below Standard fee penalization rules: How sync latency leads directly to thousands in automated platform penalties.',
-        executionChecklist: [
-          'Frame 0: Highlight eBay Seller Dashboard dropping from "Top Rated" to "Below Standard" in red text.',
-          'Second 5: Calculate the 5% additional final value fee penalty applied to every single card transaction.',
-          'Second 17: Show how sub-second inventory locking guarantees 0% out-of-stock cancellations.',
-          'Ending: "Which is why relying on 15-minute polling is..."'
-        ]
-      },
-      {
-        angleId: 'ang-3-3',
-        seriesTitle: '6:00 AM Bot Arbitrage Defense',
-        title: 'The Sunday 6:00 AM Tokyo Tournament Bot Drain',
-        targetAudience: 'LGS Webstore Owners & Resellers',
-        hook: 'While your store was closed Sunday morning, arbitrage bots bought 40 copies of this bulk card for $10. They\'re already reselling them for $320.',
-        coreMechanism:
-          'Connecting Japanese Champions League tournament streams at 6 AM to instant scraper bot sweeps on unprotected Shopify stores.',
-        executionChecklist: [
-          'Frame 0: Slam a 25-cent uncommon trainer card on desk with an $8.50 TCGplayer price ticker overlay.',
-          'Second 4: Show Japanese tournament stream win and the instant bot purchase timestamps at 6:12 AM.',
-          'Second 16: Show Aeethod\'s Dynamic Repricer detecting velocity spikes and freezing sales before stores get drained.',
-          'Ending: Loop into start without outro.'
-        ]
-      },
-      {
-        angleId: 'ang-3-4',
-        seriesTitle: 'The Concurrency Stress Test',
-        title: 'Redis Distributed Locks vs Database Polling',
-        targetAudience: 'Tech-forward Store Operators & E-com Managers',
-        hook: 'Here is the engineering reason your current POS software can\'t stop double-selling cards on Saturday afternoon.',
-        coreMechanism:
-          'Visualizing cron polling queues vs in-memory distributed locks in 30 seconds for non-technical store owners.',
-        executionChecklist: [
-          'Frame 0: Show two customers buying the same item at the exact same second on different screens.',
-          'Second 6: Draw the 15-minute blind spot of batch sync vs 300ms Redis mutex lock.',
-          'Second 18: Show Aeethod architecture completing the multi-channel broadcast in 0.3 seconds.',
-          'Ending: Loop back to hook.'
-        ]
-      },
-      {
-        angleId: 'ang-3-5',
-        seriesTitle: '6:00 AM Bot Arbitrage Defense',
-        title: 'Dynamic Repricing Without Race Conditions',
-        targetAudience: 'Stores running automated repricers',
-        hook: 'A competitor set their bot to undercut by $0.01. Watch how an algorithmic price war crashed a $50 card to $4 in 12 minutes.',
-        coreMechanism:
-          'Exposing automated repricing death spirals and showing Aeethod\'s floor/ceiling margin safeguards.',
-        executionChecklist: [
-          'Frame 0: Graph showing two competing software bots undercutting each other into the floor.',
-          'Second 5: Explain the lack of min-margin guardrails on legacy repricing software.',
-          'Second 17: Demo Aeethod\'s margin floor rules preventing algorithmic liquidation.',
-          'Ending: Loop into start.'
-        ]
-      },
-      {
         angleId: 'ang-3-6',
-        seriesTitle: 'Marketplace Account Autopsies',
-        title: 'The 2-Store 1-Warehouse Inventory Nightmare',
+        seriesTitle: 'Why I Built Aeethod OS',
+        title: 'The 2-Store 1-Warehouse Inventory Chaos',
         targetAudience: 'Multi-Location Card Shop Owners',
         hook: 'Opening a second card shop is the dream. Syncing inventory between 2 stores and 3 websites is where most owners go bankrupt.',
         coreMechanism:
@@ -944,252 +978,152 @@ export const CONTENT_SPACES: ContentSpace[] = [
     ]
   },
   {
-    id: 'cs-counter-kiosk',
+    id: 'cs-velocity-tech-lab',
     spaceNumber: 4,
-    title: 'Front-Counter Trade Economics & Kiosk Psychology Space',
-    tagline: 'The Retail Floor, Buylist Ops & Counter Psychology Space',
-    strategicDomain: 'Buylist Turnaround Times, Customer Trade-In Friction, Self-Service Kiosks & Secondhand Legal Compliance',
+    title: 'The 60fps Velocity & Tech Demonstration Lab',
+    tagline: 'The Browser Neural Vision, Sub-320ms Sync & Retail Automation Space',
+    strategicDomain: '60fps Browser Optical Card Scanning, Sub-320ms Distributed Redis Concurrency, 1-Click 60-Card Decklist Ingestion & Self-Service Kiosks',
     category: 'Retail & Automation',
-    viralMultiplier: 'High Debate Comments',
-    funnelStage: 'TOFU-MOFU (Validation Bridge)',
-    funnelStagePill: 'TOFU-MOFU',
-    primaryCohortId: 'collector',
+    viralMultiplier: '4x Save / Bookmark',
+    funnelStage: 'BOFU (Speed & SaaS Conversion)',
+    funnelStagePill: 'BOFU',
+    primaryCohortId: 'lgs_owner',
     cohortsServed: [
       {
-        cohortName: 'The Serious Collector & High-End Buyer',
-        cohortRole: 'Validation Bridge — Engages with condition grading debates, optical loupe surface scans, and fair trade-in transparency.',
-        icon: '💎'
-      },
-      {
         cohortName: 'The Overworked LGS Owner & Store Manager',
-        cohortRole: 'Retail Operator — Solves the Friday 7:30 PM $1,200 walk-out crisis and replaces angry counter arguments with automated self-service kiosks.',
+        cohortRole: 'SaaS Product Magic — Slashes 40 clerk hours of sorting payroll and eliminates eBay double-selling defect penalties.',
         icon: '🏢'
       },
       {
-        cohortName: 'The Hobby Dreamer & Casual Fan',
-        cohortRole: 'Curiosity Engine — Hooks into counter trade drama, pack value realization, and "$50 Cash vs $85 Store Credit" dilemmas.',
-        icon: '🎮'
+        cohortName: 'The Full-Time Reseller & Power Flipper',
+        cohortRole: 'Mobile Speed Tool — Scans 500-card convention hauls in 15 minutes right from phone browser without manual typing.',
+        icon: '📦'
+      },
+      {
+        cohortName: 'The Serious Collector & Competitive Player',
+        cohortRole: 'Frictionless Webstore — Tests 1-click tournament decklist checkout that maps 60 cards in 2.8 seconds.',
+        icon: '💎'
       }
     ],
     funnelProgressionMechanism:
-      'Collector/clerk engages with front-counter trade drama or grading debate in comments -> Discovers self-service kiosk workflow solving register line locks -> Store owner realizes kiosk stops customer walk-outs -> Requests kiosk demo.',
+      'Talking head holds phone to camera and scans 20 cards in 5 seconds live -> Viewers save/bookmark video (4x Save multiplier) -> Viewer tests browser camera demo at aeethod.com/scan -> Books full OS onboarding.',
     spokenCtaOutro: {
-      ctaType: 'Buylist Calculator & Kiosk Guide',
+      ctaType: 'Interactive Optical Scanner Demo',
       script:
-        'Want our exact mathematical formula that turns angry buylist walk-outs into 85% store credit buyers? DM us "BUYLIST" or download the counter breakdown guide in our bio.'
+        'You can test our 60fps neural vision scanner right now from your own phone browser with zero apps to install. DM me "SCAN" or try it free at aeethod.com/scan.'
     },
-    targetAudienceB2B: 'Store Managers, Counter Staff, Retail Clerks & Front-Desk Cashiers',
+    talkingHeadFormat: {
+      cameraSetup: 'Dynamic handheld or desk shot: Founder addresses camera, then holds phone/iPad directly in front of lens showing live screen',
+      propsInHand: 'Smartphone or iPad running Aeethod OS in browser, stack of 40 raw cards, barcode scanner, live split-screen monitor',
+      founderRole: 'The Elite Technical Innovator — Shows actual working software running in real time with zero cuts, proving technical supremacy over dinosaur incumbents',
+      funnelAllocation: '15% of Total Content Output (Bottom Funnel / BOFU)'
+    },
+    targetAudienceB2B: 'Inventory Managers, E-commerce Directors, Head Clerks, Multi-Channel PowerSellers & Store Owners',
     whyItIsAWhiteSpace: {
       competitorBlindSpot:
-        'YouTube trade videos show theatrical staged pawn-shop style screaming matches or generic collector grading. Nobody addresses the commercial reality of a customer with a 120-card binder locking up the only register during Friday night rush.',
+        'Competitors sell $15k–$30k mechanical sorting machines that jam on curled foils, or hide behind 15-minute cron batch syncing. Nobody demonstrates instant zero-hardware optical AI live on video.',
       audiencePainAndDemand:
-        'Clerks dread trade submissions during peak hours. Customers feel lowballed when offered 60% cash. Paying retail customers walk out when lines back up, losing thousands in peak-hour booster sales.',
+        'Stores waste 40 clerk hours entering cards into keyboards, and live in terror of double-selling $400 slabs on eBay during Saturday afternoon rushes.',
       strategicMoat:
-        'Self-service iPad kiosk workflows and transparent math de-escalate customer tension while freeing up cash registers for paying retail sales.'
+        'Instant visual proof: Seeing cards scanned at 60fps in a regular Safari/Chrome browser window on an iPad creates undeniable "how did they do that" tech credibility.'
     },
     aeethodSaaSAnchor: {
-      featureName: 'Customer-Facing Self-Service Buylist Kiosk & Compliance Engine',
+      featureName: 'Zero-Hardware 60fps Browser Neural Vision & Sub-320ms Redis Engine',
       productAdvantage:
-        'Dedicated customer iPad station where sellers scan & submit their trade-ins, automatically calculating condition deductions, cash vs credit tiers, and logging legal ID verification.',
-      commercialPayoff:
-        'Eliminates the 45-minute register freeze, captures trade-ins without clerk burnout, and stops the $1,200 peak-hour retail walk-out.'
+        'Scans cards at 0.2s each on any web browser, and locks/delists SKUs across Shopify, eBay, and TCGplayer in under 320ms when rung up at the register.',
+      commercialPayoff: 'Cuts intake labor cost from $0.27 to $0.02/card and guarantees 0% out-of-stock cancellation defects on eBay.'
     },
     recurringSeries: [
       {
-        seriesId: 'series-counter-crisis',
-        title: 'The Friday Night Counter Crisis',
-        format: '40s In-Store Counter Drama & Workflow',
-        cadence: 'Bi-Weekly Realities',
+        seriesId: 'series-stopwatch-trials',
+        title: 'The 30-Second Stopwatch Speed Trials',
+        format: '30s Split-Screen: Keyboard Typing vs Aeethod Optical Vision',
+        cadence: 'Weekly Evergreen',
         description:
-          'Exposing how peak-hour trade binder submissions freeze retail registers and drive away paying tournament customers.'
+          'Side-by-side timer face-offs: Manual keyboard typing into Shopify vs Aeethod browser neural vision scanning 40 cards in 15 seconds.'
       },
       {
-        seriesId: 'series-buylist-psychology',
-        title: 'Counter Psychology & The Buylist Formula',
-        format: '35s Negotiation Roleplay & De-escalation',
-        cadence: 'Weekly Tactical',
+        seriesId: 'series-redis-demo',
+        title: 'The Live 320ms Redis Delist Demo',
+        format: '35s Register Scan vs Live eBay Screen Capture',
+        cadence: 'Bi-Weekly Showcase',
         description:
-          'Teaching clerks how to explain 70% cash / 85% credit policies mathematically so customers never feel insulted or lowballed.'
+          'Proving distributed Redis locking: Physical barcode beeped at POS while simultaneous screen recording shows eBay listing vanish in 320ms.'
       },
       {
-        seriesId: 'series-kiosk-showdown',
-        title: 'Kiosk vs Counter Showdowns',
-        format: '30s Side-by-Side Throughput Benchmark',
-        cadence: 'Monthly Workflow Test',
+        seriesId: 'series-decklist-race',
+        title: 'The 1-Click Tournament Decklist Checkout Race',
+        format: '30s Side-by-Side Webstore Assembly',
+        cadence: 'Bi-Weekly Feature',
         description:
-          'Comparing trade turnaround times: Customer self-scanning on iPad kiosk vs clerk manually typing cards into register.'
+          'Screen recording: Player assembling 60 cards on Shopify (25 minutes) vs pasting raw text into Aeethod (ready to checkout in 2.8s).'
       }
     ],
     videoAnglesLibrary: [
       {
         angleId: 'ang-4-1',
-        seriesTitle: 'The Friday Night Counter Crisis',
-        title: 'The Friday 7:30 PM $1,200 Walk-Out',
-        targetAudience: 'LGS Owners with crowded Friday Night tournaments',
-        hook: 'How one customer trading in a binder at 7:30 PM just cost your game store $1,200 in lost Friday night sales.',
+        seriesTitle: 'The 30-Second Stopwatch Speed Trials',
+        title: 'Stop Typing Card Numbers Into Shopify',
+        targetAudience: 'LGS Owners paying hourly clerk sorting wages',
+        hook: 'If you or your clerks are still typing set numbers and card names into a keyboard, stop. Watch this.',
         coreMechanism:
-          'Exposing the bottleneck: A trade submission locks the only cashier for 40 minutes while 6 paying retail customers put down booster boxes and walk out.',
+          'Founder talking head: Holding phone up to lens, sliding 20 raw cards under camera, green boxes flashing, cards instantly live in POS catalog.',
         executionChecklist: [
-          'Frame 0: Camera pans over long line of agitated customers waiting behind one person flipping through a binder.',
-          'Second 5: Calculate the cost: $400 in abandoned box sales + 45 minutes of wasted clerk attention.',
-          'Second 18: Demo Aeethod customer-facing iPad kiosk where players submit trades independently in 2 minutes.',
-          'Ending: "Free up your registers on Friday night."'
+          'Frame 0: Address camera: "Every unsorted card on your counter is burning 27 cents in typing payroll."',
+          'Second 4: Bring phone into frame; slide raw cards under camera; instant audio beep confirmations.',
+          'Second 15: Show 20 cards cataloged with set, condition, and market pricing in under 5 seconds.',
+          'Ending: "Stop burning payroll on manual intake."'
         ]
       },
       {
         angleId: 'ang-4-2',
-        seriesTitle: 'Counter Psychology & The Buylist Formula',
-        title: 'Why Customers Scream "Lowball" (And How to Fix It)',
-        targetAudience: 'Front-Desk Retail Staff & Store Owners',
-        hook: 'When a customer screams that you\'re lowballing them on a $200 card, do NOT argue. Hand them this 1-page transparent breakdown.',
+        seriesTitle: 'The Live 320ms Redis Delist Demo',
+        title: 'The $400 Double-Selling Disaster Prevented in 320ms',
+        targetAudience: 'Multi-channel sellers on eBay & Shopify',
+        hook: 'Selling the same $400 slab in your shop and on eBay at the exact same minute is NOT bad luck. It\'s a 15-minute polling bug.',
         coreMechanism:
-          'Teaching clerks to show automated on-screen buylist deductions (marketplace fees, cash float, grading risks) rather than personal opinions.',
+          'Simulating in-store register scan with live screen recording of eBay and TCGplayer delisting simultaneously in 320ms via Aeethod Redis locking.',
         executionChecklist: [
-          'Frame 0: Customer throws hands up at counter: "TCGplayer says it\'s worth $200!"',
-          'Second 4: Clerk swivels Aeethod transparent customer display showing exact market breakdown.',
-          'Second 17: Customer sees 70% cash ($140) or 85% store credit ($170) and happily takes the credit.',
-          'Ending: "Turn angry sellers into repeat store-credit buyers."'
+          'Frame 0: Hold up an eBay Out-of-Stock Defect cancellation email on phone screen.',
+          'Second 4: Explain the 15-minute cron batch sync vulnerability in BinderPOS/Crystal Commerce.',
+          'Second 15: Live split-screen test: Barcode scanned at register -> sub-320ms instant delist on eBay.',
+          'Ending: Seamless loop into opening hook.'
         ]
       },
       {
         angleId: 'ang-4-3',
-        seriesTitle: 'Kiosk vs Counter Showdowns',
-        title: 'Customer Self-Scanning: 45 Cards in 90 Seconds',
-        targetAudience: 'Store Managers looking to scale trade volume',
-        hook: 'Stop paying your clerks to flip through customer binders. Let the customer do the work for you.',
+        seriesTitle: 'The 30-Second Stopwatch Speed Trials',
+        title: 'Masterball vs Pokéball Reverse Foil AI Test',
+        targetAudience: 'Pokemon Retailers & Trade Clerks',
+        hook: 'A clerk mistaking a Masterball holo for a regular reverse holo just lost your store an $85 margin swing in 2 seconds.',
         coreMechanism:
-          'Showing customer using iPad camera kiosk to scan their own 45-card submission while clerk focuses on ringing up sales.',
+          'Testing human eye under store lighting vs Aeethod neural vision detecting the micro-pattern stamp in 0.18s.',
         executionChecklist: [
-          'Frame 0: Customer placing cards under Aeethod iPad kiosk; instant beep audio confirmations.',
-          'Second 5: Kiosk generates itemized ticket with condition estimates and customer digital signature.',
-          'Second 16: Clerk receives completed ticket in POS dashboard with 1-click inspection verification.',
-          'Ending: Loop to opening statement.'
+          'Frame 0: Hold up two virtually identical Japanese 151 reverse holos under counter light.',
+          'Second 4: Point out why tired clerks mislabel them after 6 hours on their feet.',
+          'Second 15: Slide cards under phone camera: Aeethod flags Masterball stamp and auto-prices at $92.50.',
+          'Ending: Loop seamlessly into opening statement.'
         ]
       },
       {
         angleId: 'ang-4-4',
-        seriesTitle: 'Counter Psychology & The Buylist Formula',
-        title: 'The 85% Store Credit Margin Multiplier',
-        targetAudience: 'Store Owners managing cash flow',
-        hook: 'Why offering 85% store credit instead of 65% cash actually increases your net retail profit margin by 18%.',
+        seriesTitle: 'The 30-Second Stopwatch Speed Trials',
+        title: 'Why $15,000 Robotic Card Sorters Jam and Fail',
+        targetAudience: 'Store Owners debating robotic hardware',
+        hook: 'Before you spend $15,000 on a robotic card sorting machine, watch what happens when a card is slightly warped.',
         coreMechanism:
-          'Unpacking retail margin cycles: Store credit keeps capital inside the store ecosystem and recaptures wholesale product margins.',
+          'Demonstrating the mechanical jam crisis of physical feed rollers on curled foils vs non-contact optical browser scanning.',
         executionChecklist: [
-          'Frame 0: Whiteboard with $100 card: $65 Cash payout vs $85 Store Credit payout.',
-          'Second 5: Trace the $85 credit being spent on sealed product with 40% retail markup.',
-          'Second 17: Calculate actual cost of goods sold: Store only spent $51 cash equivalent for a $100 card.',
+          'Frame 0: Show curled foil jamming a mechanical belt feeder.',
+          'Second 5: Breakdown the true ROI: $15k hardware + annual maintenance contracts + mechanical jams.',
+          'Second 16: Show Aeethod\'s software-only optical scanner working on any phone or iPad camera with zero jams.',
           'Ending: Loop back to hook.'
         ]
       },
       {
         angleId: 'ang-4-5',
-        seriesTitle: 'The Friday Night Counter Crisis',
-        title: 'Secondhand Dealer Laws & The Police Confiscation Trap',
-        targetAudience: 'LGS Owners buying collections over the counter',
-        hook: 'Buying cards over the counter without these 2 legal steps could result in local police confiscating $10,000 of your inventory.',
-        coreMechanism:
-          'Detailing municipal pawn/secondhand dealer requirements: Government ID verification, thumbprints, and statutory 14-day hold periods.',
-        executionChecklist: [
-          'Frame 0: Red municipal police violation notice overlay on card shop counter.',
-          'Second 5: Explain stolen collection tracing and secondhand dealer reporting mandates.',
-          'Second 16: Show Aeethod\'s built-in ID scanner and legal hold vault tracking compliance automatically.',
-          'Ending: "Protect your shop from stolen collection liability."'
-        ]
-      },
-      {
-        angleId: 'ang-4-6',
-        seriesTitle: 'Counter Psychology & The Buylist Formula',
-        title: 'Condition Dispute De-escalation: LP vs MP',
-        targetAudience: 'Counter Clerks & Card Graders',
-        hook: 'A customer swears their card is Near Mint. Here is how our automated counter camera proves Moderate Play in 10 seconds without an argument.',
-        coreMechanism:
-          'Using high-magnification overhead camera zoom to show edge whitening and surface scuffs on a customer-facing display.',
-        executionChecklist: [
-          'Frame 0: Card looks NM under normal room lighting; loupe zoom reveals invisible foil scratching.',
-          'Second 5: Side-by-side condition criteria chart displayed to customer.',
-          'Second 17: Customer agrees with condition downgrade without feeling cheated.',
-          'Ending: Seamless replay loop into opening hook.'
-        ]
-      }
-    ]
-  },
-  {
-    id: 'cs-decklist-ecommerce',
-    spaceNumber: 5,
-    title: 'Modern Player E-Commerce & Deckbuilding Conversion Space',
-    tagline: 'The Webstore, Search Latency & Tournament Conversion Space',
-    strategicDomain: 'Local Game Store Webstores, 60-Card Decklist Ingestion, Faceted Search Speeds & Cart Abandonment',
-    category: 'Retail & Automation',
-    viralMultiplier: '5x DM Share',
-    funnelStage: 'MOFU (Margin & Operations)',
-    funnelStagePill: 'MOFU',
-    primaryCohortId: 'lgs_owner',
-    cohortsServed: [
-      {
-        cohortName: 'The Overworked LGS Owner & Store Manager',
-        cohortRole: 'Primary SaaS Buyer — Recovers the 82% cart abandonment rate of local tournament players who abandon sluggish Shopify webstores.',
-        icon: '🏢'
-      },
-      {
-        cohortName: 'The Serious Collector & Competitive Player',
-        cohortRole: 'High-LTV Buyer — Demands frictionless 1-click 60-card tournament decklist ingestion and express Friday night in-store pickup.',
-        icon: '💎'
-      }
-    ],
-    funnelProgressionMechanism:
-      'Store owner or competitive player watches 30s checkout race (Shopify 25 mins vs Aeethod 3s decklist ingest) -> Discovers why local players buy on TCGplayer instead of shop webstore -> Tests decklist ingest tool -> Upgrades webstore engine.',
-    spokenCtaOutro: {
-      ctaType: 'Decklist Ingest Benchmark & Webstore Audit',
-      script:
-        'Tired of losing 80% of your local tournament singles sales to TCGplayer Cart Optimizer? DM us "DECK" or tap the link in bio to test our 1-click decklist checkout engine.'
-    },
-    targetAudienceB2B: 'LGS Webstore Managers, Tournament Organizers, E-Commerce Directors & Modern Retailers',
-    whyItIsAWhiteSpace: {
-      competitorBlindSpot:
-        'Store owners plead on social media for locals to "support local game stores instead of TCGplayer", while completely ignoring that their Shopify webstore takes 25 minutes of painful searching to assemble one tournament deck.',
-      audiencePainAndDemand:
-        'Competitive tournament players have zero loyalty to broken webstores. When faced with searching 60 individual singles across 60 separate pages, 82% abandon the cart and buy on TCGplayer Cart Optimizer.',
-      strategicMoat:
-        'Solving the 60-card tournament decklist friction captures the high-margin competitive singles market for local stores before players leave for national aggregators.'
-    },
-    aeethodSaaSAnchor: {
-      featureName: '1-Click Tournament Decklist Ingest & Sub-100ms Faceted Search Engine',
-      productAdvantage:
-        'Players paste raw text exports from Limitless, Moxfield, or MTGGoldfish; Aeethod maps all 60 cards against local in-stock inventory in 2.8 seconds with 1 tap to checkout for in-store pickup.',
-      commercialPayoff:
-        'Recovers the 82% cart abandonment rate and turns Friday Night Magic attendees into recurring Monday morning webstore buyers.'
-    },
-    recurringSeries: [
-      {
-        seriesId: 'series-checkout-friction',
-        title: 'The 60-Card Checkout Friction Test',
-        format: '30s Side-by-Side E-Commerce Race',
-        cadence: 'Bi-Weekly Showcase',
-        description:
-          'Screen recording players assembling a 60-card tournament list: Standard Shopify (25 mins) vs TCGplayer (4 mins) vs Aeethod Decklist Ingest (3 seconds).'
-      },
-      {
-        seriesId: 'series-cart-abandonment',
-        title: 'Why Players Abandon Local Store Carts',
-        format: '35s Web Analytics Teardown',
-        cadence: 'Monthly Conversion Teardown',
-        description:
-          'Analyzing why local stores convert <1% of webstore visitors into buyers on tournament singles.'
-      },
-      {
-        seriesId: 'series-tournament-pickup',
-        title: 'The Tournament Night Pickup Engine',
-        format: '35s Operational Workflow',
-        cadence: 'Pre-Tournament Friday',
-        description:
-          'Demonstrating frictionless in-store pickup workflows where players order decks online Friday afternoon and pick them up sorted 15 minutes before Round 1.'
-      }
-    ],
-    videoAnglesLibrary: [
-      {
-        angleId: 'ang-5-1',
-        seriesTitle: 'The 60-Card Checkout Friction Test',
-        title: 'Why Players Abandon Local Store Websites',
+        seriesTitle: 'The 1-Click Tournament Decklist Checkout Race',
+        title: 'The 60-Card Tournament Decklist Checkout Race',
         targetAudience: 'LGS Owners running basic Shopify themes',
         hook: 'Your local players aren\'t buying singles on TCGplayer because they\'re cheap. They\'re doing it because your Shopify site takes 25 minutes to build a deck.',
         coreMechanism:
@@ -1202,247 +1136,17 @@ export const CONTENT_SPACES: ContentSpace[] = [
         ]
       },
       {
-        angleId: 'ang-5-2',
-        seriesTitle: 'The 60-Card Checkout Friction Test',
-        title: 'The Sub-100ms Search Difference',
-        targetAudience: 'Webstore Developers & LGS Owners',
-        hook: 'If your webstore search takes more than 1 second per card, 40% of your online shoppers leave before looking at card #2.',
+        angleId: 'ang-4-6',
+        seriesTitle: 'The Live 320ms Redis Delist Demo',
+        title: 'From Collection Drop-Off to 3 Marketplaces in 4 Minutes',
+        targetAudience: 'Fast-Turnaround Card Flippers & LGS Owners',
+        hook: 'A customer dropped off 60 high-end singles at 2:00 PM. By 2:04 PM, all 60 are live on Shopify, eBay, and TCGplayer.',
         coreMechanism:
-          'Demonstrating search latency benchmarks: Standard Shopify SQL database lagging on 80,000 card variants vs Aeethod sub-100ms indexed search.',
+          'End-to-end continuous workflow: Camera scans cards -> AI grades condition -> Sync engine publishes across 3 channels in 240 seconds.',
         executionChecklist: [
-          'Frame 0: Typing "Charizard" into a spinning wheel loader on mobile screen.',
-          'Second 5: Benchmark bounce rates against page load latency metrics.',
-          'Second 16: Show instant keystroke response and faceted condition filtering in Aeethod webstore.',
-          'Ending: Loop back to hook.'
-        ]
-      },
-      {
-        angleId: 'ang-5-3',
-        seriesTitle: 'Why Players Abandon Local Store Carts',
-        title: 'The "Missing 3 Cards" Dilemma',
-        targetAudience: 'E-commerce Managers & Shop Operators',
-        hook: 'When a player has 57 cards in their cart and you\'re missing 3, they don\'t buy 57. They empty the entire cart and buy all 60 on TCGplayer.',
-        coreMechanism:
-          'Exposing the all-or-nothing tournament psychology and how Aeethod\'s Smart Deck Alternative Suggester keeps the order.',
-        executionChecklist: [
-          'Frame 0: Show cart total dropping from $240 to $0 as user clicks "Empty Cart".',
-          'Second 5: Explain player panic: Needing the full 60-card list ready for Friday night tournament.',
-          'Second 17: Show Aeethod\'s AI Suggester offering alternative art/condition copies to complete the list locally.',
-          'Ending: "Stop losing full deck orders over 3 missing cards."'
-        ]
-      },
-      {
-        angleId: 'ang-5-4',
-        seriesTitle: 'The Tournament Night Pickup Engine',
-        title: 'Friday 6:00 PM Express Pickup Fulfillment',
-        targetAudience: 'Tournament Organizers & Shop Clerks',
-        hook: 'How to fulfill 35 tournament deck orders between 5:00 PM and 6:30 PM without delaying Round 1.',
-        coreMechanism:
-          'Showcasing bin-sorted pick slips and express barcode scan pickup bags ready at the counter.',
-        executionChecklist: [
-          'Frame 0: Clock showing 6:15 PM with 30 players rushing into the store before Round 1.',
-          'Second 5: Show chaos of manual search through binders vs numbered pick-station cubbies.',
-          'Second 17: Player scans pickup QR code on phone; bag handed over in 6 seconds flat.',
-          'Ending: Loop to start.'
-        ]
-      },
-      {
-        angleId: 'ang-5-5',
-        seriesTitle: 'Why Players Abandon Local Store Carts',
-        title: 'Local Webstore vs TCGplayer Direct Pricing',
-        targetAudience: 'LGS Owners pricing webstore inventory',
-        hook: 'Why matching TCGplayer Market Price on your webstore is actually underpricing your local competitive advantage.',
-        coreMechanism:
-          'Explaining the "Immediate In-Hand" premium: Players willingly pay 8–12% more for singles they can pick up tonight vs waiting 6 days for mail.',
-        executionChecklist: [
-          'Frame 0: Compare $20 card arriving next Tuesday vs $22 card in hand for tonight\'s locals.',
-          'Second 5: Unpack player willingness-to-pay economics for tournament deadlines.',
-          'Second 16: Show how Aeethod auto-tunes local webstore margins above race-to-the-bottom online floors.',
-          'Ending: Seamless loop to start.'
-        ]
-      },
-      {
-        angleId: 'ang-5-6',
-        seriesTitle: 'The Tournament Night Pickup Engine',
-        title: 'The Prerelease Singles Webstore Playbook',
-        targetAudience: 'Stores hosting official prerelease weekends',
-        hook: 'Prerelease weekend is when singles prices are at their all-time peak. Here is how to sell them on your webstore before Monday morning.',
-        coreMechanism:
-          'Fast-tracking prerelease pack openings directly into local webstore inventory for immediate tournament trade action.',
-        executionChecklist: [
-          'Frame 0: Stacks of newly opened prerelease singles on Sunday afternoon.',
-          'Second 5: The 48-hour price cliff: Why waiting until Wednesday to list cards loses 50% margin.',
-          'Second 17: Show rapid ingest and automated local webstore launch via Aeethod.',
-          'Ending: Loop back to hook.'
-        ]
-      }
-    ]
-  },
-  {
-    id: 'cs-convention-resilience',
-    spaceNumber: 6,
-    title: 'High-Stakes Live Operations & Convention Resiliency Space',
-    tagline: 'The Card Show, Event Logistics & Offline Hardware Space',
-    strategicDomain: 'Card Conventions, Pop-Up Vendor Logistics, Wi-Fi Failures, Offline POS Hardware & Multi-Item Trade Math',
-    category: 'Live Operations & Conventions',
-    viralMultiplier: '4x Save / Bookmark',
-    funnelStage: 'TOFU (Viral Curiosity)',
-    funnelStagePill: 'TOFU',
-    primaryCohortId: 'reseller',
-    cohortsServed: [
-      {
-        cohortName: 'The Full-Time Reseller & Power Flipper',
-        cohortRole: 'Primary Target & Save Driver — Survives convention floor Wi-Fi crashes, trades six-figure slab briefcases, and reconciles 3-day cash flow.',
-        icon: '📦'
-      },
-      {
-        cohortName: 'The Hobby Dreamer & Casual Fan',
-        cohortRole: 'Curiosity Engine — Mesmerized by high-stakes convention floor adrenaline, airplane-mode transactions, and $50k deal drama.',
-        icon: '🎮'
-      },
-      {
-        cohortName: 'The Overworked LGS Owner & Store Manager',
-        cohortRole: 'Offsite Pop-Up Operator — Needs bulletproof mobile point-of-sale for regional championships without desyncing physical shop stock.',
-        icon: '🏢'
-      }
-    ],
-    funnelProgressionMechanism:
-      'High-energy hook on convention floor Wi-Fi collapse / airplane-mode cash deal ignites broad watch loops (TOFU) -> Resellers and traveling dealers bookmark video (4x Save multiplier) -> Transition into Aeethod Offline PWA and omnichannel inventory syncing (MOFU/BOFU).',
-    spokenCtaOutro: {
-      ctaType: 'Convention Resilience Checklist & PWA Test',
-      script:
-        'Traveling to your next card show or convention? DM us "SHOW" or grab our free Traveling Dealer Offline Checklist to make sure your POS never crashes when Wi-Fi drops.'
-    },
-    targetAudienceB2B: 'Traveling Card Show Dealers, Regional Vendors, Convention Booth Operators & Pop-Up Sellers',
-    whyItIsAWhiteSpace: {
-      competitorBlindSpot:
-        'Social media is flooded with aesthetic card show showcase vlogs with trap beats, but nobody covers the high-stress logistical nightmare when convention center Wi-Fi drops to 0 kbps and cloud registers crash.',
-      audiencePainAndDemand:
-        'Traveling dealers pay $1,500–$5,000 for convention booths. When cell towers jam and cloud POS systems fail, dealers lose thousands in sales, scramble with paper receipts, and ruin inventory tracking.',
-      strategicMoat:
-        'Demonstrating real offline-first PWA resilience under airplane mode proves Aeethod was engineered by battle-tested convention veterans.'
-    },
-    aeethodSaaSAnchor: {
-      featureName: 'Offline-First PWA Mode & Local IndexedDB/SQLite Sync Engine',
-      productAdvantage:
-        'Full point-of-sale functionality with zero internet: Scans barcodes, calculates taxes, issues receipts, and caches transactions locally, syncing with the master catalog the millisecond connection returns.',
-      commercialPayoff:
-        'Guarantees zero dropped sales during high-density convention network blackouts and automates show inventory reconciliation.'
-    },
-    recurringSeries: [
-      {
-        seriesId: 'series-wifi-autopsy',
-        title: 'Convention Wi-Fi Autopsy Desk',
-        format: '35s High-Stakes Convention Stress Test',
-        cadence: 'Post-Major Convention (Monthly)',
-        description:
-          'Simulating the peak 11:00 AM convention network blackout and demonstrating how offline POS software keeps revenue flowing.'
-      },
-      {
-        seriesId: 'series-traveling-dealer',
-        title: 'The Traveling Dealer Tech Stack',
-        format: '40s Hardware & Workflow Teardown',
-        cadence: 'Bi-Weekly Showcase',
-        description:
-          'Teardowns of compact pelican case mobile POS setups, thermal receipt printers, and battery-backed hardware for traveling dealers.'
-      },
-      {
-        seriesId: 'series-show-reconciliation',
-        title: 'Show Inventory Reconciliation',
-        format: '30s Financial Balance Teardown',
-        cadence: 'Post-Show Monday',
-        description:
-          'Auditing what happened over a 3-day card show: Cash collected, trades absorbed, booth fee break-even, and restock logistics.'
-      }
-    ],
-    videoAnglesLibrary: [
-      {
-        angleId: 'ang-6-1',
-        seriesTitle: 'Convention Wi-Fi Autopsy Desk',
-        title: 'Convention Wi-Fi Collapse Survival',
-        targetAudience: 'Traveling Card Show Vendors & Dealers',
-        hook: 'What happens when 5,000 collectors jam the convention Wi-Fi and your cloud POS completely dies at 11:00 AM?',
-        coreMechanism:
-          'Breaking down the Collect-A-Con / Regional Championship disaster: Wi-Fi crashes, cellular drops, cloud POS fails. Demonstrating Aeethod Offline-First PWA running in Airplane Mode with local SQLite caching.',
-        executionChecklist: [
-          'Frame 0: Camera moving through packed convention hall with red "NO INTERNET CONNECTION" overlay on iPad.',
-          'Second 5: Show vendors scrambling with pen and paper, losing card tracking and making calculation mistakes.',
-          'Second 18: Demo Aeethod offline mode scanning barcodes and completing transactions with zero Wi-Fi.',
-          'Ending: "Never lose a trade show sale to dropped Wi-Fi."'
-        ]
-      },
-      {
-        angleId: 'ang-6-2',
-        seriesTitle: 'Convention Wi-Fi Autopsy Desk',
-        title: 'The Airplane Mode POS Challenge',
-        targetAudience: 'Convention Booth Managers',
-        hook: 'Can your store POS complete a 5-card transaction, apply sales tax, and print a receipt with Airplane Mode turned ON?',
-        coreMechanism:
-          'Live test: Flipping iPad to Airplane Mode, ringing up $1,400 in slabs, scanning barcode, and printing thermal receipt.',
-        executionChecklist: [
-          'Frame 0: Swipe down on iPad, toggle Airplane Mode ON, show zero bars and zero Wi-Fi icon.',
-          'Second 5: Scan 3 slabs with Bluetooth barcode scanner into Aeethod POS with instant beep response.',
-          'Second 16: Complete payment and show local transaction queue ready for background cloud sync.',
-          'Ending: Loop back to hook.'
-        ]
-      },
-      {
-        angleId: 'ang-6-3',
-        seriesTitle: 'The Traveling Dealer Tech Stack',
-        title: 'The 1-Pelican-Case Convention Booth Setup',
-        targetAudience: 'Traveling Dealers & Road Warriors',
-        hook: 'Everything inside this single Pelican case runs an entire $50,000 convention booth for 3 days without plugging into a wall.',
-        coreMechanism:
-          'Unboxing the ultimate mobile vendor stack: iPad, Anker power bank, mobile Bluetooth scanner, thermal printer, and Aeethod offline PWA.',
-        executionChecklist: [
-          'Frame 0: Unlatch heavy-duty Pelican case on a convention banquet table.',
-          'Second 5: Lay out the streamlined hardware components and total battery run time (14 hours).',
-          'Second 18: Show system operational and scanning in under 90 seconds from unboxing.',
-          'Ending: "Stop packing 4 duffle bags of tangled cables."'
-        ]
-      },
-      {
-        angleId: 'ang-6-4',
-        seriesTitle: 'Show Inventory Reconciliation',
-        title: 'The Monday Post-Convention Ledger Shock',
-        targetAudience: 'Card Show Dealers counting cash on Monday',
-        hook: 'You brought home $15,000 in cash from the card show. Here is why you might have actually lost $800 over the weekend.',
-        coreMechanism:
-          'Accounting for the full cost equation: Booth table fees ($1,200), hotel ($600), gas ($150), food ($200), replacement inventory costs, and cash discounts.',
-        executionChecklist: [
-          'Frame 0: Stacks of cash envelopes on desk with celebratory green emoji, followed by red deduction pen.',
-          'Second 5: Tally up overhead costs and the cost to replace the inventory sold under market value.',
-          'Second 17: Show Aeethod\'s Event Profitability Calculator revealing true net ROI.',
-          'Ending: "Never confuse gross cash with net booth profit."'
-        ]
-      },
-      {
-        angleId: 'ang-6-5',
-        seriesTitle: 'The Traveling Dealer Tech Stack',
-        title: 'The 30-Second Multi-Card Trade Calculator',
-        targetAudience: 'Dealers doing high-volume convention trades',
-        hook: 'A customer offers 7 raw singles and $120 cash for your PSA 10 slab. How do you calculate your net margin in under 30 seconds?',
-        coreMechanism:
-          'High-pressure convention trade calculations: Using Aeethod Quick Trade matrix to calculate composite offer value before the customer walks away.',
-        executionChecklist: [
-          'Frame 0: Customer slides a messy stack of 7 raw cards onto display case next to a PSA 10 slab.',
-          'Second 5: Show mental math panic vs rapid tap barcode intake.',
-          'Second 16: Screen displays composite offer margin: +$42 net profit; deal accepted instantly.',
-          'Ending: Loop to start.'
-        ]
-      },
-      {
-        angleId: 'ang-6-6',
-        seriesTitle: 'Show Inventory Reconciliation',
-        title: 'Monday Morning 200-Item Inventory Re-Sync',
-        targetAudience: 'Store Owners returning from weekend shows',
-        hook: 'It\'s Monday 9:00 AM. Your physical shop is opening, but you have 200 sold cards to reconcile from this weekend\'s show.',
-        coreMechanism:
-          'Eliminating manual spreadsheet reconciliation: When convention iPad connects to store Wi-Fi, 200 sold items are automatically deducted from webstore and shop POS.',
-        executionChecklist: [
-          'Frame 0: Weary dealer unlocking store door with boxes of leftover show inventory.',
-          'Second 5: Show the dread of spending all Monday morning manually adjusting inventory.',
-          'Second 16: iPad connects to store Wi-Fi -> 1-click reconcile updates all channels in 4 seconds.',
+          'Frame 0: Customer slides a deck box across counter; start countdown timer on screen: 04:00.',
+          'Second 6: Rapid camera sweep scans 60 cards into pending intake queue.',
+          'Second 18: One-tap bulk publish pushes live listings to webstore and eBay with sub-320ms sync.',
           'Ending: Seamless replay loop into opening hook.'
         ]
       }
