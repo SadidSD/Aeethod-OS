@@ -20,11 +20,55 @@ export interface UxFlowStep {
   stepNumber: number;
   title: string;
   userGoal: string;
+  branchCondition?: string;
+  hardwareTrigger?: 'Barcode Scan' | 'Thermal Print' | 'Cash Drawer Kick' | 'Camera OCR' | 'None';
   hotkey?: string;
   touchTargetSize: string; // e.g. "48px"
   frictionLevel: 'Low' | 'Medium' | 'High';
   edgeCaseNotes: string;
   figmaUrl?: string;
+}
+
+export interface UxSitemapNode {
+  id: string;
+  title: string;
+  route: string;
+  parentRoute?: string;
+  role: 'Clerk' | 'Manager' | 'Store Owner' | 'Collector';
+  layoutType: 'POS Kiosk' | 'Desktop Grid' | 'Center Peek Drawer' | 'Mobile View';
+  status: 'Concept' | 'Wireframing' | 'In Prototype' | 'Shipped';
+  icon: string;
+  notes: string;
+  statesDefined: {
+    ideal: boolean;
+    empty: boolean;
+    loading: boolean;
+    partial: boolean;
+    error: boolean;
+  };
+}
+
+export interface UxScreenStateSpec {
+  screenId: string;
+  screenTitle: string;
+  route: string;
+  idealStateNotes: string;
+  emptyStateTitle: string;
+  emptyStateAction: string;
+  loadingSkeletonPattern: string;
+  partialStateRules: string;
+  errorRecoveryAction: string;
+  designComplete: boolean;
+}
+
+export interface UxKanbanTask {
+  id: string;
+  title: string;
+  flowCategory: 'POS' | 'Buylist' | 'Inventory' | 'Tournaments' | 'Storefront';
+  column: 'jtbd' | 'wireframe' | 'figma' | 'tested' | 'dev_ready' | 'shipped';
+  priority: 'High' | 'Medium' | 'Critical';
+  persona: string;
+  description: string;
 }
 
 export interface UxFlowPlan {
@@ -127,6 +171,8 @@ export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
         stepNumber: 1,
         title: 'Optical / Barcode Scanner Intake',
         userGoal: 'Identify the exact card expansion set and variant without typing',
+        branchCondition: 'Branch A: Card in local DB -> Auto-price | Branch B: Unknown SKU -> 2-keystroke fuzzy search | Branch C: Damaged/Fake -> Flag Flaw Modal',
+        hardwareTrigger: 'Barcode Scan',
         hotkey: 'Space or Barcode Trigger',
         touchTargetSize: '64px',
         frictionLevel: 'Low',
@@ -137,6 +183,8 @@ export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
         stepNumber: 2,
         title: '1-Tap Condition Grading Pills',
         userGoal: 'Assign physical condition (NM/LP/MP/HP/DMG) in exactly 1 touch',
+        branchCondition: 'Branch A: NM/LP -> Standard margin | Branch B: HP/DMG -> High-risk warning discount',
+        hardwareTrigger: 'None',
         hotkey: 'Keys 1 to 5',
         touchTargetSize: '52px',
         frictionLevel: 'Low',
@@ -147,6 +195,8 @@ export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
         stepNumber: 3,
         title: 'Live Market Margin Calculation',
         userGoal: 'Calculate store buy-offer based on real-time TCGplayer market prices',
+        branchCondition: 'Branch A: Live API connected -> Real-time pricing | Branch B: Offline -> Daily cached rate sheet',
+        hardwareTrigger: 'None',
         hotkey: 'Auto-computed',
         touchTargetSize: '48px',
         frictionLevel: 'Low',
@@ -157,6 +207,8 @@ export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
         stepNumber: 4,
         title: 'Cash vs Store Credit Split Decision',
         userGoal: 'Present customer with Cash ($120) vs Store Credit ($156 @ +30% boost)',
+        branchCondition: 'Branch A: Store Credit selected -> Instant card balance injection | Branch B: Cash -> Drawer balance validation',
+        hardwareTrigger: 'Cash Drawer Kick',
         hotkey: 'Tab + Enter',
         touchTargetSize: '60px',
         frictionLevel: 'Medium',
@@ -167,6 +219,8 @@ export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
         stepNumber: 5,
         title: 'Receipt Print & Multi-Channel Injection',
         userGoal: 'Print intake voucher and add card into active store inventory immediately',
+        branchCondition: 'Branch A: Thermal printer active -> Cut voucher | Branch B: Paper out -> SMS/Email voucher',
+        hardwareTrigger: 'Thermal Print',
         hotkey: 'Enter',
         touchTargetSize: '48px',
         frictionLevel: 'Low',
@@ -188,6 +242,8 @@ export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
         stepNumber: 1,
         title: 'Global Fast Filter & Set Selection',
         userGoal: 'Instantly isolate Base Set Charizard holos from 30,000 SKUs',
+        branchCondition: 'Branch A: Direct set code match -> Filter grid | Branch B: Loose card name -> Fuzzy suggest',
+        hardwareTrigger: 'None',
         hotkey: '⌘K / Ctrl+K',
         touchTargetSize: '36px',
         frictionLevel: 'Low',
@@ -198,6 +254,8 @@ export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
         stepNumber: 2,
         title: 'Inline Cell Pricing & Condition Adjustment',
         userGoal: 'Update price from $420 to $450 without opening an inspection modal',
+        branchCondition: 'Branch A: Price within 15% range -> Commit | Branch B: >30% divergence -> Confirmation tooltip',
+        hardwareTrigger: 'None',
         hotkey: 'Double Click or Enter',
         touchTargetSize: '32px',
         frictionLevel: 'Low',
@@ -208,6 +266,8 @@ export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
         stepNumber: 3,
         title: 'Multi-Select Bulk Action Execution',
         userGoal: 'Select 20 singles and sync them to eBay with a 10% premium',
+        branchCondition: 'Branch A: Channels authorized -> Push webhook | Branch B: Channel token expired -> Re-auth badge',
+        hardwareTrigger: 'None',
         hotkey: 'Shift + Click',
         touchTargetSize: '40px',
         frictionLevel: 'Medium',
@@ -218,6 +278,8 @@ export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
         stepNumber: 4,
         title: 'Live Channel Webhook Health Verification',
         userGoal: 'Confirm that physical in-store sale decremented the online listing in <200ms',
+        branchCondition: 'Branch A: Success -> Green pulse indicator | Branch B: Lag/Failure -> Retry queue indicator',
+        hardwareTrigger: 'None',
         hotkey: 'Auto-monitored',
         touchTargetSize: '32px',
         frictionLevel: 'Low',
@@ -239,6 +301,8 @@ export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
         stepNumber: 1,
         title: 'Welcome & Legacy Inventory Importer',
         userGoal: 'Upload existing BinderPOS, CrystalCommerce, or Excel CSV sheet in 1 click',
+        branchCondition: 'Branch A: Standard CSV format -> Auto-map columns | Branch B: Custom format -> Drag-drop column mapper',
+        hardwareTrigger: 'None',
         hotkey: 'Drag & Drop',
         touchTargetSize: '64px',
         frictionLevel: 'Medium',
@@ -249,6 +313,8 @@ export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
         stepNumber: 2,
         title: 'Connect Primary Sales Channels',
         userGoal: 'Authorize eBay, Shopify, and TCGplayer seller accounts',
+        branchCondition: 'Branch A: OAuth success -> Instant test ping | Branch B: Auth failed -> Direct API troubleshooting drawer',
+        hardwareTrigger: 'None',
         hotkey: 'OAuth 1-Click',
         touchTargetSize: '48px',
         frictionLevel: 'Medium',
@@ -259,6 +325,8 @@ export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
         stepNumber: 3,
         title: 'Configure Automated Buylist Spread Rules',
         userGoal: 'Establish default store margins (e.g. 65% cash / 80% store credit)',
+        branchCondition: 'Branch A: Accept preset chips -> 1-click apply | Branch B: Custom formula -> Advanced tier matrix',
+        hardwareTrigger: 'None',
         hotkey: 'Preset Chips',
         touchTargetSize: '48px',
         frictionLevel: 'Low',
@@ -269,6 +337,8 @@ export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
         stepNumber: 4,
         title: 'First Transaction Simulation & Celebration',
         userGoal: 'Run a sample trade-in to experience zero-latency checkout',
+        branchCondition: 'Branch A: Simulation complete -> Confetti burst + Live mode activated | Branch B: Skip -> Direct to dashboard',
+        hardwareTrigger: 'Thermal Print',
         hotkey: 'Enter to Complete',
         touchTargetSize: '56px',
         frictionLevel: 'Low',
@@ -290,6 +360,8 @@ export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
         stepNumber: 1,
         title: 'Player QR / Name Search Check-in',
         userGoal: 'Confirm player attendance and collect tournament entry fee in 3 seconds',
+        branchCondition: 'Branch A: Player registered -> 1-tap mark present | Branch B: Walk-in player -> Quick 5-second guest registration',
+        hardwareTrigger: 'Barcode Scan',
         hotkey: 'Barcode Scan or Enter',
         touchTargetSize: '52px',
         frictionLevel: 'Low',
@@ -300,6 +372,8 @@ export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
         stepNumber: 2,
         title: '1-Click Swiss Round Pairing Algorithm',
         userGoal: 'Generate mathematically balanced pairings and table assignments',
+        branchCondition: 'Branch A: Even player count -> Standard pairing | Branch B: Odd player count -> Auto-grant 3-point bye',
+        hardwareTrigger: 'None',
         hotkey: '⌘P',
         touchTargetSize: '52px',
         frictionLevel: 'Low',
@@ -310,6 +384,8 @@ export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
         stepNumber: 3,
         title: 'Store Screen Projector & Mobile Display',
         userGoal: 'Broadcast pairings to store wall TV and player mobile phones via QR code',
+        branchCondition: 'Branch A: HDMI/Chromecast connected -> Fullscreen TV kiosk | Branch B: Mobile only -> Host web URL',
+        hardwareTrigger: 'None',
         hotkey: 'Auto-broadcast',
         touchTargetSize: '48px',
         frictionLevel: 'Low',
@@ -320,12 +396,251 @@ export const INITIAL_UX_FLOW_PLANS: UxFlowPlan[] = [
         stepNumber: 4,
         title: 'Rapid Match Slip Result Entry',
         userGoal: 'Record 2-0 / 2-1 match outcomes as players report to the desk',
+        branchCondition: 'Branch A: Normal result -> Enter score | Branch B: Draw / Time expired -> Tiebreaker rule applied',
+        hardwareTrigger: 'None',
         hotkey: 'Numpad 2-0 / 2-1',
         touchTargetSize: '48px',
         frictionLevel: 'Low',
         edgeCaseNotes: 'Tied match: Automatically logs tiebreaker percentages.'
       }
     ]
+  }
+];
+
+export const INITIAL_SITEMAP_NODES: UxSitemapNode[] = [
+  {
+    id: 'site-pos',
+    title: 'Counter Checkout Register',
+    route: '/pos',
+    role: 'Clerk',
+    layoutType: 'POS Kiosk',
+    status: 'Shipped',
+    icon: 'Zap',
+    notes: 'Fast-touch counter checkout kiosk with 48px+ buttons, barcode scanner integration, and cash drawer solenoid control.',
+    statesDefined: { ideal: true, empty: true, loading: true, partial: true, error: true }
+  },
+  {
+    id: 'site-pos-split',
+    title: 'Split-Tender Payment Drawer',
+    route: '/pos/split-tender',
+    parentRoute: '/pos',
+    role: 'Clerk',
+    layoutType: 'Center Peek Drawer',
+    status: 'In Prototype',
+    icon: 'Sliders',
+    notes: 'Interactive dual-slider allowing customers to pay partly in cash and partly using store credit balance.',
+    statesDefined: { ideal: true, empty: true, loading: true, partial: true, error: true }
+  },
+  {
+    id: 'site-buylist',
+    title: 'Buylist Optical Intake Queue',
+    route: '/buylist',
+    role: 'Clerk',
+    layoutType: 'POS Kiosk',
+    status: 'In Prototype',
+    icon: 'Workflow',
+    notes: 'High-speed card acquisition engine with 1-tap condition grading, real-time TCGplayer market spreads, and instant trade voucher generation.',
+    statesDefined: { ideal: true, empty: true, loading: true, partial: true, error: true }
+  },
+  {
+    id: 'site-buylist-vault',
+    title: 'High-End Vault Safe Drop',
+    route: '/buylist/vault-drop',
+    parentRoute: '/buylist',
+    role: 'Manager',
+    layoutType: 'Center Peek Drawer',
+    status: 'Wireframing',
+    icon: 'ShieldCheck',
+    notes: 'Verification modal for cards valued >$250 requiring manager approval pin and serialized security envelope scan.',
+    statesDefined: { ideal: true, empty: true, loading: true, partial: false, error: true }
+  },
+  {
+    id: 'site-inventory',
+    title: 'Singles Inventory Grid Matrix',
+    route: '/inventory',
+    role: 'Store Owner',
+    layoutType: 'Desktop Grid',
+    status: 'Shipped',
+    icon: 'Layout',
+    notes: 'Linear-inspired 28px row desktop matrix for managing 30,000+ card SKUs with inline pricing and multi-channel sync badges.',
+    statesDefined: { ideal: true, empty: true, loading: true, partial: true, error: true }
+  },
+  {
+    id: 'site-inventory-rules',
+    title: 'Automated Margin & Sync Rules',
+    route: '/inventory/bulk-price',
+    parentRoute: '/inventory',
+    role: 'Store Owner',
+    layoutType: 'Desktop Grid',
+    status: 'Wireframing',
+    icon: 'TrendingUp',
+    notes: 'Global rule engine for setting channel markup (+12% eBay, 0% in-store) and competitive market price recalculations.',
+    statesDefined: { ideal: true, empty: true, loading: true, partial: false, error: false }
+  },
+  {
+    id: 'site-tournaments',
+    title: 'Swiss Tournament Pairing Engine',
+    route: '/tournaments',
+    role: 'Clerk',
+    layoutType: 'Desktop Grid',
+    status: 'Concept',
+    icon: 'Target',
+    notes: 'Algorithmic bracket manager with 3-second player check-in, automated round pairings, and TV projector broadcast view.',
+    statesDefined: { ideal: true, empty: true, loading: true, partial: false, error: false }
+  },
+  {
+    id: 'site-tournaments-timer',
+    title: 'Wall Projector Round Timer Kiosk',
+    route: '/tournaments/timer',
+    parentRoute: '/tournaments',
+    role: 'Clerk',
+    layoutType: 'POS Kiosk',
+    status: 'Concept',
+    icon: 'Clock',
+    notes: 'High-visibility 50-minute round clock and table seating assignment display designed for store wall monitors.',
+    statesDefined: { ideal: true, empty: true, loading: false, partial: false, error: false }
+  },
+  {
+    id: 'site-collector',
+    title: 'Collector Storefront & 3D Tilt Vault',
+    route: '/collector',
+    role: 'Collector',
+    layoutType: 'Mobile View',
+    status: 'In Prototype',
+    icon: 'Eye',
+    notes: 'Signature collector storefront featuring responsive 3D card tilt with realistic holographic glare and PSA certification checks.',
+    statesDefined: { ideal: true, empty: true, loading: true, partial: true, error: true }
+  },
+  {
+    id: 'site-settings-margins',
+    title: 'Hardware Hub & Buy/Sell Margins',
+    route: '/settings/margins',
+    role: 'Store Owner',
+    layoutType: 'Desktop Grid',
+    status: 'Shipped',
+    icon: 'Sliders',
+    notes: 'Central configuration for thermal printer ESC/POS baud rates, barcode scanner prefixes, and gross margin floors.',
+    statesDefined: { ideal: true, empty: true, loading: true, partial: true, error: true }
+  }
+];
+
+export const INITIAL_SCREEN_STATES: UxScreenStateSpec[] = [
+  {
+    screenId: 'screen-buylist',
+    screenTitle: 'Counter Buylist Intake Queue',
+    route: '/buylist',
+    idealStateNotes: 'Displays 12 active trade queues, live TCGplayer market prices, condition badges, and total cash/credit payout tabs.',
+    emptyStateTitle: 'No Active Trade-Ins',
+    emptyStateAction: '+ Scan First Raw Card (Barcode or Space)',
+    loadingSkeletonPattern: 'Subtle pulse skeleton matching 4-column card row geometry (<250ms perceived).',
+    partialStateRules: 'When only 1 card is present, table row does not stretch awkwardly; shows quick-add next slot.',
+    errorRecoveryAction: 'Offline fallback: Uses daily local SQLite cache with 1-tap manual sync retry.',
+    designComplete: true
+  },
+  {
+    screenId: 'screen-inventory',
+    screenTitle: 'Singles Inventory Matrix',
+    route: '/inventory',
+    idealStateNotes: 'Dense 28px rows with virtualized infinite scrolling across 30,000+ SKUs with live eBay/TCGplayer badges.',
+    emptyStateTitle: 'Your Inventory is Empty',
+    emptyStateAction: 'Import CSV from BinderPOS or TCGplayer',
+    loadingSkeletonPattern: 'Linear skeleton rows with shimmer wave animation matching column widths.',
+    partialStateRules: 'Maintains fixed table headers with subtle empty rows indicator.',
+    errorRecoveryAction: 'Shows connection alert toast with background retry queue.',
+    designComplete: true
+  },
+  {
+    screenId: 'screen-pos',
+    screenTitle: 'Fast-Touch Counter Register',
+    route: '/pos',
+    idealStateNotes: '48px+ quick-touch buttons, active cart with subtotal, tax calculation, and 1-tap customer loyalty.',
+    emptyStateTitle: 'Cart Ready for Next Customer',
+    emptyStateAction: 'Scan Barcode or Tap Fast-Add Category',
+    loadingSkeletonPattern: 'Instant optimistic local state; zero spinner during checkout.',
+    partialStateRules: 'Cart list scrolls smoothly with sticky bottom checkout bar.',
+    errorRecoveryAction: 'Receipt printer timeout falls back to instant SMS/Email digital slip.',
+    designComplete: true
+  },
+  {
+    screenId: 'screen-tournaments',
+    screenTitle: 'Swiss Tournament Bracket Matrix',
+    route: '/tournaments',
+    idealStateNotes: '32-player live pairings with table numbers, match scores (2-0, 2-1), and round countdown timer.',
+    emptyStateTitle: 'No Active Tournaments Scheduled',
+    emptyStateAction: 'Create Friday Night Magic Event',
+    loadingSkeletonPattern: 'Grid cards pulse with round placeholder numbers.',
+    partialStateRules: 'Handles odd-player counts by auto-assigning 3-point bye.',
+    errorRecoveryAction: 'Allows manual table override and pairing re-computation.',
+    designComplete: false
+  },
+  {
+    screenId: 'screen-collector',
+    screenTitle: 'Collector Showcase & 3D Tilt Vault',
+    route: '/collector',
+    idealStateNotes: 'High-res card scans with interactive 3D holographic tilt, PSA slab certification badges, and market sparklines.',
+    emptyStateTitle: 'No Showcase Cards Featured',
+    emptyStateAction: 'Add Top 10 High-End Slabs to Showcase',
+    loadingSkeletonPattern: 'Holographic shimmer card placeholder with 3:4 aspect ratio.',
+    partialStateRules: 'Single card renders centered in gallery mode with inspection controls.',
+    errorRecoveryAction: 'High-res image load error gracefully falls back to vector card placeholder.',
+    designComplete: true
+  }
+];
+
+export const INITIAL_UX_KANBAN_TASKS: UxKanbanTask[] = [
+  {
+    id: 'k-1',
+    title: 'Counter trade bottleneck during rush hour',
+    flowCategory: 'Buylist',
+    column: 'jtbd',
+    priority: 'Critical',
+    persona: 'Counter Clerk Jake',
+    description: 'Map out the 30-second trade-in goal and interview 3 clerks regarding un-sleeved card grading delays.'
+  },
+  {
+    id: 'k-2',
+    title: 'Split-payment dual slider drawer wireframes',
+    flowCategory: 'POS',
+    column: 'wireframe',
+    priority: 'High',
+    persona: 'Counter Clerk Jake',
+    description: 'Create low-fidelity wireframes for balancing store credit vs cash payouts with touch pads >= 48px.'
+  },
+  {
+    id: 'k-3',
+    title: 'Interactive 3D Holographic Tilt Card prototype',
+    flowCategory: 'Storefront',
+    column: 'figma',
+    priority: 'High',
+    persona: 'Grail Collector Sarah',
+    description: 'Build interactive Figma and Framer prototypes demonstrating gyroscope and cursor angle glare shader.'
+  },
+  {
+    id: 'k-4',
+    title: '2-Keystroke fuzzy search usability testing',
+    flowCategory: 'Buylist',
+    column: 'tested',
+    priority: 'Critical',
+    persona: 'Counter Clerk Jake',
+    description: 'Run 5 usability test sessions measuring time-to-find vintage Base Set holos vs TCGplayer search.'
+  },
+  {
+    id: 'k-5',
+    title: 'Dense 28px inventory row inline pricing cells spec',
+    flowCategory: 'Inventory',
+    column: 'dev_ready',
+    priority: 'Critical',
+    persona: 'Store Owner Sadid',
+    description: 'Finalize design token specs, keyboard hotkeys (Enter/Tab), and WCAG contrast ratios for developer handoff.'
+  },
+  {
+    id: 'k-6',
+    title: 'Nielsen heuristic status banners in production',
+    flowCategory: 'POS',
+    column: 'shipped',
+    priority: 'Medium',
+    persona: 'Store Owner Sadid',
+    description: 'Verified live status pill and 1-click undo snackbar in production register with zero console errors.'
   }
 ];
 
