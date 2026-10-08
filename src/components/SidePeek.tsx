@@ -103,7 +103,10 @@ export const SidePeek: React.FC = () => {
     : 'h-full flex flex-col overflow-hidden';
 
   return (
-    <div className={peekMode === 'center' ? containerClasses : undefined}>
+    <div
+      className={peekMode === 'center' ? containerClasses : undefined}
+      onClick={peekMode === 'center' ? () => setOpenTask(null) : undefined}
+    >
       {/* Backdrop for side peek on mobile */}
       {peekMode === 'side' && (
         <div
@@ -112,7 +115,10 @@ export const SidePeek: React.FC = () => {
         />
       )}
 
-      <div className={peekMode === 'center' ? innerModalClasses : containerClasses}>
+      <div
+        className={peekMode === 'center' ? innerModalClasses : containerClasses}
+        onClick={peekMode === 'center' ? (e) => e.stopPropagation() : undefined}
+      >
         {/* Top Control Bar */}
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#2e2e2e] bg-[#202020] text-xs select-none">
           <div className="flex items-center gap-2">

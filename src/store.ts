@@ -218,7 +218,7 @@ export const useStore = create<State>((set, get) => ({
         return ['whiteboard', 'economics', 'strategy', 'metrics'];
       })()
     : ['whiteboard', 'economics', 'strategy', 'metrics'],
-  peekMode: (typeof window !== 'undefined' ? (localStorage.getItem('notion_peek_mode') as 'side' | 'center' | 'full') : null) || 'side',
+  peekMode: (typeof window !== 'undefined' ? (localStorage.getItem('notion_peek_mode') as 'side' | 'center' | 'full') : null) || 'center',
   theme: typeof window !== 'undefined' ? ((localStorage.getItem('notion_theme') as 'dark' | 'light') || 'dark') : 'dark',
 
   load: async () => {

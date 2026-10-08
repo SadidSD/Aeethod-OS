@@ -41,7 +41,7 @@ export const NotionDatabase: React.FC<NotionDatabaseProps> = ({
   defaultView = 'table',
 }) => {
   const db = useDb();
-  const { create, update, remove, setOpenTask } = useStore();
+  const { create, update, remove, setOpenTask, setPeekMode } = useStore();
 
   const [viewMode, setViewMode] = useState<'table' | 'board' | 'gallery' | 'list'>(defaultView);
   const [searchQuery, setSearchQuery] = useState('');
@@ -271,7 +271,10 @@ export const NotionDatabase: React.FC<NotionDatabaseProps> = ({
               {processedTasks.map((t) => (
                 <tr
                   key={t.id}
-                  onClick={() => setOpenTask(t.id)}
+                  onClick={() => {
+                    setPeekMode('center');
+                    setOpenTask(t.id);
+                  }}
                   className="cursor-pointer group"
                 >
                   {/* Title */}
@@ -403,7 +406,10 @@ export const NotionDatabase: React.FC<NotionDatabaseProps> = ({
                   {colTasks.map((t) => (
                     <div
                       key={t.id}
-                      onClick={() => setOpenTask(t.id)}
+                      onClick={() => {
+                        setPeekMode('center');
+                        setOpenTask(t.id);
+                      }}
                       className="p-3 rounded-md bg-[#282828] hover:bg-[#303030] border border-[#333333] cursor-pointer transition space-y-2 group shadow-xs"
                     >
                       <div className="text-xs font-medium text-white group-hover:text-indigo-300 transition">

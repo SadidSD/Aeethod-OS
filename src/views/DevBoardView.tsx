@@ -16,7 +16,7 @@ import { DevType } from '../types';
 
 export const DevBoardView: React.FC = () => {
   const db = useDb();
-  const { update, setOpenTask, setQuickAddOpen } = useStore();
+  const { update, setOpenTask, setQuickAddOpen, setPeekMode } = useStore();
 
   const [selectedSprintId, setSelectedSprintId] = useState<string>('all');
   const [selectedEpicId, setSelectedEpicId] = useState<string>('all');
@@ -178,7 +178,10 @@ export const DevBoardView: React.FC = () => {
                   return (
                     <div
                       key={task.id}
-                      onClick={() => setOpenTask(task.id)}
+                      onClick={() => {
+                        setPeekMode('center');
+                        setOpenTask(task.id);
+                      }}
                       className="p-3.5 rounded-xl bg-ink-900 border border-ink-800 hover:border-cyan-500/40 cursor-pointer transition space-y-2.5 group shadow-xs hover:shadow-md"
                     >
                       {/* Epic Tag & Type */}

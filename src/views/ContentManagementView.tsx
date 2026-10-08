@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   VideoRecord,
   ContentTopic,
@@ -23,6 +23,7 @@ import {
   Target,
   Sparkles,
   Layers,
+  Tag,
   ArrowUpRight,
   SlidersHorizontal,
   X,
@@ -133,12 +134,22 @@ export const ContentManagementView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [viewMode, setViewMode] = useState<'vertical' | 'table'>('vertical');
 
-  // Expanded card tracking
-  const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
+  // Floating page card modal state
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const selectedCard = useMemo(() => {
+    if (!selectedCardId) return null;
+    return videos.find((v) => v.id === selectedCardId) || null;
+  }, [videos, selectedCardId]);
 
-  const toggleCard = (id: string) => {
-    setExpandedCards((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectedCardId(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Add modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -485,18 +496,18 @@ export const ContentManagementView: React.FC = () => {
                   <div className="p-2.5 space-y-2.5 flex-1 overflow-y-auto">
                     {stageVideos.map((vid) => {
                       const topicMeta = TOPIC_CONFIG[vid.topic];
-                      const isExpanded = expandedCards[vid.id];
 
                       return (
                         <div
                           key={vid.id}
-                          className={`rounded-lg p-3 transition space-y-2.5 group border ${
+                          onClick={() => setSelectedCardId(vid.id)}
+                          className={`rounded-xl p-3.5 transition space-y-2.5 group border cursor-pointer ${
                             isLight
-                              ? 'bg-white hover:bg-[#fcfbfa] border-[#e9e9e7] hover:border-[#dcdbd7] shadow-xs'
-                              : 'bg-[#242424] hover:bg-[#272727] border-[#2e2e2e] hover:border-[#383838] shadow-sm'
+                              ? 'bg-white hover:bg-[#faf9f6] border-[#e9e9e7] hover:border-indigo-400 shadow-xs hover:shadow-md'
+                              : 'bg-[#242424] hover:bg-[#282828] border-[#2e2e2e] hover:border-indigo-500/50 shadow-sm hover:shadow-md'
                           }`}
                         >
-                          {/* Badges strip */}
+                          {/* Badges strip & Open Page indicator */}
                           <div className="flex items-center justify-between gap-1 text-[10px]">
                             <span
                               className={`px-2 py-0.5 rounded-full font-medium ${topicMeta.bg} ${topicMeta.text} border ${topicMeta.border} truncate max-w-[140px]`}
@@ -504,73 +515,61 @@ export const ContentManagementView: React.FC = () => {
                             >
                               {topicMeta.label}
                             </span>
-                            <span className={`font-mono text-[10px] shrink-0 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                              {vid.format.split(' ')[0]}
-                            </span>
+                            <div className="flex items-center gap-1 shrink-0 text-slate-400 font-mono">
+                              <span>{vid.format.split(' ')[0]}</span>
+                              <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 text-indigo-400 transition" />
+                            </div>
                           </div>
 
-                          {/* Editable Title */}
-                          <input
-                            type="text"
-                            value={vid.title}
-                            onChange={(e) => updateVideo(vid.id, { title: e.target.value })}
-                            className={`w-full text-xs font-semibold bg-transparent border-0 px-1 py-0.5 rounded outline-none transition leading-snug ${
-                              isLight
-                                ? 'text-[#1a1a1a] hover:bg-[#f4f2ee] focus:bg-[#f4f2ee]'
-                                : 'text-slate-100 hover:bg-[#2d2d2d] focus:bg-[#2d2d2d]'
-                            }`}
-                          />
+                          {/* Title */}
+                          <div className={`text-xs font-semibold leading-snug group-hover:text-indigo-400 transition ${isLight ? 'text-slate-900' : 'text-slate-100'}`}>
+                            {vid.title}
+                          </div>
 
                           {/* Hook preview */}
-                          <p className={`text-[11px] italic line-clamp-2 px-1 leading-relaxed ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                            "{vid.hook}"
-                          </p>
+                          {vid.hook && (
+                            <p className={`text-[11px] italic line-clamp-2 px-0.5 leading-relaxed ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                              "{vid.hook}"
+                            </p>
+                          )}
 
-                          {/* Quick Script Access Pill */}
-                          <div className="px-1 pt-0.5">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setActiveScriptVideoId(vid.id);
-                                setScriptStudioTab('editor');
-                              }}
-                              className={`w-full text-[11px] px-2.5 py-1 rounded-md font-mono flex items-center justify-between transition ${
+                          {/* Quick Script Status Bar */}
+                          <div className="pt-0.5">
+                            <div
+                              className={`w-full text-[10px] px-2.5 py-1.5 rounded-md font-mono flex items-center justify-between transition ${
                                 vid.script
-                                  ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20'
+                                  ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
                                   : isLight
-                                  ? 'bg-slate-100/80 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200'
-                                  : 'bg-[#1e1e1e] text-slate-400 hover:text-indigo-300 hover:bg-[#282828] border border-[#2e2e2e]'
+                                  ? 'bg-slate-100 text-slate-500 border border-slate-200'
+                                  : 'bg-[#1c1c1c] text-slate-400 border border-[#2a2a2a]'
                               }`}
-                              title="Open Full Script Studio Workspace"
                             >
                               <span className="flex items-center gap-1.5 truncate">
-                                <FileText className="w-3.5 h-3.5 shrink-0 text-indigo-400" />
-                                <span className="font-medium truncate">
+                                <FileText className="w-3 h-3 shrink-0 text-indigo-400" />
+                                <span className="truncate">
                                   {vid.script
                                     ? `Script (${getWordCount(vid.script)}w • ~${formatSecondsToMinutes(getEstimatedReadingTimeSeconds(getWordCount(vid.script)))})`
-                                    : '✍️ Write Whole Script'}
+                                    : '✍️ Add whole script'}
                                 </span>
                               </span>
-                              <ArrowUpRight className="w-3 h-3 shrink-0 opacity-60" />
-                            </button>
+                              <span className="text-[9px] uppercase font-bold text-indigo-400 font-mono shrink-0">Open Page</span>
+                            </div>
                           </div>
 
-                          {/* Clean Quick Footer with details disclosure */}
+                          {/* Footer with Date, Advance, and Delete */}
                           <div className={`pt-2 border-t flex items-center justify-between text-[11px] ${isLight ? 'border-[#f0eee9]' : 'border-[#2d2d2d]'}`}>
-                            <button
-                              type="button"
-                              onClick={() => toggleCard(vid.id)}
-                              className={`text-[11px] flex items-center gap-1 font-mono transition ${
-                                isLight ? 'text-slate-500 hover:text-black' : 'text-slate-400 hover:text-slate-200'
-                              }`}
-                            >
-                              <span>{isExpanded ? 'Less' : 'Details & Script'}</span>
-                              <ChevronDown
-                                className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                              />
-                            </button>
+                            <div className="flex items-center gap-1 text-[10px] font-mono text-slate-400">
+                              {vid.publishDate ? (
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="w-2.5 h-2.5" />
+                                  <span>{vid.publishDate}</span>
+                                </span>
+                              ) : (
+                                <span>No date</span>
+                              )}
+                            </div>
 
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                               {/* Advance Stage button */}
                               {stage !== 'Uploaded' && (
                                 <button
@@ -595,152 +594,18 @@ export const ContentManagementView: React.FC = () => {
 
                               <button
                                 type="button"
-                                onClick={() => deleteVideo(vid.id)}
-                                className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                                onClick={() => {
+                                  if (window.confirm(`Delete "${vid.title}"?`)) {
+                                    deleteVideo(vid.id);
+                                  }
+                                }}
+                                className="p-1 rounded text-slate-400 hover:text-rose-500 transition"
                                 title="Delete"
                               >
                                 <Trash2 className="w-3 h-3" />
                               </button>
                             </div>
                           </div>
-
-                          {/* Expanded Card Details (Clean Settings Pane & Full Script Space) */}
-                          {isExpanded && (
-                            <div className={`pt-2.5 border-t space-y-3 text-[11px] font-mono animate-fade-in ${isLight ? 'border-[#f0eee9]' : 'border-[#2d2d2d]'}`}>
-                              {/* Dedicated Full Script Space Inside Card */}
-                              <div className="space-y-1.5 p-2.5 rounded-lg bg-indigo-500/5 border border-indigo-500/20">
-                                <div className="flex items-center justify-between">
-                                  <label className={`text-[10px] uppercase font-bold flex items-center gap-1.5 text-indigo-400`}>
-                                    <FileText className="w-3.5 h-3.5" />
-                                    <span>Whole Video Script</span>
-                                  </label>
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[10px] text-slate-400 font-mono">
-                                      {getWordCount(vid.script)} words • ~{formatSecondsToMinutes(getEstimatedReadingTimeSeconds(getWordCount(vid.script)))}
-                                    </span>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setActiveScriptVideoId(vid.id);
-                                        setScriptStudioTab('editor');
-                                      }}
-                                      className="text-[10px] text-indigo-400 hover:text-indigo-300 flex items-center gap-0.5 font-bold hover:underline"
-                                      title="Open Fullscreen Script Studio"
-                                    >
-                                      <span>Studio</span>
-                                      <Maximize2 className="w-2.5 h-2.5 ml-0.5" />
-                                    </button>
-                                  </div>
-                                </div>
-
-                                <textarea
-                                  rows={7}
-                                  value={vid.script || ''}
-                                  onChange={(e) => updateVideo(vid.id, { script: e.target.value })}
-                                  placeholder="Write your spoken script, visual cues [like this], and teleprompter lines here..."
-                                  className={`w-full rounded-md p-2 text-xs font-mono border focus:outline-none focus:border-indigo-500 leading-relaxed resize-y ${
-                                    isLight
-                                      ? 'bg-white border-[#e3e2de] text-slate-900 focus:bg-white'
-                                      : 'bg-[#181818] border-[#333] text-slate-200 focus:bg-[#1a1a1a]'
-                                  }`}
-                                />
-
-                                <div className="flex items-center justify-between text-[10px]">
-                                  {vid.script ? (
-                                    <span className="text-slate-400 font-mono">Autosaved to database</span>
-                                  ) : (
-                                    <span className="text-slate-500 font-mono">Spoken script & teleprompter text</span>
-                                  )}
-
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setActiveScriptVideoId(vid.id);
-                                      setScriptStudioTab('teleprompter');
-                                    }}
-                                    className="text-emerald-400 hover:underline font-mono flex items-center gap-1"
-                                  >
-                                    <Play className="w-2.5 h-2.5" />
-                                    <span>Teleprompter mode</span>
-                                  </button>
-                                </div>
-                              </div>
-
-                              <div className="space-y-1">
-                                <label className={`text-[10px] uppercase ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Topic Pillar</label>
-                                <select
-                                  value={vid.topic}
-                                  onChange={(e) => updateVideo(vid.id, { topic: e.target.value as ContentTopic })}
-                                  className={`w-full rounded px-2 py-1 text-[11px] border ${
-                                    isLight ? 'bg-[#f7f6f3] border-[#e3e2de] text-slate-800' : 'bg-[#1e1e1e] border-[#333] text-slate-200'
-                                  }`}
-                                >
-                                  {TOPIC_LIST.map((t) => (
-                                    <option key={t} value={t}>
-                                      {t}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-
-                              <div className="space-y-1">
-                                <label className={`text-[10px] uppercase ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Format</label>
-                                <select
-                                  value={vid.format}
-                                  onChange={(e) => updateVideo(vid.id, { format: e.target.value as ReelFormat })}
-                                  className={`w-full rounded px-2 py-1 text-[11px] border ${
-                                    isLight ? 'bg-[#f7f6f3] border-[#e3e2de] text-slate-800' : 'bg-[#1e1e1e] border-[#333] text-slate-200'
-                                  }`}
-                                >
-                                  {FORMAT_LIST.map((f) => (
-                                    <option key={f} value={f}>
-                                      {f}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-
-                              <div className="space-y-1">
-                                <label className={`text-[10px] uppercase ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Stage</label>
-                                <select
-                                  value={vid.status}
-                                  onChange={(e) => updateVideo(vid.id, { status: e.target.value as VideoStatus })}
-                                  className={`w-full rounded px-2 py-1 text-[11px] border ${
-                                    isLight ? 'bg-[#f7f6f3] border-[#e3e2de] text-slate-800' : 'bg-[#1e1e1e] border-[#333] text-slate-200'
-                                  }`}
-                                >
-                                  {STATUS_LIST.map((s) => (
-                                    <option key={s} value={s}>
-                                      {s}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-
-                              <div className="space-y-1">
-                                <label className={`text-[10px] uppercase ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Date</label>
-                                <input
-                                  type="date"
-                                  value={vid.publishDate || ''}
-                                  onChange={(e) => updateVideo(vid.id, { publishDate: e.target.value || undefined })}
-                                  className={`w-full rounded px-2 py-1 text-[11px] border ${
-                                    isLight ? 'bg-[#f7f6f3] border-[#e3e2de] text-slate-800' : 'bg-[#1e1e1e] border-[#333] text-slate-200'
-                                  }`}
-                                />
-                              </div>
-
-                              {vid.views && (
-                                <div className={`p-2 rounded text-[10px] space-y-0.5 border ${
-                                  isLight ? 'bg-[#f9f8f5] border-[#e9e9e7] text-slate-700' : 'bg-[#1e1e1e] border-[#333] text-slate-300'
-                                }`}>
-                                  <div className="font-bold text-emerald-600 dark:text-emerald-400">{vid.views.toLocaleString()} views</div>
-                                  <div className={isLight ? 'text-slate-500' : 'text-slate-400'}>
-                                    ❤️ {vid.likes} • 📤 {vid.shares} shares • 🔖 {vid.saves} saves
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )}
                         </div>
                       );
                     })}
@@ -845,12 +710,28 @@ export const ContentManagementView: React.FC = () => {
                           {vid.views ? `${vid.views.toLocaleString()} views` : '—'}
                         </td>
                         <td className="py-2.5 px-3 text-right whitespace-nowrap">
-                          <button
-                            onClick={() => deleteVideo(vid.id)}
-                            className="p-1 rounded text-slate-400 hover:text-rose-600 transition"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedCardId(vid.id)}
+                              className="px-2 py-0.5 rounded text-[10px] font-mono text-indigo-400 hover:bg-indigo-500/10 transition"
+                              title="Open Floating Page"
+                            >
+                              Open Page
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm(`Delete "${vid.title}"?`)) {
+                                  deleteVideo(vid.id);
+                                }
+                              }}
+                              className="p-1 rounded text-slate-400 hover:text-rose-600 transition"
+                              title="Delete Reel"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1915,6 +1796,330 @@ export const ContentManagementView: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* FLOATING PAGE MODAL (Center Peek Notion-style modal for each card) */}
+      {selectedCard && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs animate-fade-in"
+          onClick={() => setSelectedCardId(null)}
+        >
+          <div
+            className={`w-full max-w-3xl max-h-[92vh] rounded-2xl border shadow-2xl flex flex-col overflow-hidden animate-slide-in ${
+              isLight ? 'bg-white border-[#e3e2de] text-slate-900' : 'bg-[#18181b] border-[#2e2e38] text-white'
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top Control Bar */}
+            <div
+              className={`flex items-center justify-between px-5 py-3 border-b select-none text-xs ${
+                isLight ? 'bg-[#faf9f6] border-[#e9e9e7]' : 'bg-[#1f1f24] border-[#2a2a33]'
+              }`}
+            >
+              {/* Breadcrumbs */}
+              <div className="flex items-center gap-2 truncate">
+                <span className="text-base">📹</span>
+                <span className="font-semibold text-slate-400">Reel Floating Page</span>
+                <span className="text-slate-500">•</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full font-medium text-[10px] ${TOPIC_CONFIG[selectedCard.topic].bg} ${TOPIC_CONFIG[selectedCard.topic].text} border ${TOPIC_CONFIG[selectedCard.topic].border}`}
+                >
+                  {TOPIC_CONFIG[selectedCard.topic].label}
+                </span>
+                <span className="text-[11px] font-mono text-slate-400 hidden sm:inline">
+                  {selectedCard.format}
+                </span>
+              </div>
+
+              {/* Top Action Buttons */}
+              <div className="flex items-center gap-2">
+                {selectedCard.status !== 'Uploaded' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextIdx = STATUS_LIST.indexOf(selectedCard.status) + 1;
+                      if (nextIdx < STATUS_LIST.length) {
+                        updateVideo(selectedCard.id, { status: STATUS_LIST[nextIdx] });
+                      }
+                    }}
+                    className={`text-xs font-semibold px-2.5 py-1 rounded-md transition flex items-center gap-1 ${
+                      isLight
+                        ? 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200'
+                        : 'text-indigo-300 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40'
+                    }`}
+                  >
+                    <span>Advance Stage</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveScriptVideoId(selectedCard.id);
+                    setScriptStudioTab('teleprompter');
+                  }}
+                  className={`text-xs font-semibold px-2.5 py-1 rounded-md transition flex items-center gap-1 ${
+                    isLight
+                      ? 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'
+                      : 'text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30'
+                  }`}
+                  title="Open Live Teleprompter"
+                >
+                  <Play className="w-3 h-3" />
+                  <span className="hidden sm:inline">Teleprompter</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveScriptVideoId(selectedCard.id);
+                    setScriptStudioTab('editor');
+                  }}
+                  className={`text-xs font-semibold px-2.5 py-1 rounded-md transition flex items-center gap-1 ${
+                    isLight
+                      ? 'text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200'
+                      : 'text-slate-300 bg-[#2b2b34] hover:bg-[#343440] border border-[#3d3d49]'
+                  }`}
+                  title="Open Fullscreen Studio"
+                >
+                  <Maximize2 className="w-3 h-3" />
+                  <span className="hidden sm:inline">Studio</span>
+                </button>
+
+                <div className={`h-4 w-px mx-0.5 ${isLight ? 'bg-slate-200' : 'bg-[#33333f]'}`} />
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm(`Delete "${selectedCard.title}"?`)) {
+                      deleteVideo(selectedCard.id);
+                      setSelectedCardId(null);
+                    }
+                  }}
+                  className="p-1.5 rounded text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition"
+                  title="Delete Reel"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedCardId(null)}
+                  className="p-1.5 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-700/30 transition"
+                  title="Close (Esc)"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Scrollable Floating Page Body */}
+            <div className="flex-1 overflow-y-auto px-6 sm:px-8 py-6 space-y-6">
+              {/* Large Page Title */}
+              <div>
+                <input
+                  type="text"
+                  value={selectedCard.title}
+                  onChange={(e) => updateVideo(selectedCard.id, { title: e.target.value })}
+                  placeholder="Untitled Reel Page..."
+                  className={`w-full text-2xl font-bold tracking-tight bg-transparent border-b border-transparent focus:border-indigo-500 outline-none pb-1 transition ${
+                    isLight ? 'text-slate-900 hover:border-slate-300' : 'text-white hover:border-slate-700'
+                  }`}
+                />
+              </div>
+
+              {/* Notion-Style Properties Table */}
+              <div
+                className={`p-4 rounded-xl border space-y-2.5 text-xs ${
+                  isLight ? 'bg-[#faf9f6] border-[#e9e9e7]' : 'bg-[#141418] border-[#262630]'
+                }`}
+              >
+                {/* Stage / Status Property */}
+                <div className="grid grid-cols-3 sm:grid-cols-4 items-center">
+                  <span className="text-slate-400 font-medium flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-indigo-400" />
+                    Stage
+                  </span>
+                  <div className="col-span-2 sm:col-span-3">
+                    <select
+                      value={selectedCard.status}
+                      onChange={(e) => updateVideo(selectedCard.id, { status: e.target.value as VideoStatus })}
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium border outline-none cursor-pointer ${
+                        isLight ? 'bg-white border-[#e3e2de] text-slate-800' : 'bg-[#202028] border-[#323240] text-slate-200'
+                      }`}
+                    >
+                      {STATUS_LIST.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Topic Pillar Property */}
+                <div className="grid grid-cols-3 sm:grid-cols-4 items-center">
+                  <span className="text-slate-400 font-medium flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5" />
+                    Topic Pillar
+                  </span>
+                  <div className="col-span-2 sm:col-span-3">
+                    <select
+                      value={selectedCard.topic}
+                      onChange={(e) => updateVideo(selectedCard.id, { topic: e.target.value as ContentTopic })}
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium border outline-none cursor-pointer ${
+                        isLight ? 'bg-white border-[#e3e2de] text-slate-800' : 'bg-[#202028] border-[#323240] text-slate-200'
+                      }`}
+                    >
+                      {TOPIC_LIST.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Format Property */}
+                <div className="grid grid-cols-3 sm:grid-cols-4 items-center">
+                  <span className="text-slate-400 font-medium flex items-center gap-1.5">
+                    <Clapperboard className="w-3.5 h-3.5" />
+                    Format
+                  </span>
+                  <div className="col-span-2 sm:col-span-3">
+                    <select
+                      value={selectedCard.format}
+                      onChange={(e) => updateVideo(selectedCard.id, { format: e.target.value as ReelFormat })}
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium border outline-none cursor-pointer ${
+                        isLight ? 'bg-white border-[#e3e2de] text-slate-800' : 'bg-[#202028] border-[#323240] text-slate-200'
+                      }`}
+                    >
+                      {FORMAT_LIST.map((f) => (
+                        <option key={f} value={f}>
+                          {f}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Target Date Property */}
+                <div className="grid grid-cols-3 sm:grid-cols-4 items-center">
+                  <span className="text-slate-400 font-medium flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5" />
+                    Target Date
+                  </span>
+                  <div className="col-span-2 sm:col-span-3">
+                    <input
+                      type="date"
+                      value={selectedCard.publishDate || ''}
+                      onChange={(e) => updateVideo(selectedCard.id, { publishDate: e.target.value || undefined })}
+                      className={`px-2.5 py-1 rounded-md text-xs font-mono border outline-none ${
+                        isLight ? 'bg-white border-[#e3e2de] text-slate-800' : 'bg-[#202028] border-[#323240] text-slate-200'
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {/* Performance Analytics (if published) */}
+                {selectedCard.views !== undefined && (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 items-center pt-1 border-t border-slate-700/20">
+                    <span className="text-slate-400 font-medium flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      Metrics
+                    </span>
+                    <div className="col-span-2 sm:col-span-3 flex items-center gap-3 font-mono text-[11px]">
+                      <span className="text-emerald-400 font-bold">{selectedCard.views.toLocaleString()} views</span>
+                      <span className="text-slate-400">❤️ {selectedCard.likes}</span>
+                      <span className="text-slate-400">📤 {selectedCard.shares} shares</span>
+                      <span className="text-slate-400">🔖 {selectedCard.saves} saves</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Hook Section */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                    <span>⚡ First 3-Second Hook (Visual & Spoken)</span>
+                  </label>
+                  <span className="text-[10px] text-slate-400 font-mono">Catch viewer before scrolling</span>
+                </div>
+                <textarea
+                  rows={2}
+                  value={selectedCard.hook}
+                  onChange={(e) => updateVideo(selectedCard.id, { hook: e.target.value })}
+                  placeholder="First spoken line and matching text on screen..."
+                  className={`w-full rounded-xl px-3.5 py-2.5 text-xs border focus:outline-none focus:border-indigo-500 leading-relaxed resize-none ${
+                    isLight ? 'bg-white border-[#e3e2de] text-slate-900' : 'bg-[#141418] border-[#262630] text-white'
+                  }`}
+                />
+              </div>
+
+              {/* Whole Video Script Section */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                    <FileText className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>Whole Video Script</span>
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[11px] text-slate-400 font-mono">
+                      {getWordCount(selectedCard.script)} words • ~{formatSecondsToMinutes(getEstimatedReadingTimeSeconds(getWordCount(selectedCard.script)))} spoken
+                    </span>
+                    <span className="text-[10px] text-emerald-400 font-mono hidden sm:inline">
+                      Autosaved
+                    </span>
+                  </div>
+                </div>
+
+                <textarea
+                  rows={12}
+                  value={selectedCard.script || ''}
+                  onChange={(e) => updateVideo(selectedCard.id, { script: e.target.value })}
+                  placeholder="Write full word-for-word spoken dialogue, visual directions [like this], and teleprompter lines here..."
+                  className={`w-full rounded-xl p-4 text-xs font-mono border focus:outline-none focus:border-indigo-500 leading-relaxed resize-y ${
+                    isLight ? 'bg-white border-[#e3e2de] text-slate-900' : 'bg-[#141418] border-[#262630] text-slate-100'
+                  }`}
+                />
+
+                {/* Script Action Footer */}
+                <div className="flex items-center justify-between pt-1">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveScriptVideoId(selectedCard.id);
+                        setScriptStudioTab('teleprompter');
+                      }}
+                      className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 transition"
+                    >
+                      <Play className="w-3 h-3" />
+                      <span>Start Teleprompter</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveScriptVideoId(selectedCard.id);
+                        setScriptStudioTab('editor');
+                      }}
+                      className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center gap-1.5 transition"
+                    >
+                      <Maximize2 className="w-3 h-3" />
+                      <span>Script Studio & Beats</span>
+                    </button>
+                  </div>
+
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    Press Esc to close
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
