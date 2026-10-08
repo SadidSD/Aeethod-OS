@@ -31,7 +31,16 @@ import {
   CheckCircle2,
   Clock,
   Calendar,
-  BarChart3
+  BarChart3,
+  FileText,
+  Edit3,
+  Maximize2,
+  Play,
+  Pause,
+  RotateCcw,
+  Type,
+  Copy,
+  Check
 } from 'lucide-react';
 
 const TOPIC_LIST: ContentTopic[] = [
@@ -139,8 +148,158 @@ export const ContentManagementView: React.FC = () => {
   const [newVideoFormat, setNewVideoFormat] = useState<ReelFormat>('Price Breakdown and Analysis');
   const [newVideoStatus, setNewVideoStatus] = useState<VideoStatus>('Scripting');
   const [newVideoHook, setNewVideoHook] = useState('');
+  const [newVideoScript, setNewVideoScript] = useState('');
   const [newVideoDate, setNewVideoDate] = useState('');
   const [newVideoNotes, setNewVideoNotes] = useState('');
+
+  // Script Studio Modal state
+  const [activeScriptVideoId, setActiveScriptVideoId] = useState<string | null>(null);
+  const [teleprompterPlaying, setTeleprompterPlaying] = useState(false);
+  const [teleprompterSpeed, setTeleprompterSpeed] = useState(2); // 1 to 5
+  const [teleprompterFontSize, setTeleprompterFontSize] = useState<'normal' | 'large' | 'xlarge'>('large');
+  const [scriptStudioTab, setScriptStudioTab] = useState<'editor' | 'teleprompter'>('editor');
+  const [copiedScript, setCopiedScript] = useState(false);
+  const teleprompterRef = React.useRef<HTMLDivElement>(null);
+
+  // Auto-scroll effect for Teleprompter
+  React.useEffect(() => {
+    if (!teleprompterPlaying || scriptStudioTab !== 'teleprompter') return;
+    const interval = setInterval(() => {
+      if (teleprompterRef.current) {
+        teleprompterRef.current.scrollTop += teleprompterSpeed;
+      }
+    }, 45);
+    return () => clearInterval(interval);
+  }, [teleprompterPlaying, teleprompterSpeed, scriptStudioTab]);
+
+  // Script calculation helpers
+  const getWordCount = (text?: string): number => {
+    if (!text) return 0;
+    return text.trim().split(/\s+/).filter(Boolean).length;
+  };
+
+  const getEstimatedReadingTimeSeconds = (words: number, wpm = 145): number => {
+    return Math.round((words / wpm) * 60);
+  };
+
+  const formatSecondsToMinutes = (seconds: number): string => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    if (m === 0) return `${s}s`;
+    return `${m}m ${s < 10 ? '0' : ''}${s}s`;
+  };
+
+  const activeScriptVideo = useMemo(() => {
+    if (!activeScriptVideoId) return null;
+    return videos.find((v) => v.id === activeScriptVideoId) || null;
+  }, [videos, activeScriptVideoId]);
+
+  const getFormatTemplate = (format: ReelFormat, hook: string) => {
+    const hookText = hook ? hook : 'First spoken line with card or visual prop in hand';
+    switch (format) {
+      case 'Looping':
+        return `[00:00 - 00:03] THE HOOK (Direct to Camera + Close-up of Card)
+${hookText}
+
+[00:03 - 00:15] THE SETUP & CONFLICT (POV: Counter / B-Roll)
+Here is the context: A customer or seller brings in something that looks completely normal... until you inspect it under raking light.
+
+[00:15 - 00:35] THE CORE VALUE BREAKDOWN
+1. The micro-defect or math trap that 95% of people miss.
+2. What happens to your store margin if you accept this raw card.
+
+[00:35 - 00:50] THE FIX / HARD FACT
+Here is how professional stores protect themselves in under 5 seconds: ...
+
+[00:50 - 00:60] THE LOOP ENDING (Transitions seamlessly into first sentence)
+Always check before handing over cash... which is why ${hookText.toLowerCase()}`;
+
+      case 'Price Breakdown and Analysis':
+        return `[00:00 - 00:03] THE FINANCIAL HOOK
+${hookText}
+
+[00:03 - 00:18] THE SPREADSHEET TEARDOWN (Receipt / Calculator on screen)
+Let's run the exact transaction math:
+- Gross Sale Price: $...
+- Platform Transaction Fee: -$...
+- Payment Processing Fee: -$...
+- Packaging & Tracked Bubble Mailer: -$...
+- Real Take-Home Cash: $...
+
+[00:18 - 00:40] THE MARKET LOGIC
+Why this margin compression exists and why high revenue is deceptive: ...
+
+[00:40 - 00:55] ACTIONABLE STRATEGY
+Stop subsidizing the marketplace. Shift inventory to: ...
+
+[00:55 - 00:60] CALL TO ACTION
+Share this with a card seller who needs to audit their real margins.`;
+
+      case 'Myth Blast':
+        return `[00:00 - 00:03] THE MYTH STATEMENT
+${hookText}
+
+[00:03 - 00:20] THE FALSE BELIEF
+Everyone in the hobby repeats this rule without looking at the underlying data or print run ratios.
+
+[00:20 - 00:42] THE PROOF & HARD DATA (Loupe close-up / Historical charts)
+Here is the raw proof that completely disproves it: ...
+
+[00:42 - 00:55] WHAT SMART STORES DO INSTEAD
+Instead of tying up cash, reallocate to high-turnover inventory: ...
+
+[00:55 - 00:60] CALL TO ACTION
+What's your take? Drop your experience in the comments.`;
+
+      case 'Prevention':
+        return `[00:00 - 00:03] URGENT WARNING
+${hookText}
+
+[00:03 - 00:18] THE COSTLY MISTAKE
+If you don't catch this at the trade counter, you're looking at an instant $200 chargeback or buyer dispute.
+
+[00:18 - 00:42] THE 3-STEP AUDIT CHECKLIST
+- Step 1: Check the back edge under 5000K angled light
+- Step 2: Verify the set code and collector number on live API
+- Step 3: Run the 70% buylist formula
+
+[00:42 - 00:55] REAL-WORLD EXAMPLE
+We saved $600 yesterday using this exact intake protocol.
+
+[00:55 - 00:60] SAVE & BOOKMARK
+Save this reel so you have the checklist ready before your next trade night rush.`;
+
+      case 'Teardown and Challenge':
+        return `[00:00 - 00:04] THE DIRECT CHALLENGE
+${hookText}
+
+[00:04 - 00:20] THE STATUS QUO NIGHTMARE
+Why manual 45-second spreadsheets and guess-work pricing are bleeding retail profits: ...
+
+[00:20 - 00:42] THE HEAD-TO-HEAD SPEED TEST
+Old manual way: takes 4 minutes per card.
+Modern automated flow: takes 0.5 seconds per card.
+
+[00:42 - 00:55] THE BOTTOM-LINE IMPACT
+That's 20 hours of clerk labor saved every single weekend.
+
+[00:55 - 00:60] CALL TO ACTION
+Are you still running your trade counter on spreadsheets? Let's talk in the comments.`;
+
+      default:
+        return `[00:00 - 00:03] THE HOOK
+${hookText}
+
+[00:03 - 00:20] THE SETUP & AGITATION
+...
+
+[00:20 - 00:45] THE VALUE & DEMONSTRATION
+...
+
+[00:45 - 00:60] THE CLOSING / CALL TO ACTION
+...`;
+    }
+  };
 
   const updateVideo = (id: string, updates: Partial<VideoRecord>) => {
     update('content_videos', id, updates);
@@ -161,6 +320,7 @@ export const ContentManagementView: React.FC = () => {
       format: newVideoFormat,
       status: newVideoStatus,
       hook: newVideoHook.trim() || 'Attention-grabbing hook...',
+      script: newVideoScript.trim() || undefined,
       publishDate: newVideoDate || undefined,
       notes: newVideoNotes || undefined
     });
@@ -168,6 +328,7 @@ export const ContentManagementView: React.FC = () => {
     setIsAddModalOpen(false);
     setNewVideoTitle('');
     setNewVideoHook('');
+    setNewVideoScript('');
     setNewVideoDate('');
     setNewVideoNotes('');
   };
@@ -472,6 +633,35 @@ export const ContentManagementView: React.FC = () => {
                             "{vid.hook}"
                           </p>
 
+                          {/* Quick Script Access Pill */}
+                          <div className="px-1 pt-0.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveScriptVideoId(vid.id);
+                                setScriptStudioTab('editor');
+                              }}
+                              className={`w-full text-[11px] px-2.5 py-1 rounded-md font-mono flex items-center justify-between transition ${
+                                vid.script
+                                  ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20'
+                                  : isLight
+                                  ? 'bg-slate-100/80 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200'
+                                  : 'bg-[#1e1e1e] text-slate-400 hover:text-indigo-300 hover:bg-[#282828] border border-[#2e2e2e]'
+                              }`}
+                              title="Open Full Script Studio Workspace"
+                            >
+                              <span className="flex items-center gap-1.5 truncate">
+                                <FileText className="w-3.5 h-3.5 shrink-0 text-indigo-400" />
+                                <span className="font-medium truncate">
+                                  {vid.script
+                                    ? `Script (${getWordCount(vid.script)}w • ~${formatSecondsToMinutes(getEstimatedReadingTimeSeconds(getWordCount(vid.script)))})`
+                                    : '✍️ Write Whole Script'}
+                                </span>
+                              </span>
+                              <ArrowUpRight className="w-3 h-3 shrink-0 opacity-60" />
+                            </button>
+                          </div>
+
                           {/* Clean Quick Footer with details disclosure */}
                           <div className={`pt-2 border-t flex items-center justify-between text-[11px] ${isLight ? 'border-[#f0eee9]' : 'border-[#2d2d2d]'}`}>
                             <button
@@ -481,7 +671,7 @@ export const ContentManagementView: React.FC = () => {
                                 isLight ? 'text-slate-500 hover:text-black' : 'text-slate-400 hover:text-slate-200'
                               }`}
                             >
-                              <span>{isExpanded ? 'Less' : 'Details'}</span>
+                              <span>{isExpanded ? 'Less' : 'Details & Script'}</span>
                               <ChevronDown
                                 className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                               />
@@ -521,9 +711,74 @@ export const ContentManagementView: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* Expanded Card Details (Clean Settings Pane) */}
+                          {/* Expanded Card Details (Clean Settings Pane & Full Script Space) */}
                           {isExpanded && (
-                            <div className={`pt-2.5 border-t space-y-2 text-[11px] font-mono animate-fade-in ${isLight ? 'border-[#f0eee9]' : 'border-[#2d2d2d]'}`}>
+                            <div className={`pt-2.5 border-t space-y-3 text-[11px] font-mono animate-fade-in ${isLight ? 'border-[#f0eee9]' : 'border-[#2d2d2d]'}`}>
+                              {/* Dedicated Full Script Space Inside Card */}
+                              <div className="space-y-1.5 p-2.5 rounded-lg bg-indigo-500/5 border border-indigo-500/20">
+                                <div className="flex items-center justify-between">
+                                  <label className={`text-[10px] uppercase font-bold flex items-center gap-1.5 text-indigo-400`}>
+                                    <FileText className="w-3.5 h-3.5" />
+                                    <span>Whole Video Script</span>
+                                  </label>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[10px] text-slate-400 font-mono">
+                                      {getWordCount(vid.script)} words • ~{formatSecondsToMinutes(getEstimatedReadingTimeSeconds(getWordCount(vid.script)))}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveScriptVideoId(vid.id);
+                                        setScriptStudioTab('editor');
+                                      }}
+                                      className="text-[10px] text-indigo-400 hover:text-indigo-300 flex items-center gap-0.5 font-bold hover:underline"
+                                      title="Open Fullscreen Script Studio"
+                                    >
+                                      <span>Studio</span>
+                                      <Maximize2 className="w-2.5 h-2.5 ml-0.5" />
+                                    </button>
+                                  </div>
+                                </div>
+
+                                <textarea
+                                  rows={7}
+                                  value={vid.script || ''}
+                                  onChange={(e) => updateVideo(vid.id, { script: e.target.value })}
+                                  placeholder="Write your spoken script, visual cues [like this], and teleprompter lines here..."
+                                  className={`w-full rounded-md p-2 text-xs font-mono border focus:outline-none focus:border-indigo-500 leading-relaxed resize-y ${
+                                    isLight
+                                      ? 'bg-white border-[#e3e2de] text-slate-900 focus:bg-white'
+                                      : 'bg-[#181818] border-[#333] text-slate-200 focus:bg-[#1a1a1a]'
+                                  }`}
+                                />
+
+                                <div className="flex items-center justify-between text-[10px]">
+                                  {!vid.script ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => updateVideo(vid.id, { script: getFormatTemplate(vid.format, vid.hook) })}
+                                      className="text-indigo-400 hover:underline font-mono flex items-center gap-1"
+                                    >
+                                      <span>⚡ Insert {vid.format} script outline template</span>
+                                    </button>
+                                  ) : (
+                                    <span className="text-slate-400">Autosaved to database</span>
+                                  )}
+
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveScriptVideoId(vid.id);
+                                      setScriptStudioTab('teleprompter');
+                                    }}
+                                    className="text-emerald-400 hover:underline font-mono flex items-center gap-1"
+                                  >
+                                    <Play className="w-2.5 h-2.5" />
+                                    <span>Teleprompter mode</span>
+                                  </button>
+                                </div>
+                              </div>
+
                               <div className="space-y-1">
                                 <label className={`text-[10px] uppercase ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Topic Pillar</label>
                                 <select
@@ -631,6 +886,7 @@ export const ContentManagementView: React.FC = () => {
                     isLight ? 'bg-[#f7f6f3] border-[#e9e9e7] text-slate-600' : 'bg-[#222222]/60 border-[#282828] text-slate-400'
                   }`}>
                     <th className="py-2.5 px-3.5 font-medium">Title & Hook</th>
+                    <th className="py-2.5 px-3 font-medium">Whole Script</th>
                     <th className="py-2.5 px-3 font-medium">Topic</th>
                     <th className="py-2.5 px-3 font-medium">Format</th>
                     <th className="py-2.5 px-3 font-medium">Stage</th>
@@ -658,6 +914,29 @@ export const ContentManagementView: React.FC = () => {
                           <div className={`text-[11px] italic px-1 line-clamp-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                             "{vid.hook}"
                           </div>
+                        </td>
+                        <td className="py-2.5 px-3 whitespace-nowrap">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveScriptVideoId(vid.id);
+                              setScriptStudioTab('editor');
+                            }}
+                            className={`px-2 py-1 rounded text-[11px] font-mono flex items-center gap-1.5 transition ${
+                              vid.script
+                                ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20'
+                                : isLight
+                                ? 'bg-slate-100 text-slate-500 hover:text-indigo-600 border border-slate-200'
+                                : 'bg-[#2a2a2a] text-slate-400 hover:text-indigo-300 border border-[#333]'
+                            }`}
+                          >
+                            <FileText className="w-3 h-3 text-indigo-400" />
+                            <span>
+                              {vid.script
+                                ? `${getWordCount(vid.script)}w (~${formatSecondsToMinutes(getEstimatedReadingTimeSeconds(getWordCount(vid.script)))})`
+                                : '+ Write Script'}
+                            </span>
+                          </button>
                         </td>
                         <td className="py-2.5 px-3 whitespace-nowrap">
                           <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${topicMeta.bg} ${topicMeta.text}`}>
@@ -1269,6 +1548,30 @@ export const ContentManagementView: React.FC = () => {
                 />
               </div>
 
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className={`block text-[11px] font-mono uppercase ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                    Whole Video Script (Optional)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setNewVideoScript(getFormatTemplate(newVideoFormat, newVideoHook))}
+                    className="text-[10px] text-indigo-400 hover:underline font-mono"
+                  >
+                    + Insert {newVideoFormat} Outline
+                  </button>
+                </div>
+                <textarea
+                  rows={4}
+                  value={newVideoScript}
+                  onChange={(e) => setNewVideoScript(e.target.value)}
+                  placeholder="Write full spoken dialogue, visual cues [like this], and teleprompter lines..."
+                  className={`w-full rounded-lg px-3 py-2 text-xs font-mono border focus:outline-none focus:border-indigo-500 resize-y leading-relaxed ${
+                    isLight ? 'bg-white border-[#e3e2de] text-slate-900' : 'bg-[#181818] border-[#2e2e2e] text-white'
+                  }`}
+                />
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={`block text-[11px] font-mono uppercase mb-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Target Date</label>
@@ -1315,6 +1618,441 @@ export const ContentManagementView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* SCRIPT STUDIO MODAL & TELEPROMPTER */}
+      {activeScriptVideo && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 animate-fade-in">
+          <div
+            className={`w-full max-w-5xl h-[92vh] flex flex-col rounded-2xl border shadow-2xl overflow-hidden transition-all ${
+              isLight ? 'bg-white border-[#e3e2de]' : 'bg-[#181820] border-[#292936]'
+            }`}
+          >
+            {/* 1. Studio Header */}
+            <div
+              className={`p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b shrink-0 ${
+                isLight ? 'bg-[#faf9f6] border-[#e9e9e7]' : 'bg-[#15151c] border-[#252530]'
+              }`}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shrink-0 ${
+                    activeScriptVideo.creator === 'Sadid'
+                      ? 'bg-gradient-to-br from-indigo-500 to-indigo-700 shadow-sm shadow-indigo-500/25'
+                      : 'bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-sm shadow-emerald-500/25'
+                  }`}
+                >
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-wider">
+                      Script Studio
+                    </span>
+                    <span className={`text-[11px] font-mono ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                      @{activeScriptVideo.creator === 'Sadid' ? 'sadid_aeethod' : 'anika_tcgops'}
+                    </span>
+                    <span className="text-slate-500 text-xs">•</span>
+                    <span className={`text-[11px] font-medium ${TOPIC_CONFIG[activeScriptVideo.topic].text}`}>
+                      {activeScriptVideo.topic}
+                    </span>
+                  </div>
+
+                  <input
+                    type="text"
+                    value={activeScriptVideo.title}
+                    onChange={(e) => updateVideo(activeScriptVideo.id, { title: e.target.value })}
+                    className={`w-full text-base sm:text-lg font-bold bg-transparent border-0 outline-none truncate leading-tight ${
+                      isLight ? 'text-slate-900 focus:bg-white' : 'text-white focus:bg-[#20202a]'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              {/* Header Right Actions */}
+              <div className="flex items-center gap-2 shrink-0">
+                {/* Mode Selector */}
+                <div className={`p-1 rounded-xl flex items-center gap-1 border ${isLight ? 'bg-slate-100 border-slate-200' : 'bg-[#1f1f2a] border-[#2c2c3c]'}`}>
+                  <button
+                    onClick={() => setScriptStudioTab('editor')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
+                      scriptStudioTab === 'editor'
+                        ? 'bg-indigo-600 text-white shadow-xs'
+                        : isLight ? 'text-slate-600 hover:text-black' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Editor</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setScriptStudioTab('teleprompter');
+                      setTeleprompterPlaying(false);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
+                      scriptStudioTab === 'teleprompter'
+                        ? 'bg-emerald-600 text-white shadow-xs'
+                        : isLight ? 'text-slate-600 hover:text-black' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Play className="w-3.5 h-3.5" />
+                    <span>Teleprompter</span>
+                  </button>
+                </div>
+
+                {/* Copy Script */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(activeScriptVideo.script || '');
+                    setCopiedScript(true);
+                    setTimeout(() => setCopiedScript(false), 2000);
+                  }}
+                  className={`p-2 rounded-xl border text-xs font-medium flex items-center gap-1.5 transition ${
+                    isLight
+                      ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                      : 'bg-[#22222e] border-[#313142] text-slate-300 hover:bg-[#282836]'
+                  }`}
+                  title="Copy full script to clipboard"
+                >
+                  {copiedScript ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-slate-400" />}
+                  <span className="hidden sm:inline">{copiedScript ? 'Copied' : 'Copy'}</span>
+                </button>
+
+                {/* Close Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveScriptVideoId(null);
+                    setTeleprompterPlaying(false);
+                  }}
+                  className={`p-2 rounded-xl transition ${
+                    isLight
+                      ? 'text-slate-400 hover:text-black hover:bg-slate-100'
+                      : 'text-slate-400 hover:text-white hover:bg-[#252532]'
+                  }`}
+                  title="Close Script Studio"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* 2. Metrics & Pacing Banner */}
+            <div
+              className={`px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 border-b text-xs shrink-0 ${
+                isLight ? 'bg-white border-[#f0eee9]' : 'bg-[#1a1a23] border-[#272733]'
+              }`}
+            >
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="font-mono text-slate-400">
+                  <strong className={isLight ? 'text-slate-900' : 'text-white'}>
+                    {getWordCount(activeScriptVideo.script)}
+                  </strong>{' '}
+                  words
+                </span>
+
+                <span className="text-slate-500">•</span>
+
+                {(() => {
+                  const words = getWordCount(activeScriptVideo.script);
+                  const seconds = getEstimatedReadingTimeSeconds(words);
+                  const isOptimal = seconds <= 60;
+                  const isExtended = seconds > 60 && seconds <= 90;
+                  return (
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full font-mono text-[11px] font-bold border flex items-center gap-1.5 ${
+                        isOptimal
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
+                          : isExtended
+                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/25'
+                          : 'bg-rose-500/10 text-rose-400 border-rose-500/25'
+                      }`}
+                    >
+                      <Clock className="w-3 h-3" />
+                      <span>~{formatSecondsToMinutes(seconds)}</span>
+                      <span>({isOptimal ? 'Optimal <60s Reel' : isExtended ? '60-90s Reel' : 'Long >90s'})</span>
+                    </span>
+                  );
+                })()}
+
+                <span className="text-slate-500">•</span>
+                <span className="text-[11px] text-slate-400 font-mono hidden md:inline">
+                  Paced at ~145 WPM conversational speaking tempo
+                </span>
+              </div>
+
+              {/* Status Selector */}
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-mono text-slate-400">Stage:</span>
+                <select
+                  value={activeScriptVideo.status}
+                  onChange={(e) => updateVideo(activeScriptVideo.id, { status: e.target.value as VideoStatus })}
+                  className={`rounded-lg px-2 py-1 text-xs font-mono font-semibold border ${
+                    isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-[#22222e] border-[#313142] text-slate-200'
+                  }`}
+                >
+                  {STATUS_LIST.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* 3. Main Workspace Area */}
+            {scriptStudioTab === 'editor' ? (
+              <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
+                {/* Left: Distraction-free Scriptwriter */}
+                <div className="flex-1 flex flex-col p-4 sm:p-6 overflow-hidden min-h-0 space-y-3">
+                  {/* Quick Format Snippets */}
+                  <div className="flex flex-wrap items-center gap-1.5 pb-1">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 font-mono mr-1">
+                      Quick Beats:
+                    </span>
+                    {[
+                      { label: '+ [Hook 0-3s]', snippet: '[00:00 - 00:03] THE HOOK (Direct to Camera):\n' },
+                      { label: '+ [B-Roll / Action]', snippet: '\n[VISUAL CUE / B-ROLL]: (Zoom in on ...)\n' },
+                      { label: '+ [On-Screen Graphic]', snippet: '\n[GRAPHIC OVERLAY]: (Show price comparison chart)\n' },
+                      { label: '+ [Data Point]', snippet: '\n- Gross Sale: $...\n- Marketplace Fee: -$...\n- Net Cash: $...\n' },
+                      { label: '+ [Call to Action]', snippet: '\n[CALL TO ACTION]: Save this reel and follow for daily card shop metrics.\n' },
+                      { label: '+ [Loop Ending]', snippet: '\n[LOOP ENDING]: ...which is why ' }
+                    ].map((btn, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => {
+                          const cur = activeScriptVideo.script || '';
+                          const updated = cur ? `${cur}\n${btn.snippet}` : btn.snippet;
+                          updateVideo(activeScriptVideo.id, { script: updated });
+                        }}
+                        className={`text-[10px] font-mono px-2 py-1 rounded-md border transition ${
+                          isLight
+                            ? 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                            : 'bg-[#22222d] hover:bg-[#2b2b3a] text-slate-300 border-[#323242]'
+                        }`}
+                      >
+                        {btn.label}
+                      </button>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateVideo(activeScriptVideo.id, {
+                          script: getFormatTemplate(activeScriptVideo.format, activeScriptVideo.hook)
+                        })
+                      }
+                      className="text-[10px] font-mono px-2.5 py-1 rounded-md bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 transition ml-auto"
+                    >
+                      ⚡ Insert {activeScriptVideo.format} Outline
+                    </button>
+                  </div>
+
+                  {/* Main Script Textarea */}
+                  <div className="flex-1 min-h-0 flex flex-col relative">
+                    <textarea
+                      value={activeScriptVideo.script || ''}
+                      onChange={(e) => updateVideo(activeScriptVideo.id, { script: e.target.value })}
+                      placeholder="Write your complete word-for-word spoken script here... Include camera directions, lines to emphasize, and screen text in [brackets]."
+                      className={`w-full flex-1 p-4 sm:p-5 rounded-xl text-xs sm:text-sm font-mono leading-relaxed border outline-none resize-none overflow-y-auto focus:border-indigo-500 shadow-inner ${
+                        isLight
+                          ? 'bg-[#fcfbfa] border-[#e3e2de] text-slate-900 focus:bg-white'
+                          : 'bg-[#131319] border-[#262633] text-slate-100 focus:bg-[#111116]'
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {/* Right: Filming Notes & Reference Sidebar */}
+                <div
+                  className={`w-full md:w-80 p-4 sm:p-6 border-t md:border-t-0 md:border-l overflow-y-auto space-y-4 text-xs font-mono shrink-0 ${
+                    isLight ? 'bg-[#faf9f6] border-[#e9e9e7]' : 'bg-[#15151d] border-[#252533]'
+                  }`}
+                >
+                  <div className="space-y-1">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                      Opening Hook Line:
+                    </span>
+                    <textarea
+                      rows={3}
+                      value={activeScriptVideo.hook}
+                      onChange={(e) => updateVideo(activeScriptVideo.id, { hook: e.target.value })}
+                      className={`w-full p-2.5 rounded-lg border text-xs focus:outline-none focus:border-indigo-500 resize-none italic ${
+                        isLight ? 'bg-white border-[#e3e2de] text-slate-900' : 'bg-[#1c1c26] border-[#2e2e3d] text-white'
+                      }`}
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                      Filming Props & B-Roll Notes:
+                    </span>
+                    <textarea
+                      rows={4}
+                      value={activeScriptVideo.notes || ''}
+                      onChange={(e) => updateVideo(activeScriptVideo.id, { notes: e.target.value })}
+                      placeholder="e.g. Bring 10x jewelers loupe, Base Set Charizard slab, receipt thermal printer, ring light at 45°..."
+                      className={`w-full p-2.5 rounded-lg border text-xs focus:outline-none focus:border-indigo-500 resize-none ${
+                        isLight ? 'bg-white border-[#e3e2de] text-slate-900' : 'bg-[#1c1c26] border-[#2e2e3d] text-white'
+                      }`}
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                      Target Publish Date:
+                    </span>
+                    <input
+                      type="date"
+                      value={activeScriptVideo.publishDate || ''}
+                      onChange={(e) => updateVideo(activeScriptVideo.id, { publishDate: e.target.value || undefined })}
+                      className={`w-full p-2 rounded-lg border text-xs ${
+                        isLight ? 'bg-white border-[#e3e2de] text-slate-900' : 'bg-[#1c1c26] border-[#2e2e3d] text-slate-200'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Format Structure Beat Guide */}
+                  {FORMAT_DEFINITIONS[activeScriptVideo.format] && (
+                    <div className="p-3 rounded-xl bg-indigo-500/5 border border-indigo-500/20 space-y-2">
+                      <span className="text-[10px] uppercase font-bold text-indigo-400 block">
+                        {activeScriptVideo.format} Structure:
+                      </span>
+                      <p className="text-[11px] text-slate-400 leading-relaxed">
+                        {FORMAT_DEFINITIONS[activeScriptVideo.format].description}
+                      </p>
+                      <div className="space-y-1 pt-1 border-t border-indigo-500/20 text-[10px] text-slate-400">
+                        {FORMAT_DEFINITIONS[activeScriptVideo.format].breakdownTimeline.map((item, idx) => (
+                          <div key={idx} className="flex items-start gap-1.5">
+                            <span className="text-indigo-400 font-bold shrink-0">{item.second}:</span>
+                            <span className="text-slate-300">{item.beat}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* Teleprompter Screen */
+              <div className="flex-1 flex flex-col bg-[#0b0b10] text-white overflow-hidden min-h-0">
+                {/* Teleprompter Controls Bar */}
+                <div className="p-4 bg-[#12121a] border-b border-[#22222f] flex flex-wrap items-center justify-between gap-4 shrink-0">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setTeleprompterPlaying(!teleprompterPlaying)}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg transition active:scale-95 ${
+                        teleprompterPlaying
+                          ? 'bg-amber-600 hover:bg-amber-500 text-white'
+                          : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                      }`}
+                    >
+                      {teleprompterPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-white" />}
+                      <span>{teleprompterPlaying ? 'Pause Teleprompter' : 'Start Auto-Scroll'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (teleprompterRef.current) teleprompterRef.current.scrollTop = 0;
+                        setTeleprompterPlaying(false);
+                      }}
+                      className="p-2 rounded-xl bg-[#20202c] hover:bg-[#282838] text-slate-300 border border-[#303042] transition"
+                      title="Rewind to Top"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Speed Controls */}
+                  <div className="flex items-center gap-2 font-mono text-xs">
+                    <span className="text-slate-400">Scroll Speed:</span>
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setTeleprompterSpeed(s)}
+                        className={`w-7 h-7 rounded-lg font-bold transition ${
+                          teleprompterSpeed === s
+                            ? 'bg-indigo-600 text-white'
+                            : 'bg-[#1e1e2b] text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {s}x
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Font Size Controls */}
+                  <div className="flex items-center gap-2 font-mono text-xs">
+                    <span className="text-slate-400">Font:</span>
+                    {(['normal', 'large', 'xlarge'] as const).map((size) => (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => setTeleprompterFontSize(size)}
+                        className={`px-2.5 py-1 rounded-lg capitalize transition ${
+                          teleprompterFontSize === size
+                            ? 'bg-indigo-600 text-white'
+                            : 'bg-[#1e1e2b] text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Teleprompter Scrolling Body */}
+                <div
+                  ref={teleprompterRef}
+                  className="flex-1 p-8 sm:p-14 overflow-y-auto min-h-0 space-y-6 max-w-4xl mx-auto w-full select-text"
+                >
+                  <div className="h-20" /> {/* Top breathing space */}
+
+                  <div
+                    className={`leading-relaxed tracking-wide font-sans transition-all whitespace-pre-wrap ${
+                      teleprompterFontSize === 'normal'
+                        ? 'text-lg sm:text-xl'
+                        : teleprompterFontSize === 'large'
+                        ? 'text-2xl sm:text-3xl'
+                        : 'text-3xl sm:text-4xl'
+                    }`}
+                  >
+                    {(activeScriptVideo.script || '').split('\n').map((line, idx) => {
+                      const isBracketCue = line.trim().startsWith('[') || line.trim().startsWith('-');
+                      return (
+                        <p
+                          key={idx}
+                          className={`mb-4 transition ${
+                            isBracketCue
+                              ? 'text-indigo-400/90 font-mono text-sm sm:text-base italic'
+                              : 'text-white font-medium'
+                          }`}
+                        >
+                          {line || '\u00A0'}
+                        </p>
+                      );
+                    })}
+
+                    {!activeScriptVideo.script && (
+                      <div className="text-center text-slate-500 italic py-20 font-mono text-base">
+                        No script written yet. Switch to Editor mode to type or insert an outline.
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="h-64" /> {/* Bottom scrolling padding */}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

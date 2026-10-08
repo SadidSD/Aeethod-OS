@@ -44,6 +44,7 @@ export interface VideoRecord {
   format: ReelFormat;
   status: VideoStatus;
   hook: string;
+  script?: string; // Full written video script & teleprompter text
   publishDate?: string;
   views?: number;
   likes?: number;
@@ -213,6 +214,28 @@ export const INITIAL_VIDEO_RECORDS: VideoRecord[] = [
     format: 'Price Breakdown and Analysis',
     status: 'Uploaded',
     hook: 'Selling a $100 card on a marketplace does NOT give you $100 in the bank.',
+    script: `[00:00 - 00:03] THE HOOK (Direct to Camera, Slapping a $100 bill on the desk)
+Selling a $100 card on a marketplace does NOT give you $100 in the bank. In fact, you'll be lucky to keep $72.
+
+[00:03 - 00:18] THE SPREADSHEET TEARDOWN (B-Roll: Receipt breakdown on screen)
+Here is the exact math the platforms don't want you to calculate:
+- Platform transaction fee: 12.75% ($12.75)
+- Payment processing fee: 2.9% + 30¢ ($3.20)
+- Tracked bubble mailer & top-loader: $4.85
+- Return reserve / lost package risk: 2.5% ($2.50)
+- Buylist acquisition cost (assuming you bought it at 50% cash): $50.00
+
+[00:18 - 00:38] THE OPERATIONAL TRUTH (Looking right into lens)
+Your gross sale was $100.
+Your direct marketplace deductions were $23.30.
+After your $50 inventory intake cost, you took home exactly $26.70.
+And that’s BEFORE paying your clerk, rent, and packaging labor.
+
+[00:38 - 00:52] THE STRATEGY
+The shops that actually get rich don't sell $100 singles on open marketplaces. They use their website, local tournaments, and POS buylist credit at 70% to recycle the cash three times over.
+
+[00:52 - 00:60] THE LOOP
+So stop celebrating $10,000 revenue months until you calculate your real take-home cash... because selling a $100 card does NOT give you $100 in the bank.`,
     publishDate: '2026-09-28',
     views: 18450,
     likes: 1240,
@@ -228,6 +251,26 @@ export const INITIAL_VIDEO_RECORDS: VideoRecord[] = [
     format: 'Teardown and Challenge',
     status: 'Scheduled',
     hook: 'Selling the same $300 card in-store and online at the exact same minute is a solvable bug.',
+    script: `[00:00 - 00:04] THE HOOK (Holding up two identical slabs)
+Selling the same $300 card in-store and on eBay at the exact same minute is NOT bad luck. It's an architecture failure.
+
+[00:04 - 00:18] THE DOUBLE-SALE DISASTER (Split screen: POS register vs eBay Sold notification)
+Imagine this: A customer is at your counter paying $300 for a Charizard VMAX Alt Art. 
+At 2:14 PM, your clerk taps "Complete Sale".
+At 2:14 PM, a buyer in Germany buys the exact same card on your eBay store because your sync webhook takes 45 seconds to update.
+
+[00:18 - 00:36] THE REPERCUSSIONS
+Now you have to cancel the eBay order.
+eBay dings your seller rating.
+The buyer leaves negative feedback.
+And if you do this twice in a quarter, your search algorithm placement drops 40%.
+
+[00:36 - 00:50] THE ZERO-LATENCY FIX (Showing terminal & distributed sync engine)
+In modern engineering, 45-second polling is obsolete. 
+By running an in-memory lock on the physical inventory ID the microsecond a clerk scans the barcode, the card is delisted across eBay, TCGplayer, and Shopify in under 80 milliseconds.
+
+[00:50 - 00:60] THE LOOP
+Fix your sync latency before you lose your top-rated seller badge... because double-selling a $300 card is a 100% solvable bug.`,
     publishDate: '2026-10-08',
     notes: 'Direct demonstration of zero-latency sync engine.'
   },
@@ -271,6 +314,24 @@ export const INITIAL_VIDEO_RECORDS: VideoRecord[] = [
     format: 'Looping',
     status: 'Uploaded',
     hook: 'A customer brought in this vintage Charizard asking for cash, but one micro-flaw changed the offer.',
+    script: `[00:00 - 00:03] THE HOOK (Close-up of Base Set Charizard under 10x jewelers loupe)
+A customer brought in this vintage Charizard asking for cash, but one micro-flaw changed the offer.
+
+[00:03 - 00:18] THE EXAMINATION (POV: Turning card under angled 5000K light)
+At first glance from across the counter, the front looks clean. The holo foil has zero surface clouding, no silvering on the yellow border, and the centering is an easy 55/45.
+He looked up TCGplayer market price and asked for 70% cash: roughly $280.
+
+[00:18 - 00:38] THE MICRO-FLAW REVEAL (Macro zoom on top-right back edge)
+Then I flipped it over.
+Right here along the blue border edge—look at this tiny white hairline indent. That is not just edge whitening; that’s a minor binder ring compression ding that breached the blue ink layer.
+To a novice, that’s "Near Mint with slight wear". To PSA or Beckett, that single compression takes this card from a PSA 8 down to a PSA 5.
+
+[00:38 - 00:50] THE TRADE COUNTER RESOLUTION
+A PSA 8 is worth $350. A PSA 5 is worth $160.
+If I gave him $280 cash, my shop would have lost $120 the moment we listed it.
+
+[00:50 - 00:60] THE LOOP
+Always inspect the back before you hand over cash... which is why when a customer brought in this vintage Charizard, one micro-flaw changed the offer.`,
     publishDate: '2026-09-30',
     views: 34200,
     likes: 2890,
@@ -312,6 +373,25 @@ export const INITIAL_VIDEO_RECORDS: VideoRecord[] = [
     format: 'Myth Blast',
     status: 'Recording',
     hook: 'People think working at a card shop is opening packs all day. Here is what Saturday night actually looks like.',
+    script: `[00:00 - 00:03] THE HOOK (Handheld phone POV walking past a line of 25 players)
+People think working at a card shop is opening packs all day. Here is what Saturday night actually looks like.
+
+[00:03 - 00:18] THE SITUATION (Panning over 4 giant plastic tubs of unsorted foils)
+It is 8:35 PM. Round 4 of the local modern tournament just ended.
+I have twenty-two players standing at my trade-in counter, and every single one of them dumped three binders of trade bait onto the glass.
+Closing time is supposed to be 9:00 PM.
+
+[00:18 - 00:38] THE BOTTLE-NECK (Showing manual scanner typing)
+Most card shops make clerks manually search every single card on a laptop.
+Type the card name, select the expansion set, check if it's reverse holo or regular, check condition, enter price.
+Doing that for 800 cards takes over three hours of unpaid overtime.
+
+[00:38 - 00:52] THE TRANSFORMATION (Dropping a stack of 50 cards into the optical feeder)
+Watch this: We put the whole 50-card stack into the feeder.
+The cameras read both sides simultaneously, match the collector code against live buylist market prices, and spit out the exact trade receipt in 35 seconds.
+
+[00:52 - 00:60] THE LOOP
+The line is gone, the register balances out, and we actually get to go home on time... even though people still think working at a card shop is just opening packs all day.`,
     notes: 'Real shop POV with customer lines and sorting chaos.'
   },
   {
