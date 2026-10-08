@@ -26,6 +26,7 @@ import {
   Package,
   BookOpen,
   Scan,
+  BrainCircuit,
 } from 'lucide-react';
 
 
@@ -369,8 +370,8 @@ export const Sidebar: React.FC = () => {
                       : 'text-[#9b9b9b] hover:text-white hover:bg-[#282828]'
                   }`}
                 >
-                  <Palette className="w-3.5 h-3.5 text-purple-400" />
-                  <span className="font-semibold text-white">UI & UX Design Studio</span>
+                  <BrainCircuit className="w-3.5 h-3.5 text-indigo-400" />
+                  <span className="font-semibold text-white">UX Research & Decisions</span>
                 </a>
                 <a
                   href="#/whiteboard"

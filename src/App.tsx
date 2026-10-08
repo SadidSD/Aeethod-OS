@@ -21,7 +21,7 @@ import { EconomicsView } from './views/EconomicsView';
 import { GameTheoryView } from './views/GameTheoryView';
 import { ContentManagementView } from './views/ContentManagementView';
 import { DevArchitectureTrackerView } from './views/DevArchitectureTrackerView';
-import { UiUxStudioView } from './views/UiUxStudioView';
+import { UxResearchWorkplaceView } from './views/UxResearchWorkplaceView';
 import { WhiteboardView } from './views/WhiteboardView';
 import { TechStackView } from './views/TechStackView';
 import { ProductDetailView } from './views/ProductDetailView';
@@ -161,7 +161,7 @@ export const App: React.FC = () => {
         if (sub) return <ProductDetailView productId={sub} />;
         return <DevArchitectureTrackerView />;
       case 'dev':
-        if (sub === 'ui-ux' || sub === 'ui' || sub === 'ux') return <UiUxStudioView />;
+        if (sub === 'ui-ux' || sub === 'ui' || sub === 'ux' || sub === 'ux-research' || sub === 'decisions') return <UxResearchWorkplaceView />;
         if (sub === 'stack' || sub === 'tech-stack' || sub === 'stacks') return <TechStackView />;
         if (sub === 'product' && route[2]) return <ProductDetailView productId={route[2]} />;
         if (sub === 'products' || sub === 'architecture' || sub === 'plan') return <DevArchitectureTrackerView />;
@@ -175,7 +175,9 @@ export const App: React.FC = () => {
       case 'ui-ux':
       case 'ui':
       case 'ux':
-        return <UiUxStudioView />;
+      case 'ux-research':
+      case 'decisions':
+        return <UxResearchWorkplaceView />;
       case 'architecture':
       case 'vibe':
       case 'plan':
