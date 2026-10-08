@@ -25,6 +25,8 @@ import { UiUxStudioView } from './views/UiUxStudioView';
 import { WhiteboardView } from './views/WhiteboardView';
 import { TechStackView } from './views/TechStackView';
 import { ProductDetailView } from './views/ProductDetailView';
+import { CardKnowledgeHubView } from './views/CardKnowledgeHubView';
+import { CardAnatomyView } from './views/CardAnatomyView';
 
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 
@@ -182,6 +184,20 @@ export const App: React.FC = () => {
       case 'miro':
       case 'board-canvas':
         return <WhiteboardView />;
+
+      case 'knowledge':
+        if (sub === 'cards' || sub === 'card' || !sub) return <CardKnowledgeHubView />;
+        return <CardKnowledgeHubView />;
+      case 'card-knowledge':
+      case 'tcg-knowledge':
+        return <CardKnowledgeHubView />;
+      case 'cards':
+      case 'card':
+        if (sub === 'anatomy' || sub === 'explorer') return <CardAnatomyView />;
+        return <CardKnowledgeHubView />;
+      case 'card-anatomy':
+      case 'anatomy':
+        return <CardAnatomyView />;
 
       case 'metrics':
         return <SaaSMetricsView />;

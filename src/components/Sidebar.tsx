@@ -24,6 +24,8 @@ import {
   Palette,
   PenTool,
   Package,
+  BookOpen,
+  Scan,
 } from 'lucide-react';
 
 
@@ -142,6 +144,22 @@ export const Sidebar: React.FC = () => {
             title="Content Studio & Planning"
           >
             <Clapperboard className="w-4 h-4 text-indigo-400" />
+          </a>
+
+          <a
+            href="#/knowledge/cards"
+            className="w-8 h-8 rounded-md hover:bg-[#2c2c2c] flex items-center justify-center text-[#9b9b9b] hover:text-white transition"
+            title="Card Knowledge Hub"
+          >
+            <BookOpen className="w-4 h-4 text-indigo-400" />
+          </a>
+
+          <a
+            href="#/cards/anatomy"
+            className="w-8 h-8 rounded-md hover:bg-[#2c2c2c] flex items-center justify-center text-[#9b9b9b] hover:text-white transition"
+            title="Card Anatomy Explorer"
+          >
+            <Scan className="w-4 h-4 text-emerald-400" />
           </a>
 
           <a
@@ -364,6 +382,28 @@ export const Sidebar: React.FC = () => {
                 >
                   <PenTool className="w-3.5 h-3.5 text-amber-400" />
                   <span className="font-semibold text-amber-300">Whiteboard (Miro Canvas)</span>
+                </a>
+                <a
+                  href="#/knowledge/cards"
+                  className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs transition ${
+                    currentPath === 'knowledge' || currentPath === 'card-knowledge' || (currentPath === 'cards' && currentSub !== 'anatomy')
+                      ? 'bg-[#2c2c2c] text-white font-medium'
+                      : 'text-[#9b9b9b] hover:text-white hover:bg-[#282828]'
+                  }`}
+                >
+                  <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
+                  <span className="font-semibold text-white">Card Knowledge Hub</span>
+                </a>
+                <a
+                  href="#/cards/anatomy"
+                  className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs transition ${
+                    (currentPath === 'cards' && currentSub === 'anatomy') || currentPath === 'card-anatomy'
+                      ? 'bg-[#2c2c2c] text-white font-medium'
+                      : 'text-[#9b9b9b] hover:text-white hover:bg-[#282828]'
+                  }`}
+                >
+                  <Scan className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="font-semibold text-emerald-300">Card Anatomy Explorer</span>
                 </a>
                 <a
                   href="#/dev/board"
