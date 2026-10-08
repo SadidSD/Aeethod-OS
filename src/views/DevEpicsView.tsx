@@ -32,6 +32,22 @@ export const DevEpicsView: React.FC = () => {
   const [endDate, setEndDate] = useState('');
 
   const devTasks = db.tasks.filter((t) => t.topicId === 'dev' && !t.parentId);
+  const [quickTaskTitle, setQuickTaskTitle] = useState<Record<string, string>>({});
+
+  const handleQuickAddTaskToEpic = (epicId: string) => {
+    const title = (quickTaskTitle[epicId] || '').trim();
+    if (!title) return;
+    create('tasks', {
+      topicId: 'dev',
+      epicId: epicId,
+      title: title,
+      status: 'backlog',
+      type: 'feature',
+      priority: 'normal',
+      assignee: db.settings.team[0] || '',
+    });
+    setQuickTaskTitle((prev) => ({ ...prev, [epicId]: '' }));
+  };
 
   const toggleCollapse = (epicId: string) => {
     setCollapsedEpics((prev) => ({ ...prev, [epicId]: !prev[epicId] }));
@@ -238,10 +254,60 @@ export const DevEpicsView: React.FC = () => {
 
                 {/* Expanded Tasks List */}
                 {!isCollapsed && (
-                  <div className="pl-6 pt-2 border-t border-ink-800/80 space-y-1.5">
+                  <div className="pl-6 pt-3 border-t border-ink-800/80 space-y-3">
+                    {/* Inline Task Creator & Link Existing Task */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          handleQuickAddTaskToEpic(epic.id);
+                        }}
+                        className="flex-1 flex items-center gap-2"
+                      >
+                        <input
+                          type="text"
+                          value={quickTaskTitle[epic.id] || ''}
+                          onChange={(e) =>
+                            setQuickTaskTitle((prev) => ({ ...prev, [epic.id]: e.target.value }))
+                          }
+                          placeholder={`+ Add a task directly to "${epic.name}" (press Enter)...`}
+                          className="flex-1 input text-xs py-1.5 px-3 bg-ink-950/70 border-ink-800 focus:border-indigo-500/50"
+                        />
+                        <button
+                          type="submit"
+                          disabled={!quickTaskTitle[epic.id]?.trim()}
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500 hover:text-white border border-indigo-500/30 transition disabled:opacity-40 disabled:pointer-events-none flex items-center gap-1 shrink-0"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Add to Epic</span>
+                        </button>
+                      </form>
+
+                      {devTasks.filter((t) => !t.epicId).length > 0 && (
+                        <select
+                          value=""
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              update('tasks', e.target.value, { epicId: epic.id });
+                            }
+                          }}
+                          className="input text-xs py-1.5 px-2 bg-ink-950/80 border-ink-800 text-slate-300 max-w-[220px] truncate shrink-0"
+                        >
+                          <option value="">+ Link existing task...</option>
+                          {devTasks
+                            .filter((t) => !t.epicId)
+                            .map((ut) => (
+                              <option key={ut.id} value={ut.id}>
+                                {ut.title}
+                              </option>
+                            ))}
+                        </select>
+                      )}
+                    </div>
+
                     {epicTasks.length === 0 ? (
                       <div className="text-xs text-slate-500 italic py-1">
-                        No tasks linked to this epic.
+                        No tasks linked to this epic yet. Use the field above, or assign any ticket to this epic in the task drawer or Kanban board.
                       </div>
                     ) : (
                       epicTasks.map((t) => {
