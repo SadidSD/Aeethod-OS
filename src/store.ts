@@ -415,9 +415,31 @@ export const useStore = create<State>((set, get) => ({
     Promise.resolve(supabase.from('settings').upsert({ id: 'current', ...patch } as any)).catch(() => {});
   },
 
-  replaceDb: async (db) => {
-    const saved = (await api('PUT', '/api/db', db)) as DB;
-    set({ db: saved || db, openTaskId: null });
+  replaceDb: async (newDb) => {
+    const saved = (await api('PUT', '/api/db', newDb)) as DB;
+    const targetDb = saved || newDb;
+    set({ db: targetDb, openTaskId: null });
+
+    const collections: Col[] = [
+      'topics',
+      'tasks',
+      'docs',
+      'fields',
+      'metrics',
+      'sprints',
+      'epics',
+      'content_videos',
+      'saas_products',
+      'dev_items',
+      'ui_ux_items',
+      'whiteboard_elements',
+    ];
+
+    for (const c of collections) {
+      if (Array.isArray((targetDb as any)[c])) {
+        syncCollectionToSupabaseDoc(c, (targetDb as any)[c]);
+      }
+    }
   },
 
   resetDb: async () => {
