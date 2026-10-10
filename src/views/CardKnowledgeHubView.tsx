@@ -37,7 +37,8 @@ import {
   COLLECTOR_NUMBER_EDGE_CASES,
   RARITY_SYMBOLS,
   ETL_PIPELINE_STAGES,
-  PRODUCTION_SUPABASE_SQL
+  PRODUCTION_SUPABASE_SQL,
+  ALL_26_COMPETITORS_MATRIX
 } from '../data/pokemonMasterArchitectureData';
 
 type MasterTab = 'fingerprint' | 'eras-languages' | 'variants-stamps' | 'scanner-cv' | 'database-etl';
@@ -1257,6 +1258,69 @@ export const CardKnowledgeHubView: React.FC = () => {
                         >
                           {fp.marketGapStatus === 'Untouched' ? '🔴 100% Untouched' : fp.marketGapStatus}
                         </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* 4D. All 26 Competitors vs. The 3 Core Pillars (Scanning + Buylist + Sync/Auto-Pricing) */}
+          <div
+            className={`p-6 rounded-2xl border space-y-4 ${
+              isLight ? 'bg-white border-slate-200 shadow-xs' : 'bg-[#181820] border-[#292935]'
+            }`}
+          >
+            <div>
+              <h3 className={`text-base font-extrabold ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                3. All 26 Industry Competitors vs. The 3 Core Pillars (Scanning • Buylist • Sync &amp; Auto-Pricing)
+              </h3>
+              <p className="text-xs text-slate-400">
+                Complete audit of every competitor tracked in Aeethod OS across (1) Optical Card Scanning, (2) Counter &amp; Online Buylist, and (3) Multi-Channel Sync &amp; Auto-Pricing.
+              </p>
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-zinc-800">
+              <table className="w-full text-left text-xs">
+                <thead className={isLight ? 'bg-slate-100 text-slate-700' : 'bg-zinc-900 text-zinc-300'}>
+                  <tr className="border-b border-slate-200 dark:border-zinc-800">
+                    <th className="py-2.5 px-3 font-bold">#</th>
+                    <th className="py-2.5 px-3 font-bold">Competitor &amp; Pricing</th>
+                    <th className="py-2.5 px-3 font-bold">1. Optical Card Scanning</th>
+                    <th className="py-2.5 px-3 font-bold">2. Buylist Engine</th>
+                    <th className="py-2.5 px-3 font-bold">3. Inventory Sync &amp; Auto-Pricing</th>
+                    <th className="py-2.5 px-3 font-bold">Has All 3?</th>
+                    <th className="py-2.5 px-3 font-bold">Fatal Flaw for Pokémon Shops</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200/60 dark:divide-zinc-800">
+                  {ALL_26_COMPETITORS_MATRIX.map((comp) => (
+                    <tr key={comp.num} className="hover:bg-indigo-500/5 align-top">
+                      <td className="py-2.5 px-3 font-mono font-bold text-indigo-400">{comp.num}</td>
+                      <td className="py-2.5 px-3">
+                        <div className={`font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{comp.name}</div>
+                        <div className="text-[10px] font-mono text-amber-400">{comp.pricingSummary}</div>
+                        <div className="text-[10px] text-slate-500">{comp.pillarCategory}</div>
+                      </td>
+                      <td className="py-2.5 px-3 text-slate-300 max-w-xs">{comp.opticalScanning}</td>
+                      <td className="py-2.5 px-3 text-slate-300 max-w-xs">{comp.buylistEngine}</td>
+                      <td className="py-2.5 px-3 text-slate-300 max-w-xs">{comp.syncAndAutoPricing}</td>
+                      <td className="py-2.5 px-3">
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase whitespace-nowrap ${
+                            comp.hasAllThree.startsWith('Partial')
+                              ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                              : comp.hasAllThree.startsWith('Hardware')
+                              ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30'
+                              : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                          }`}
+                        >
+                          {comp.hasAllThree}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-[11px] text-slate-400 max-w-sm leading-relaxed">
+                        {comp.pokemonShopWeakness}
                       </td>
                     </tr>
                   ))}

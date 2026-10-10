@@ -1144,3 +1144,310 @@ CREATE TABLE public.inventory_items (
 CREATE INDEX idx_identities_embedding ON catalog.card_identities USING hnsw (art_embedding halfvec_cosine_ops);
 CREATE INDEX idx_identities_name_trgm ON catalog.card_identities USING gin (name gin_trgm_ops);
 CREATE INDEX idx_identities_num_clean ON catalog.card_identities (number_clean);`;
+
+export interface CompetitorThreePillarSpec {
+  num: number;
+  name: string;
+  pillarCategory: 'Pillar 1: All-in-One Commerce' | 'Pillar 2: Shopify Apps & Tools' | 'Pillar 3: Mobile / Standalone POS';
+  pricingSummary: string;
+  opticalScanning: string;
+  buylistEngine: string;
+  syncAndAutoPricing: string;
+  hasAllThree: 'Partial (Layer 1 Only)' | 'Hardware Dependent' | 'No (Missing 1–2 Pillars)';
+  pokemonShopWeakness: string;
+}
+
+export const ALL_26_COMPETITORS_MATRIX: CompetitorThreePillarSpec[] = [
+  // PILLAR 1: ALL-IN-ONE TCG COMMERCE PLATFORMS (10)
+  {
+    num: 1,
+    name: 'TCG Sync (Storefront Pro)',
+    pillarCategory: 'Pillar 1: All-in-One Commerce',
+    pricingSummary: '£1,000 setup + 2% sales commission',
+    opticalScanning: '⚠️ Basic Layer 1 terminal/barcode scan (blind to Pokémon Layer 2 stamps/Master Balls)',
+    buylistEngine: '✅ Yes (Store credit & cash intake)',
+    syncAndAutoPricing: '✅ Yes (Shopify, TCGplayer, Cardmarket, eBay)',
+    hasAllThree: 'Partial (Layer 1 Only)',
+    pokemonShopWeakness: '£1,000 upfront setup fee + 2% sales tax; scanner lacks 14-point Pokémon Layer 2 disambiguation.'
+  },
+  {
+    num: 2,
+    name: 'Storepass',
+    pillarCategory: 'Pillar 1: All-in-One Commerce',
+    pricingSummary: '$99–$4,999/mo + 2% ($499/mo flat)',
+    opticalScanning: '❌ No Camera CV Scanner (100% manual text search / barcode at counter)',
+    buylistEngine: '✅ Yes (High-speed manual search buylist)',
+    syncAndAutoPricing: '✅ Yes (Shopify/BigCommerce + real-time margin rules)',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'Zero optical card scanning; commission-free tier costs $499/mo.'
+  },
+  {
+    num: 3,
+    name: 'Crystal Commerce',
+    pillarCategory: 'Pillar 1: All-in-One Commerce',
+    pricingSummary: '$99/mo + 2.5% marketplace fee',
+    opticalScanning: '❌ No Camera CV Scanner',
+    buylistEngine: '✅ Yes (Legacy in-store trade-in kiosk)',
+    syncAndAutoPricing: '⚠️ Legacy sync (Frequent overselling lag across eBay/TCGplayer)',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'Dated 2010 PHP architecture, no camera scanner, 2.5% commission, and sync lag during set drops.'
+  },
+  {
+    num: 4,
+    name: 'BinderPOS',
+    pillarCategory: 'Pillar 1: All-in-One Commerce',
+    pricingSummary: '$100–$150/mo + 2.5% fee (PAUSED)',
+    opticalScanning: '❌ No Camera CV Scanner (Requires manual typing or $15k Roca sorter)',
+    buylistEngine: '✅ Yes (Shopify store credit buylist)',
+    syncAndAutoPricing: '✅ Yes (Shopify + TCGplayer sync)',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'SIGNUPS FROZEN IN FEB 2025; no built-in camera scanner; 2.5% commission on online sales.'
+  },
+  {
+    num: 5,
+    name: 'rareOS',
+    pillarCategory: 'Pillar 1: All-in-One Commerce',
+    pricingSummary: '$0/mo (Early Access Beta)',
+    opticalScanning: '⚠️ Batch photo intake (Layer 1 + retro video games/comics)',
+    buylistEngine: '✅ Yes (In-store trade-in ticket generator)',
+    syncAndAutoPricing: '⚠️ PriceCharting valuation; lacks mature TCGplayer Direct / Cardmarket sync',
+    hasAllThree: 'Partial (Layer 1 Only)',
+    pokemonShopWeakness: 'Early-stage beta lacking deep multi-marketplace inventory decrementing and Pokémon Layer 2 variant rules.'
+  },
+  {
+    num: 6,
+    name: 'SortSwift',
+    pillarCategory: 'Pillar 1: All-in-One Commerce',
+    pricingSummary: '$39.99–$499/mo + $2.5k–$6k Sorter',
+    opticalScanning: '⚠️ Relies on $2,500–$6,000 Super Sorter mechanical hardware (Layer 1)',
+    buylistEngine: '✅ Yes (Trade-in management)',
+    syncAndAutoPricing: '✅ Yes (Shopify + TCGplayer auto-pricing + Chaos bin tracking)',
+    hasAllThree: 'Hardware Dependent',
+    pokemonShopWeakness: 'Requires expensive mechanical sorting hardware for full efficiency; cannot scan sleeved cards or slabs at counter.'
+  },
+  {
+    num: 7,
+    name: 'blstr',
+    pillarCategory: 'Pillar 1: All-in-One Commerce',
+    pricingSummary: '$100/mo flat (0% commission)',
+    opticalScanning: '❌ No native high-speed Layer 2 CV counter scanner',
+    buylistEngine: '✅ Yes (Smart buylist margin & condition rules)',
+    syncAndAutoPricing: '⚠️ Bi-directional Shopify sync + TCGplayer pricing (Lacks eBay/Cardmarket)',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'Lacks physical counter POS hardware integration, camera CV scanning, and eBay/Cardmarket syndication.'
+  },
+  {
+    num: 8,
+    name: 'ShadowPOS',
+    pillarCategory: 'Pillar 1: All-in-One Commerce',
+    pricingSummary: '$79–$149/mo + CardBot hardware',
+    opticalScanning: '⚠️ Dependent on third-party CardCastle CardBot hardware kiosk',
+    buylistEngine: '✅ Yes (Automated trade-in value calculations)',
+    syncAndAutoPricing: '✅ Yes (POS + online storefront sync)',
+    hasAllThree: 'Hardware Dependent',
+    pokemonShopWeakness: 'Relies on external CardBot hardware partnership rather than any smartphone/webcam counter scanner.'
+  },
+  {
+    num: 9,
+    name: 'PRISM',
+    pillarCategory: 'Pillar 1: All-in-One Commerce',
+    pricingSummary: 'Kickstarter ($0/mo promised)',
+    opticalScanning: '❌ Unreleased / No production CV scanner',
+    buylistEngine: '⚠️ Prototype trade ledger only',
+    syncAndAutoPricing: '❌ Lacks live enterprise marketplace API sync',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'Unreleased Kickstarter prototype with unclear delivery roadmap and no cloud marketplace APIs.'
+  },
+  {
+    num: 10,
+    name: 'DMM マイカポス (MyKapos)',
+    pillarCategory: 'Pillar 1: All-in-One Commerce',
+    pricingSummary: 'Custom JPY Enterprise + Terminal',
+    opticalScanning: '⚠️ Barcode / terminal scanner for Japanese printings only',
+    buylistEngine: '✅ Yes (Japanese Kaitori legal trade-in workflow)',
+    syncAndAutoPricing: '⚠️ Domestic Japan EC & Yahoo! Auctions JP only (Zero EN/TCGplayer/Shopify)',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: '100% locked to domestic Japan stores in Japanese; zero English, Shopify, TCGplayer, or Cardmarket support.'
+  },
+
+  // PILLAR 2: SHOPIFY APPS & TOOLS (8)
+  {
+    num: 11,
+    name: 'TCG Automate',
+    pillarCategory: 'Pillar 2: Shopify Apps & Tools',
+    pricingSummary: 'Usage-based ($49–$199/mo)',
+    opticalScanning: '✅ Batch photo-to-listing AI (Layer 1 artwork matching)',
+    buylistEngine: '❌ No customer buylist or trade-in module',
+    syncAndAutoPricing: '⚠️ One-way batch listing creation to eBay/TCGplayer/Whatnot/Shopify (No POS register)',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'Listing ingestion utility only—no in-store POS register, no buylist counter, and usage fees scale up on bulk.'
+  },
+  {
+    num: 12,
+    name: 'Game Locker',
+    pillarCategory: 'Pillar 2: Shopify Apps & Tools',
+    pricingSummary: 'Freemium ($29–$99/mo)',
+    opticalScanning: '❌ No AI camera scanner (Barcode / manual only)',
+    buylistEngine: '⚠️ Basic Shopify rules only',
+    syncAndAutoPricing: '⚠️ Shopify multi-location inventory only (Lacks TCGplayer/Cardmarket sync)',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'No camera scanner and no external marketplace sync to TCGplayer or Cardmarket.'
+  },
+  {
+    num: 13,
+    name: 'Synq ‑ TCG Manager',
+    pillarCategory: 'Pillar 2: Shopify Apps & Tools',
+    pricingSummary: 'Starts at $29/mo flat (0% fee)',
+    opticalScanning: '❌ No AI camera scanner (Shopify POS barcodes only)',
+    buylistEngine: '❌ No customer-facing buylist kiosk or trade-in portal',
+    syncAndAutoPricing: '⚠️ One-way TCGplayer price fetch into Shopify across 16 games (Does NOT sync stock back to TCGplayer/eBay)',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'No camera scanner, no buylist, and one-way sync (selling on Shopify does not delist on TCGplayer/eBay).'
+  },
+  {
+    num: 14,
+    name: 'TCG Importer',
+    pillarCategory: 'Pillar 2: Shopify Apps & Tools',
+    pricingSummary: '$19–$59/mo',
+    opticalScanning: '❌ No camera scanner',
+    buylistEngine: '❌ No buylist module',
+    syncAndAutoPricing: '❌ Bulk catalog importer into Shopify only (No live repricing bot or POS)',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'Single-purpose catalog import utility; stores cancel after importing sets.'
+  },
+  {
+    num: 15,
+    name: 'CardUpkeep',
+    pillarCategory: 'Pillar 2: Shopify Apps & Tools',
+    pricingSummary: '$29–$79/mo flat',
+    opticalScanning: '❌ No camera scanner',
+    buylistEngine: '❌ No buylist portal',
+    syncAndAutoPricing: '⚠️ Automated live pricing for Shopify only (No eBay/Cardmarket sync)',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'Only updates prices inside Shopify; no camera scanner, no buylist, and no external marketplace sync.'
+  },
+  {
+    num: 16,
+    name: 'Kori TCG Manager',
+    pillarCategory: 'Pillar 2: Shopify Apps & Tools',
+    pricingSummary: '$14.99–$24.99/mo',
+    opticalScanning: '❌ No camera scanner',
+    buylistEngine: '❌ No buylist portal',
+    syncAndAutoPricing: '⚠️ Basic Shopify price adjustments & bulk condition editor only',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'Micro-merchant budget tool lacking camera scanning, buylists, POS workflows, and marketplace sync.'
+  },
+  {
+    num: 17,
+    name: 'LGS Forge',
+    pillarCategory: 'Pillar 2: Shopify Apps & Tools',
+    pricingSummary: '$29–$69/mo flat',
+    opticalScanning: '❌ No AI camera scanner (Barcodes only)',
+    buylistEngine: '❌ No customer buylist widget',
+    syncAndAutoPricing: '⚠️ Shopify catalog & price feed sync (Direct Synq clone)',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'No mobile/counter AI camera scanner, no buylist portal, and no multi-marketplace syndication.'
+  },
+  {
+    num: 18,
+    name: 'CardSync',
+    pillarCategory: 'Pillar 2: Shopify Apps & Tools',
+    pricingSummary: '$19–$49/mo',
+    opticalScanning: '❌ No camera scanner',
+    buylistEngine: '❌ No buylist functionality',
+    syncAndAutoPricing: '⚠️ Imports CSV/TCGplayer exports into Shopify & updates prices overnight',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'Relies on manual CSV uploads; no POS register, no buylist, and no camera scanner.'
+  },
+
+  // PILLAR 3: POS & INVENTORY TOOLS (MOBILE / STANDALONE — 8)
+  {
+    num: 19,
+    name: 'CardFlow',
+    pillarCategory: 'Pillar 3: Mobile / Standalone POS',
+    pricingSummary: 'Freemium ($39–$99/mo)',
+    opticalScanning: '❌ No high-speed Layer 2 CV scanner',
+    buylistEngine: '✅ Yes (Offline counter buy-in & trade-in tracking)',
+    syncAndAutoPricing: '❌ Offline-first SQLite POS; lacks real-time automated repricing bots & Shopify/TCGplayer sync',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'Built for offline convention booths; creates race conditions with online stores and lacks automated repricing.'
+  },
+  {
+    num: 20,
+    name: 'DeckTradr',
+    pillarCategory: 'Pillar 3: Mobile / Standalone POS',
+    pricingSummary: '$49–$129/mo',
+    opticalScanning: '✅ Fast 0.2s Layer 1 mobile AI scanner (Blind to Layer 2 stamps/Master Balls)',
+    buylistEngine: '✅ Yes (Instant booth trade-in calculator with cash vs credit)',
+    syncAndAutoPricing: '❌ Convention booth POS only—lacks full Shopify webstore builder & bi-directional marketplace sync',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'Great for weekend convention booths, but lacks full multi-channel online storefront sync and Layer 2 Pokémon guardrails.'
+  },
+  {
+    num: 21,
+    name: 'SnapSale.io',
+    pillarCategory: 'Pillar 3: Mobile / Standalone POS',
+    pricingSummary: '$39–$89/mo (or $19 weekend pass)',
+    opticalScanning: '⚠️ Basic mobile lookup for sports slabs & TCGs',
+    buylistEngine: '⚠️ Basic show deal calculator',
+    syncAndAutoPricing: '❌ Weekend card-show checkout & P&L tracker only (Zero continuous Shopify/TCGplayer sync)',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'Built for weekend table dealers; selling a card at a show does not delist it from Shopify or TCGplayer.'
+  },
+  {
+    num: 22,
+    name: 'My Card Wizard',
+    pillarCategory: 'Pillar 3: Mobile / Standalone POS',
+    pricingSummary: '$39/mo flat',
+    opticalScanning: '✅ Layer 1 CV scanner (Name, number, set symbol)',
+    buylistEngine: '❌ No retail POS or customer buylist portal',
+    syncAndAutoPricing: '❌ Exports static CSV files for TCGplayer/CardTrader (No live bi-directional sync or auto-pricing)',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'Scan-and-export CSV utility only; no live inventory sync, no auto-pricing engine, and no counter buylist.'
+  },
+  {
+    num: 23,
+    name: 'Double Holo (Vendor Hub)',
+    pillarCategory: 'Pillar 3: Mobile / Standalone POS',
+    pricingSummary: '$59–$199/mo',
+    opticalScanning: '⚠️ Mobile slab/card lookup (Lacks 14-point Layer 2 coordinate CV)',
+    buylistEngine: '✅ Yes (B2B wholesale lot & vendor deal tracking)',
+    syncAndAutoPricing: '✅ Yes (Mobile sync across Shopify, eBay, TCGplayer + slab repricing)',
+    hasAllThree: 'Partial (Layer 1 Only)',
+    pokemonShopWeakness: 'Vendor-centric mobile app lacking permanent multi-register store POS hardware & deep Layer 2 stamp/foil CV.'
+  },
+  {
+    num: 24,
+    name: 'Jarbas',
+    pillarCategory: 'Pillar 3: Mobile / Standalone POS',
+    pricingSummary: 'Freemium ($10–$30/mo)',
+    opticalScanning: '❌ Generic barcode only (Zero TCG card recognition)',
+    buylistEngine: '❌ No TCG buylist or store credit engine',
+    syncAndAutoPricing: '❌ WhatsApp/Instagram DM catalog only (Zero TCGplayer/eBay/condition support)',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'Generic social-selling app with zero TCG database, no card conditions, and no automated market pricing.'
+  },
+  {
+    num: 25,
+    name: 'Kyte',
+    pillarCategory: 'Pillar 3: Mobile / Standalone POS',
+    pricingSummary: 'Freemium ($9.99–$19.99/mo)',
+    opticalScanning: '❌ Generic retail barcode only',
+    buylistEngine: '❌ No TCG buylist',
+    syncAndAutoPricing: '❌ Horizontal micro-retail app (Zero TCG catalog or market price feeds)',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'General retail app where entering 50,000 Pokémon card variants manually is impossible.'
+  },
+  {
+    num: 26,
+    name: 'TCG PowerTools',
+    pillarCategory: 'Pillar 3: Mobile / Standalone POS',
+    pricingSummary: '€12–€239/mo flat (0% fee)',
+    opticalScanning: '❌ No camera scanner',
+    buylistEngine: '❌ No physical store POS or counter buylist',
+    syncAndAutoPricing: '⚠️ Dominant automated repricing bot for European Cardmarket ONLY (No Shopify or TCGplayer)',
+    hasAllThree: 'No (Missing 1–2 Pillars)',
+    pokemonShopWeakness: 'Strictly a European Cardmarket repricing bot—no camera scanner, no in-store POS, no buylist, and no US TCGplayer/Shopify sync.'
+  }
+];
+
