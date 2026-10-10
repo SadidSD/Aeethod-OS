@@ -1218,12 +1218,12 @@ export const ALL_26_COMPETITORS_MATRIX: CompetitorThreePillarSpec[] = [
     num: 6,
     name: 'SortSwift',
     pillarCategory: 'Pillar 1: All-in-One Commerce',
-    pricingSummary: '$39.99–$499/mo + $2.5k–$6k Sorter',
-    opticalScanning: '⚠️ Relies on $2,500–$6,000 Super Sorter mechanical hardware (Layer 1)',
-    buylistEngine: '✅ Yes (Trade-in management)',
-    syncAndAutoPricing: '✅ Yes (Shopify + TCGplayer auto-pricing + Chaos bin tracking)',
+    pricingSummary: '$219–$499/mo (for all 3) + $249 Sync Box + $8,999–$24,999 Sorter',
+    opticalScanning: '⚠️ Free scans lack language/foil/exact printing; "High-Accuracy" metered by monthly scan credits ($5–$199/mo) or $8,999–$24,999 Super Sorter',
+    buylistEngine: '✅ Yes (Gated behind $219/mo "Online" bundle or $64.99/mo A La Carte)',
+    syncAndAutoPricing: '✅ Yes ($12.99/mo per channel + $249 Sync Box for TCGplayer + $15.99–$124.99/mo Auto-Pricing)',
     hasAllThree: 'Hardware Dependent',
-    pokemonShopWeakness: 'Requires expensive mechanical sorting hardware for full efficiency; cannot scan sleeved cards or slabs at counter.'
+    pokemonShopWeakness: 'Getting all 3 requires at least $219–$249/mo + $249 Sync Box; free scanner ignores language/foil/printing, and high-speed sorting requires an $8,999–$24,999 Super Sorter (+ $199/mo).'
   },
   {
     num: 7,

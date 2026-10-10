@@ -310,10 +310,10 @@ export const competitorsData: Competitor[] = [
     churnRate: "Moderate (9% – 12%)",
     churnLevel: "med",
     pricing: {
-      base: "Free starter tier (up to 5k items); $39.99 to $499/mo",
-      setupFee: "$0",
-      commissionRate: "0% on flat plans",
-      hardwareCost: "Super Sorter hardware units ($2,500 – $6,000)",
+      base: "Free Entry (up to 5k items); 9 Bundles ($19 to $499/mo; $219/mo min for Buylist) or A La Carte",
+      setupFee: "$0 ($249 one-time for TCGplayer Sync Box appliance)",
+      commissionRate: "0% on POS & synced marketplaces; 2% on SortSwift storefront orders",
+      hardwareCost: "Super Sorter Mini 9-bin ($8,999) or 29-bin ($24,999) + $199/mo device scan plan; Sync Box ($249)",
       pricingModel: "Freemium"
     },
     offerings: [
@@ -341,9 +341,9 @@ export const competitorsData: Competitor[] = [
     marketing: {
       channels: ["TikTok & YouTube Shorts", "Shopify App Store", "Trade Shows (GAMA, Gen Con, Collect-A-Con)"],
       tactics: ["Viral mechanical sorting machine video demonstrations", "Free tier for up to 5,000 items (chaos tracking lead magnet)", "Live trade show sorting challenges"],
-      primaryFunnel: "Freemium Software Signup -> Hardware Upsell ($2,500 - $6,000 Super Sorter)"
+      primaryFunnel: "Freemium Software Signup -> Paid Bundle ($219-$499/mo) -> Hardware Upsell ($8,999 - $24,999 Super Sorter + $199/mo)"
     },
-    attackVector: "Build software-based chaos bin management without requiring proprietary $3,000+ mechanical sorting machines.",
+    attackVector: "Build software-based chaos bin management and 14-point Pokémon variant CV without gating exact printing/foil behind expensive monthly scan credit tiers or $8,999–$24,999 mechanical sorting machines.",
     techStackSummary: "Embedded firmware, OpenCV, React web dashboard, Shopify REST/GraphQL API",
     targetMarket: "High-volume card shops and sorting warehouses processing massive bulk singles"
   },
