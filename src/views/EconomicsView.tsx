@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   TrendingUp,
   Target,
@@ -30,6 +30,7 @@ import {
   Server,
   Globe,
   Check,
+  Store,
 } from 'lucide-react';
 import { useDb, useStore } from '../store';
 import { competitorsData, Competitor } from '../lib/competitorsData';
@@ -40,9 +41,145 @@ import { navigate, href } from '../lib/router';
 import { fmtMoney } from '../lib/metrics';
 import { TcgMarketEconomicsTerminal } from '../components/TcgMarketEconomicsTerminal';
 
+interface CommercialArchetype {
+  id: string;
+  title: string;
+  merchantType: 'Physical Storefront' | 'Non-Storefront Vendor' | 'Physical Store Chain';
+  unitLabel: 'stores' | 'vendors' | 'chains';
+  sam: number;
+  samSharePct: string;
+  websiteOwnership: string;
+  noWebsitePct: number;
+  who: string;
+  monthlyGmv: string;
+  skus: string;
+  currentStack: string;
+  wedge: string;
+  price: number;
+  wtp: number;
+  surplus: number;
+  savings: number;
+  elasticity: string;
+  phase: string;
+  taskDescription: string;
+}
+
+const COMMERCIAL_ARCHETYPES: CommercialArchetype[] = [
+  {
+    id: 'ff112c61-dfc3-4735-951c-ae28165a995c',
+    title: 'Profile 1 — Indie Single-Store LGS (Brick-and-Mortar)',
+    merchantType: 'Physical Storefront',
+    unitLabel: 'stores',
+    sam: 7500,
+    samSharePct: '25.2%',
+    websiteOwnership: '~55% Basic Site · ~45% No Singles/Buylist Site',
+    noWebsitePct: 45,
+    who: 'Neighbourhood physical hobby shop (WPN / Play! Pokémon / Bandai TCG+), 1–3 staff, 1 counter register.',
+    monthlyGmv: '$12k – $35k/mo',
+    skus: '10k – 35k SKUs',
+    currentStack: 'Shopify/Square POS + TCGplayer + Spreadsheets',
+    wedge: 'Instant Hosted/Embedded Buylist + Camera Foil Trade-In Scanner at $99 flat (saves ~$150/mo vs BinderPOS/SortSwift).',
+    price: 99,
+    wtp: 149,
+    surplus: 50,
+    savings: 150,
+    elasticity: 'elastic (ε ≈ −1.2)',
+    phase: 'Phase 2 Scale',
+    taskDescription: `**Who:** Neighbourhood physical hobby shop, 1–3 staff, 1 counter register (WPN / Play! Pokémon / Bandai TCG+).\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Physical Storefront (25.2% of total SAM) |\n| SAM Size | 7,500 stores (US, CA, UK, W. Europe, ANZ) |\n| Website Ownership | ~55% have basic Shopify/Square site · ~45% have NO singles/buylist site |\n| Monthly singles GMV | $12k – $35k |\n| Singles SKUs | 10k – 35k |\n| Current stack | Shopify/Square POS + TCGplayer + spreadsheets / manual counter calculator |\n| Current software spend | $49 – $150/mo |\n\n**Elasticity:** elastic (ε ≈ −1.2) — sensitive to fixed monthly overhead and avoids % commissions.\n\n**Savings vs incumbent:** vs SortSwift Core ($249/mo) or BinderPOS ($150 base + 2.5% commission ≈ $275/mo) → saves ~$150+/mo.\n\n**Killer features:** Instant hosted/embedded Buylist Portal, phone-camera foil/variant trade-in scanner, 0% commission.`,
+  },
+  {
+    id: 'e6862dfd-b601-4327-8eb1-54f498160789',
+    title: 'Profile 2 — High-Volume Premier LGS (Destination Storefront)',
+    merchantType: 'Physical Storefront',
+    unitLabel: 'stores',
+    sam: 2400,
+    samSharePct: '8.1%',
+    websiteOwnership: '~95% Dedicated Storefront · ~5% Marketplace Only',
+    noWebsitePct: 5,
+    who: 'Large tournament & destination store, 5–15 staff, 2–4 registers, dedicated walk-in trade-in counter.',
+    monthlyGmv: '$60k – $180k/mo',
+    skus: '75k – 250k+ SKUs',
+    currentStack: 'BinderPOS ($150–$350 + 2.5%) / SortSwift ($369) / Storepass',
+    wedge: 'Eliminates $900–$1,688/mo in 2.5% GMV commission taxes + replaces slow manual counter trade-ins with optical scanning.',
+    price: 299,
+    wtp: 599,
+    surplus: 300,
+    savings: 1000,
+    elasticity: 'extremely-inelastic (ε ≈ −0.3)',
+    phase: 'Phase 1 Beachhead',
+    taskDescription: `**Who:** Large tournament/destination store, 5–15 staff, 2–4 registers, dedicated walk-in trade-in counter.\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Physical Storefront (Top ~23% of brick-and-mortar shops) |\n| SAM Size | 2,400 stores (US, CA, UK, W. Europe, ANZ) |\n| Website Ownership | ~95% have a dedicated webstore (Shopify / BinderPOS / Storepass) |\n| Monthly singles GMV | $60k – $180k (≈45% online) |\n| Singles SKUs | 75k – 250k+ |\n| Current stack | BinderPOS ($150–$350 + 2.5%) / SortSwift Core+ ($369) / Storepass ($99–$999) |\n\n**Incumbent cost:**\n- $80k GMV → ~$36k online → $150 + $900 ≈ **$1,050/mo**\n- $150k GMV → ~$67.5k online → $150 + $1,688 ≈ **$1,840/mo**\n\nSavings at $299 flat: **~$750 – $1,540/mo**. BinderPOS paused new signups in Feb 2025 & TCGplayer shut down Direct Buylist in July 2024.\n\n**Elasticity:** extremely inelastic (ε ≈ −0.3). **Phase 1 beachhead.**`,
+  },
+  {
+    id: '400b5daf-d8a2-42c5-9f29-49433289b381',
+    title: 'Profile 3 — Online Warehouse PowerSeller (Non-Storefront Vendor)',
+    merchantType: 'Non-Storefront Vendor',
+    unitLabel: 'vendors',
+    sam: 5500,
+    samSharePct: '18.5%',
+    websiteOwnership: '~25% Have Website · ~75% Have NO Website (Marketplaces Only)',
+    noWebsitePct: 75,
+    who: 'Commercial online-only vendor (TCGplayer Level 4 / Direct, eBay Top-Rated, Cardmarket Powerseller), 2–8 staff, ZERO walk-in store.',
+    monthlyGmv: '$40k – $250k/mo',
+    skus: '50k – 500k+ listings',
+    currentStack: 'SortSwift ($219–$499 + $249 Box) + Card Dealer Pro ($99)',
+    wedge: 'TCGplayer killed Direct Buylist (July 2024); Aeethod gives the 75% without a website an Instant Hosted Buylist + 2-way Sync + Bulk/Foil Scanner.',
+    price: 249,
+    wtp: 499,
+    surplus: 250,
+    savings: 375,
+    elasticity: 'inelastic (ε ≈ −0.5)',
+    phase: 'Phase 1 Beachhead',
+    taskDescription: `**Who:** Commercial online-only vendor (TCGplayer Level 4 / Direct, eBay Top-Rated, Cardmarket Powerseller), 2–8 warehouse/office staff, ZERO walk-in storefront.\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Non-Storefront Commercial Vendor (No physical retail shop) |\n| SAM Size | 5,500 operations ($300k – $3M+/yr singles across US, EU, UK, CA) |\n| Website Ownership | Only ~25% have a website · ~75% sell ONLY on TCGplayer/eBay/Cardmarket |\n| Monthly singles GMV | $40k – $250k |\n| Listings | 50k – 500k+ |\n| Current stack | SortSwift ($219–$499/mo + $249 Sync Box) + Card Dealer Pro ($99) + TCG PowerTools |\n| Current software spend | $250 – $750/mo across 2–4 disconnected tools |\n\n**Pain:** TCGplayer killed its central Direct Buylist (July 2024), leaving online vendors with no website unable to run a public buylist; cross-channel double-sales between TCGplayer & eBay.\n\n**Elasticity:** inelastic (ε ≈ −0.5) — judged on intake speed & Hosted Buylist Portal (buylist.aeethod.com/vendor). **Phase 1 beachhead.**`,
+  },
+  {
+    id: 'fb124dd7-a62e-4768-9857-39805e2c16ec',
+    title: 'Profile 4 — Card-Show Booth Dealer & Live-Stream Vendor (Non-Storefront)',
+    merchantType: 'Non-Storefront Vendor',
+    unitLabel: 'vendors',
+    sam: 14000,
+    samSharePct: '47.1%',
+    websiteOwnership: '<8% Have Website · 92%+ Have ZERO Website (IG / Whatnot / eBay)',
+    noWebsitePct: 92,
+    who: 'Weekend convention/card-show booth vendors (~6,500 across Collect-A-Con, Regionals & local hotel shows) + ~7,500 full-time Whatnot / TikTok / IG breakers & slab dealers.',
+    monthlyGmv: '$8k – $60k/mo',
+    skus: '500 – 15,000 slabs & singles',
+    currentStack: 'Collectr / Shiny / Rare Candy ($0–$15) + Manual eBay/TCGplayer',
+    wedge: 'Instant Hosted Buylist URL (`buylist.aeethod.com/vendor`) + Event Drop-Off QR Table Tent + 3-second Camera Trade-In Calculator + Auto-Delist.',
+    price: 79,
+    wtp: 149,
+    surplus: 70,
+    savings: 65,
+    elasticity: 'bifurcated',
+    phase: 'Phase 2 Scale',
+    taskDescription: `**Who:** Weekend convention/card-show table vendors (Collect-A-Con 900–1,300 booths/show, Pokémon Regionals, local hotel shows) & full-time Whatnot / TikTok Live / IG slab & singles dealers (1–3 staff, ZERO physical store).\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Non-Storefront Commercial Vendor (47.1% of total commercial SAM!) |\n| SAM Size | 14,000 active commercial vendors (~6,500 circuit booth dealers + ~7,500 live-stream/IG vendors) |\n| Website Ownership | <8% have a website · 92%+ have ZERO website (rely on IG bio, Whatnot, eBay) |\n| Revenue | $8k – $60k/mo ($10k – $50k per major show weekend) |\n| SKUs | 500 – 15,000 high-velocity singles, holos & PSA/CGC slabs |\n| Current stack | Collectr / Shiny / Rare Candy calculator ($0–$15/mo) + manual eBay/TCGplayer delisting |\n\n**Pain:** 92% have no website to accept pre-show Event Drop-Off buylists; 25-minute manual calculator bottleneck at crowded show booths; selling a slab at a show leaves it live on eBay.\n\n**Pricing:** $79/mo (includes Instant Hosted Buylist Portal + QR Table Sign + Camera Trade-In Calculator + eBay/TCGplayer auto-delist). **Elasticity:** bifurcated.`,
+  },
+  {
+    id: '724948ae-5c88-46eb-9b65-a4c9b5da0366',
+    title: 'Profile 5 — Multi-Location Enterprise Chain (Brick-and-Mortar)',
+    merchantType: 'Physical Store Chain',
+    unitLabel: 'chains',
+    sam: 350,
+    samSharePct: '1.2%',
+    websiteOwnership: '100% Enterprise Webstore (~1,400 physical rooftops)',
+    noWebsitePct: 0,
+    who: 'Regional & national retail chains operating 3–15 physical storefronts + central fulfillment warehouse, 20–100 staff.',
+    monthlyGmv: '$150k – $800k+/mo',
+    skus: '500k – 2M+ SKUs',
+    currentStack: 'Storepass Enterprise ($1.5k–$5k/mo) / TCG Sync ($2.5k/mo)',
+    wedge: 'Unified multi-warehouse inventory ledger, inter-store transfer routing, and 0% GMV tax at flat enterprise pricing.',
+    price: 699,
+    wtp: 1499,
+    surplus: 800,
+    savings: 2500,
+    elasticity: 'completely-inelastic (ε ≈ −0.1)',
+    phase: 'Phase 3 Expansion',
+    taskDescription: `**Who:** 3–15 physical stores + central fulfillment depot, 20–100 staff.\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Physical Storefront Chain (~1,400 total rooftops across 350 parent organizations) |\n| SAM Size | 350 enterprise chains (~500 globally) |\n| Website Ownership | 100% have enterprise websites |\n| Monthly singles GMV | $150k – $800k+ |\n| SKUs | 500k – 2M+ |\n| Current stack | Storepass Enterprise ($1,500 – $4,999/mo), TCG Sync Enterprise ($2,499/mo), custom ERP |\n\n**Pain:** Inventory siloed per store, no automated inter-store transfers, high per-location software fees.\n\n**Elasticity:** completely inelastic (ε ≈ −0.1) — decided on uptime, RBAC, SLA. **Phase 3.**`,
+  },
+];
+
 export const EconomicsView: React.FC = () => {
   const db = useDb();
-  const { setOpenTask, theme } = useStore();
+  const { setOpenTask, update, theme } = useStore();
   const isLight = theme === 'light';
 
   const [activeTab, setActiveTab] = useState<'climate' | 'tcg-market' | 'micro-topics' | 'features' | 'profiles'>('tcg-market');
@@ -56,10 +193,29 @@ export const EconomicsView: React.FC = () => {
   const [featureElasticityFilter, setFeatureElasticityFilter] = useState<'all' | 'Inelastic' | 'Unit Elastic' | 'Hyper-Elastic'>('all');
   const [simulatedTier, setSimulatedTier] = useState<99 | 149 | 249>(149);
 
-  // Economic target profiles from tasks
-  const profileTasks = db.tasks.filter(
-    (t) => t.topicId === 'economics' && t.tags?.includes('customer-profile')
-  );
+  // Sync canonical Store vs Vendor market census into live task records so task modals also stay up-to-date
+  useEffect(() => {
+    COMMERCIAL_ARCHETYPES.forEach((arch) => {
+      const existing = db.tasks.find((t) => t.id === arch.id);
+      if (
+        existing &&
+        (existing.title !== arch.title || Number(existing.fields?.['economics--sam']) !== arch.sam)
+      ) {
+        update('tasks', arch.id, {
+          title: arch.title,
+          description: arch.taskDescription,
+          fields: {
+            ...existing.fields,
+            'economics--price': arch.price,
+            'economics--wtp': arch.wtp,
+            'economics--surplus': arch.surplus,
+            'economics--savings': arch.savings,
+            'economics--sam': arch.sam,
+          },
+        });
+      }
+    });
+  }, [db.tasks, update]);
 
   // Core theoretical microeconomics topics
   const microTopics = [
@@ -121,13 +277,13 @@ export const EconomicsView: React.FC = () => {
       name: 'Market Structure & Platform Monopsony',
       tag: 'Industrial Organization',
       icon: '🏛️',
-      summary: 'Oligopolistic platform gateway (eBay/TCGplayer) controlling 70%+ US volume vs 18,000 fragmented retail fringe.',
+      summary: 'Oligopolistic platform gateway (eBay/TCGplayer) controlling 70%+ US volume vs 29,750 commercial stores & vendors.',
       formula: 'HHI = \\sum s_i^2 > 3,800 \\text{ (Highly Concentrated Gateway)}',
       coreAnalysis: `The TCG secondary market exhibits an industrial structure of **Platform Monopsony & Gateway Monopoly**:
-1. **The Core Gateway (TCGplayer owned by eBay)**: Controls over 70% of North American online singles liquidity. Because consumers congregate there for universal search, merchants are economically coerced into listing inventory on the platform despite 10%–13% fees.
-2. **The Fragmented Retail Fringe**: ~18,000 independent local game stores and high-volume dealers compete as price-takers. Individual stores have zero market power against the platform gateway.
-3. **Contestable Market Disruption**: Because BinderPOS paused signups in Feb 2025 and charges a 2.5% GMV tax, the retail software layer is ripe for disruption by Aeethod's flat-rate, 0% commission architecture.`,
-      tradeoff: 'Stores cannot afford to leave TCGplayer completely without sacrificing 40%+ of sales; the optimal strategy is using Aeethod to divert repeat customers to their 0% commission direct channel.',
+1. **The Core Gateway (TCGplayer owned by eBay)**: Controls over 70% of North American online singles liquidity. Because consumers congregate there for universal search, merchants are economically coerced into listing inventory on the platform despite 10%–13.5% fees.
+2. **The Fragmented Commercial Fringe (29,750 SAM across US/CA/UK/EU/ANZ)**: Consists of **10,250 physical brick-and-mortar store accounts (34.5%)** and **19,500 commercial non-storefront vendors (65.5% — warehouse power sellers, card-show booth dealers, and live-stream breakers)**, plus ~57,000 casual side-hustle sellers.
+3. **The Post-July 2024 Buylist Vacuum**: When TCGplayer shut down its centralized Direct Buylist in July 2024 and BinderPOS paused signups in Feb 2025, the 64.2% of commercial sellers without a website were left stranded without a buylist—creating a massive opening for Aeethod's Instant Hosted Buylist + Flat-Rate OS.`,
+      tradeoff: 'Stores cannot afford to leave TCGplayer completely without sacrificing 40%+ of sales; the optimal strategy is using Aeethod to divert repeat customers and trade-ins to their 0% commission direct channel.',
     },
     {
       id: 'network-effects',
@@ -187,14 +343,14 @@ export const EconomicsView: React.FC = () => {
       name: 'WTP & Merchant Price Sensitivity',
       tag: 'Customer Micro-Economics',
       icon: '💵',
-      summary: 'Empirical WTP across the 5 commercial retail archetypes and price sensitivity to commission taxes.',
+      summary: 'Empirical WTP across the 5 commercial retail archetypes (10,250 Physical Stores vs 19,500 Commercial Vendors).',
       formula: 'Surplus_{merchant} = WTP_{archetype} - Price_{Aeethod}',
-      coreAnalysis: `Willingness to Pay (WTP) for software varies systematically across merchant profiles:
-- **Profile 1: Indie Single-Store LGS**: WTP is $140/mo. At Aeethod's $99/mo starter price, the merchant captures **+$41/mo consumer surplus**. Highly sensitive to setup fees.
-- **Profile 2: High-Volume Premier LGS (WPN Premium)**: WTP is $500/mo. They process $80,000/mo in GMV. On BinderPOS (2.5%), they bleed $2,000/mo. At Aeethod's $299/mo Pro tier, they capture **+$201/mo software surplus** plus **+$1,701/mo in avoided commissions**!
-- **Profile 3: Warehouse PowerSeller**: WTP is $350/mo. Pure e-commerce speed and API stability are everything.
-- **Profile 4: Multi-Store Regional Chain**: WTP is $1,200/mo. Needs multi-location sync, central warehouse transfers, and granular employee permissions.
-- **Profile 5: Traveling Show Dealer**: WTP is $180/mo. Needs offline iPad POS mode with zero latency in convention center dead zones.`,
+      coreAnalysis: `Willingness to Pay (WTP) for software varies systematically across the 29,750 commercial merchants:
+- **Profile 1: Indie Single-Store LGS (7,500 stores — 45% lack a singles website)**: WTP is $149/mo. At Aeethod's $99/mo starter price, the merchant captures **+$50/mo consumer surplus** plus an instant hosted buylist.
+- **Profile 2: High-Volume Premier LGS (2,400 stores — 95% have webstores)**: WTP is $599/mo. Processing $80k+/mo in GMV on BinderPOS (2.5%) costs $1,050+/mo. At Aeethod's $299/mo Pro tier, they capture **+$300/mo software surplus** plus **+$750–$1,540/mo in avoided commissions**!
+- **Profile 3: Online Warehouse PowerSeller (5,500 non-storefront vendors — 75% lack a website)**: WTP is $499/mo. Needs bulk foil scanning, multi-marketplace sync, and a Hosted Buylist Portal since TCGplayer killed Direct Buylist.
+- **Profile 4: Card-Show Booth & Live-Stream Vendor (14,000 non-storefront vendors — 92% lack a website)**: WTP is $149/mo. Needs an instant Hosted Buylist with Event Drop-Off QR codes, camera trade-in calculator, and eBay/TCGplayer auto-delist at $79/mo.
+- **Profile 5: Multi-Store Regional Chain (350 chains / ~1,400 rooftops)**: WTP is $1,499/mo. Needs multi-location sync, central warehouse transfers, and RBAC at $699/mo.`,
       tradeoff: 'Commission pricing punishes high-volume stores; flat-rate pricing creates massive consumer surplus that turns stores into passionate brand evangelists.',
     },
     {
@@ -1022,71 +1178,241 @@ export const EconomicsView: React.FC = () => {
       {/* ========================================================================= */}
       {activeTab === 'profiles' && (
         <div className="space-y-6 animate-slide-in">
-          <div className="flex items-center justify-between">
+          {/* Header Row */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
                 <Target className="w-4 h-4 text-emerald-400" />
-                <span>5 Commercial Retail Archetypes (WTP & Surplus Analysis)</span>
+                <span>5 Commercial Retail Archetypes — Physical Stores vs. Non-Storefront Vendors</span>
               </h3>
-              <p className="text-xs text-slate-400">
-                Data-driven segmentation of North American and global card retailers with willingness to pay and surplus capture.
+              <p className="text-xs text-slate-400 mt-0.5">
+                Empirical census across US, Canada, UK, Western Europe & ANZ (86,750 Total Sellers · 29,750 Commercial B2B SAM).
               </p>
             </div>
 
             <button
               onClick={() => navigate('/pricing-sim')}
-              className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"
+              className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 shrink-0"
             >
               <span>Open Switching ROI Simulator</span>
               <ArrowRight className="w-3 h-3" />
             </button>
           </div>
 
+          {/* ===================================================================== */}
+          {/* MARKET CENSUS BANNER: PHYSICAL STORES vs. NON-STOREFRONT VENDORS      */}
+          {/* ===================================================================== */}
+          <div className="card p-5 border-indigo-500/30 bg-[#1c1c21] space-y-5 shadow-md">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#2e2e36] pb-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                    Verified Industry Census
+                  </span>
+                  <span className="text-[11px] font-mono text-slate-400">
+                    US · Canada · UK · Western Europe · ANZ
+                  </span>
+                </div>
+                <h4 className="text-base font-black text-white">
+                  Why 65.5% of Commercial TCG Businesses Are Non-Storefront Vendors (Not Physical Shops)
+                </h4>
+                <p className="text-xs text-slate-400 max-w-3xl leading-relaxed">
+                  Legacy ERPs (BinderPOS, CrystalCommerce, Storepass) only target the <strong className="text-white">10,250 physical brick-and-mortar store accounts (34.5% of SAM)</strong>. They ignore the <strong className="text-cyan-300">19,500 commercial non-storefront vendors (65.5% of SAM)</strong>—and across both groups, <strong className="text-amber-300">19,100 businesses (64.2%) have NO functional singles/buylist website</strong>.
+                </p>
+              </div>
+
+              {/* 4 Macro Census Counters */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 shrink-0 font-mono">
+                <div className="p-3 rounded-xl bg-[#25252c] border border-[#32323c]">
+                  <div className="text-[9px] uppercase text-slate-400 font-bold">Total Active Sellers (TAM)</div>
+                  <div className="text-base font-black text-white mt-0.5">86,750</div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">Incl. 57k casuals</div>
+                </div>
+                <div className="p-3 rounded-xl bg-[#25252c] border border-indigo-500/30">
+                  <div className="text-[9px] uppercase text-indigo-300 font-bold">Physical Store Accounts</div>
+                  <div className="text-base font-black text-indigo-400 mt-0.5">10,250</div>
+                  <div className="text-[10px] text-indigo-300/80 mt-0.5">34.5% of B2B SAM</div>
+                </div>
+                <div className="p-3 rounded-xl bg-[#25252c] border border-cyan-500/30">
+                  <div className="text-[9px] uppercase text-cyan-300 font-bold">Commercial Vendors</div>
+                  <div className="text-base font-black text-cyan-400 mt-0.5">19,500</div>
+                  <div className="text-[10px] text-cyan-300/80 mt-0.5">65.5% of B2B SAM</div>
+                </div>
+                <div className="p-3 rounded-xl bg-[#25252c] border border-amber-500/30">
+                  <div className="text-[9px] uppercase text-amber-300 font-bold">No Buylist Website</div>
+                  <div className="text-base font-black text-amber-400 mt-0.5">19,100</div>
+                  <div className="text-[10px] text-amber-300/80 mt-0.5">64.2% of B2B SAM</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Visual Split Bar: Commercial SAM (29,750) */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-[11px] font-mono">
+                <span className="text-indigo-300 font-bold">
+                  🏪 PHYSICAL BRICK-AND-MORTAR STORES: 10,250 Accounts (34.5% of SAM · ~11,300 Rooftops)
+                </span>
+                <span className="text-cyan-300 font-bold">
+                  🎒 NON-STOREFRONT COMMERCIAL VENDORS: 19,500 Operations (65.5% of SAM · Zero Physical Store)
+                </span>
+              </div>
+              <div className="h-3.5 w-full rounded-full overflow-hidden flex bg-[#2a2a32] p-0.5 gap-0.5">
+                <div
+                  style={{ width: '25.2%' }}
+                  className="bg-indigo-500 h-full rounded-l-full"
+                  title="Profile 1: Indie Single-Store LGS — 7,500 stores (25.2%)"
+                />
+                <div
+                  style={{ width: '8.1%' }}
+                  className="bg-violet-500 h-full"
+                  title="Profile 2: Premier Destination LGS — 2,400 stores (8.1%)"
+                />
+                <div
+                  style={{ width: '1.2%' }}
+                  className="bg-fuchsia-500 h-full"
+                  title="Profile 5: Multi-Location Chains — 350 chains (1.2%)"
+                />
+                <div
+                  style={{ width: '18.5%' }}
+                  className="bg-cyan-500 h-full"
+                  title="Profile 3: Online Warehouse PowerSellers — 5,500 vendors (18.5%)"
+                />
+                <div
+                  style={{ width: '47.0%' }}
+                  className="bg-emerald-500 h-full rounded-r-full"
+                  title="Profile 4: Card-Show Booth & Live-Stream Vendors — 14,000 vendors (47.1%)"
+                />
+              </div>
+
+              {/* Legend */}
+              <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono text-slate-400 pt-1">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-xs bg-indigo-500 inline-block" />
+                    Indie LGS: 7,500 (25.2%)
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-xs bg-violet-500 inline-block" />
+                    Premier LGS: 2,400 (8.1%)
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-xs bg-fuchsia-500 inline-block" />
+                    Chains: 350 (1.2%)
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-xs bg-cyan-500 inline-block" />
+                    Warehouse PowerSellers: 5,500 (18.5%)
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-xs bg-emerald-500 inline-block" />
+                    Card-Show & Stream Vendors: 14,000 (47.1%)
+                  </span>
+                </div>
+                <span className="text-slate-500">
+                  +57,000 Casual / Binder Flippers excluded from B2B SAM (&lt;$1.5k/mo GMV)
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* ===================================================================== */}
+          {/* 5 COMMERCIAL RETAIL ARCHETYPE CARDS                                   */}
+          {/* ===================================================================== */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {profileTasks.map((p) => {
-              const price = p.fields?.['economics--price'];
-              const wtp = p.fields?.['economics--wtp'];
-              const surplus = p.fields?.['economics--surplus'];
-              const sam = p.fields?.['economics--sam'];
-              const elasticity = p.fields?.['economics--elasticity'];
+            {COMMERCIAL_ARCHETYPES.map((arch) => {
+              const isVendor = arch.merchantType === 'Non-Storefront Vendor';
 
               return (
                 <div
-                  key={p.id}
-                  onClick={() => setOpenTask(p.id)}
-                  className="card p-5 border-[#2e2e2e] bg-[#202020] hover:border-indigo-500/40 cursor-pointer transition space-y-3 group shadow-sm"
+                  key={arch.id}
+                  onClick={() => setOpenTask(arch.id)}
+                  className="card p-5 border-[#2e2e2e] bg-[#202020] hover:border-indigo-500/40 cursor-pointer transition space-y-3.5 group shadow-sm flex flex-col justify-between"
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="text-sm font-bold text-white group-hover:text-indigo-400 transition leading-snug">
-                        {p.title}
+                  <div className="space-y-3">
+                    {/* Top Badges & Price */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span
+                            className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+                              isVendor
+                                ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
+                                : 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30'
+                            }`}
+                          >
+                            {isVendor ? '🎒 Non-Storefront Vendor' : '🏪 Physical Storefront'}
+                          </span>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#2a2a30] text-slate-300 border border-[#383842]">
+                            {arch.samSharePct} of SAM
+                          </span>
+                          <span
+                            className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
+                              arch.noWebsitePct >= 40
+                                ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                                : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/25'
+                            }`}
+                          >
+                            🌐 {arch.websiteOwnership}
+                          </span>
+                        </div>
+
+                        <div className="text-sm font-bold text-white group-hover:text-indigo-400 transition leading-snug pt-0.5">
+                          {arch.title}
+                        </div>
                       </div>
-                      <div className="text-xs text-slate-400 mt-1 line-clamp-2">
-                        {p.description || 'Target commercial segment profile.'}
+
+                      <span className="text-xs font-mono px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold shrink-0">
+                        ${arch.price}/mo
+                      </span>
+                    </div>
+
+                    {/* Clean Who Summary */}
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      <strong className="text-white">Who:</strong> {arch.who}
+                    </p>
+
+                    {/* Structured 2x2 Operational Details Grid */}
+                    <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-[#18181c] border border-[#2a2a30] text-[11px]">
+                      <div>
+                        <span className="text-[9px] font-mono uppercase text-slate-500 block">Monthly Singles GMV</span>
+                        <span className="font-mono font-semibold text-white">{arch.monthlyGmv}</span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] font-mono uppercase text-slate-500 block">Catalog Depth</span>
+                        <span className="font-mono font-semibold text-white">{arch.skus}</span>
+                      </div>
+                      <div className="col-span-2 pt-1 border-t border-[#26262c]">
+                        <span className="text-[9px] font-mono uppercase text-slate-500 block">Current Incumbent Stack</span>
+                        <span className="font-mono text-slate-300">{arch.currentStack}</span>
                       </div>
                     </div>
 
-                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold shrink-0">
-                      ${Number(price || 0)}/mo
-                    </span>
+                    {/* Aeethod Wedge Callout */}
+                    <div className="text-[11px] text-cyan-200/90 bg-cyan-500/8 border border-cyan-500/20 rounded-lg px-3 py-2 leading-snug">
+                      <strong className="text-cyan-400 font-mono uppercase text-[10px] mr-1">Why They Buy:</strong>
+                      {arch.wedge}
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-4 gap-2 pt-2 border-t border-[#2e2e2e] text-xs font-mono">
+                  {/* Bottom 4-Column Economic Telemetry */}
+                  <div className="grid grid-cols-4 gap-2 pt-3 border-t border-[#2e2e2e] text-xs font-mono">
                     <div>
                       <span className="text-slate-500 block text-[9px] uppercase font-bold">SAM Size</span>
-                      <span className="text-white font-semibold">{Number(sam || 0).toLocaleString()} stores</span>
+                      <span className="text-white font-semibold">
+                        {arch.sam.toLocaleString()} {arch.unitLabel}
+                      </span>
                     </div>
                     <div>
                       <span className="text-slate-500 block text-[9px] uppercase font-bold">WTP</span>
-                      <span className="text-white font-semibold">${Number(wtp || 0)}/mo</span>
+                      <span className="text-white font-semibold">${arch.wtp}/mo</span>
                     </div>
                     <div>
                       <span className="text-slate-500 block text-[9px] uppercase font-bold">Surplus</span>
-                      <span className="text-emerald-400 font-semibold">+${Number(surplus || 0)}/mo</span>
+                      <span className="text-emerald-400 font-semibold">+${arch.surplus}/mo</span>
                     </div>
                     <div>
                       <span className="text-slate-500 block text-[9px] uppercase font-bold">Elasticity</span>
-                      <span className="text-indigo-400 font-semibold">{String(elasticity || '-0.8')}</span>
+                      <span className="text-indigo-400 font-semibold">{arch.elasticity.split(' ')[0]}</span>
                     </div>
                   </div>
                 </div>
