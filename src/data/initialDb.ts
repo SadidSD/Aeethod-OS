@@ -1608,8 +1608,8 @@ export const INITIAL_DB: DB = {
     {
       "id": "400b5daf-d8a2-42c5-9f29-49433289b381",
       "topicId": "economics",
-      "title": "Profile 3 — Online Warehouse PowerSeller (Non-Storefront Vendor)",
-      "description": "**Who:** Commercial online-only vendor (TCGplayer Level 4 / Direct, eBay Top-Rated, Cardmarket Powerseller), 2–8 warehouse/office staff, ZERO walk-in storefront.\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Non-Storefront Commercial Vendor (No physical retail shop) |\n| SAM Size | 5,500 operations ($300k – $3M+/yr singles across US, EU, UK, CA) |\n| Website Ownership | Only ~25% have a website · ~75% sell ONLY on TCGplayer/eBay/Cardmarket |\n| Monthly singles GMV | $40k – $250k |\n| Listings | 50k – 500k+ |\n| Current stack | SortSwift ($219–$499/mo + $249 Sync Box) + Card Dealer Pro ($99) + TCG PowerTools |\n| Current software spend | $250 – $750/mo across 2–4 disconnected tools |\n\n**Pain:** TCGplayer killed its central Direct Buylist (July 2024), leaving online vendors with no website unable to run a public buylist; cross-channel double-sales between TCGplayer & eBay.\n\n**Elasticity:** inelastic (ε ≈ −0.5) — judged on intake speed & Hosted Buylist Portal (`buylist.aeethod.com/vendor`). **Phase 1 beachhead.**",
+      "title": "Profile 3 — Online Warehouse & Home-Office PowerSeller (Vendor)",
+      "description": "**Who:** Commercial online-only vendors (5,500 large warehouse operations >$40k/mo + 4,000 full-time home-office power sellers $8k–$40k/mo on TCGplayer Level 4 / Direct, eBay Top-Rated, Cardmarket), ZERO walk-in storefront.\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Non-Storefront Commercial Vendor (23.6% of total 40,250 SAM) |\n| SAM Size | 9,500 operations (5,500 warehouses + 4,000 full-time home-office online sellers) |\n| Website Ownership | Only ~20% have a website · ~80% sell ONLY on TCGplayer/eBay/Cardmarket |\n| Monthly singles GMV | $8k – $250k |\n| Listings | 15k – 500k+ |\n| Current stack | SortSwift ($219–$499/mo + $249 Sync Box) + Card Dealer Pro ($99) + TCG PowerTools |\n| Current software spend | $150 – $750/mo across 2–4 disconnected tools |\n\n**Pain:** TCGplayer killed its central Direct Buylist (July 2024), leaving online vendors with no website unable to run a public buylist; cross-channel double-sales between TCGplayer & eBay.\n\n**Elasticity:** inelastic (ε ≈ −0.5) — judged on intake speed & Hosted Buylist Portal (`buylist.aeethod.com/vendor`). **Phase 1 beachhead.**",
       "status": "todo",
       "priority": "high",
       "assignee": "",
@@ -1623,7 +1623,7 @@ export const INITIAL_DB: DB = {
         "economics--wtp": 499,
         "economics--surplus": 250,
         "economics--savings": 375,
-        "economics--sam": 5500,
+        "economics--sam": 9500,
         "economics--elasticity": "inelastic",
         "economics--phase": "phase-1-beachhead"
       },
@@ -1633,13 +1633,13 @@ export const INITIAL_DB: DB = {
       "sprintId": null,
       "epicId": null,
       "createdAt": "2026-10-04T16:52:42.701Z",
-      "updatedAt": "2026-10-12T05:30:00.000Z"
+      "updatedAt": "2026-10-12T05:42:00.000Z"
     },
     {
       "id": "fb124dd7-a62e-4768-9857-39805e2c16ec",
       "topicId": "economics",
-      "title": "Profile 4 — Card-Show Booth Dealer & Live-Stream Vendor (Non-Storefront)",
-      "description": "**Who:** Weekend convention/card-show table vendors (Collect-A-Con 900–1,300 booths/show, Pokémon Regionals, local hotel shows) & full-time Whatnot / TikTok Live / IG slab & singles dealers (1–3 staff, ZERO physical store).\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Non-Storefront Commercial Vendor (47.1% of total commercial SAM!) |\n| SAM Size | 14,000 active commercial vendors (~6,500 circuit booth dealers + ~7,500 live-stream/IG vendors) |\n| Website Ownership | <8% have a website · 92%+ have ZERO website (rely on IG bio, Whatnot, eBay) |\n| Revenue | $8k – $60k/mo ($10k – $50k per major show weekend) |\n| SKUs | 500 – 15,000 high-velocity singles, holos & PSA/CGC slabs |\n| Current stack | Collectr / Shiny / Rare Candy calculator ($0–$15/mo) + manual eBay/TCGplayer delisting |\n\n**Pain:** 92% have no website to accept pre-show Event Drop-Off buylists; 25-minute manual calculator bottleneck at crowded show booths; selling a slab at a show leaves it live on eBay.\n\n**Pricing:** $79/mo (includes Instant Hosted Buylist Portal + QR Table Sign + Camera Trade-In Calculator + eBay/TCGplayer auto-delist). **Elasticity:** bifurcated.",
+      "title": "Profile 4 — Card-Show Booth Dealer & Live-Stream Vendor (Vendor)",
+      "description": "**Who:** Weekend convention/card-show table vendors (~8,500 across Collect-A-Con 900–1,300 booths/show, Pokémon Regionals, local hotel shows) & ~12,000 active Whatnot / TikTok Live / IG slab & singles dealers (1–3 staff, ZERO physical store).\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Non-Storefront Commercial Vendor (50.9% of total 40,250 SAM!) |\n| SAM Size | 20,500 active vendors (~8,500 circuit/local booth dealers + ~12,000 live-stream/IG vendors) |\n| Website Ownership | <8% have a website · 92%+ have ZERO website (rely on IG bio, Whatnot, eBay) |\n| Revenue | $3k – $60k/mo ($10k – $50k per major show weekend) |\n| SKUs | 500 – 15,000 high-velocity singles, holos & PSA/CGC slabs |\n| Current stack | Collectr / Shiny / Rare Candy calculator ($0–$15/mo) + manual eBay/TCGplayer delisting |\n\n**Pain:** 92% have no website to accept pre-show Event Drop-Off buylists; 25-minute manual calculator bottleneck at crowded show booths; selling a slab at a show leaves it live on eBay.\n\n**Pricing:** $79/mo (includes Instant Hosted Buylist Portal + QR Table Sign + Camera Trade-In Calculator + eBay/TCGplayer auto-delist). **Elasticity:** bifurcated.",
       "status": "todo",
       "priority": "normal",
       "assignee": "",
@@ -1653,7 +1653,7 @@ export const INITIAL_DB: DB = {
         "economics--wtp": 149,
         "economics--surplus": 70,
         "economics--savings": 65,
-        "economics--sam": 14000,
+        "economics--sam": 20500,
         "economics--elasticity": "bifurcated",
         "economics--phase": "phase-2-scale"
       },
@@ -1663,7 +1663,7 @@ export const INITIAL_DB: DB = {
       "sprintId": null,
       "epicId": null,
       "createdAt": "2026-10-04T16:52:42.701Z",
-      "updatedAt": "2026-10-12T05:30:00.000Z"
+      "updatedAt": "2026-10-12T05:42:00.000Z"
     },
     {
       "id": "724948ae-5c88-46eb-9b65-a4c9b5da0366",
