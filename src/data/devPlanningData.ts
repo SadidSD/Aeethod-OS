@@ -47,10 +47,10 @@ export interface DevWorkItem {
 export const INITIAL_SAAS_PRODUCTS: SaaSProductPillar[] = [
 {
     id: "prod-scanning-cards",
-    name: "Scanning Cards",
-    tagline: "High-speed AI computer-vision card scanning & bulk identification",
+    name: "AI Optical Scanner & Sifter Management OS",
+    tagline: "High-speed AI computer-vision card scanning, mobile binder app & Roca Sorter companion management (0% GMV fee)",
     icon: "📸",
-    targetAudience: "Mid to high volume seller (processing 5,000–50,000+ cards/week)",
+    targetAudience: "Commercial TCG warehouses (Roca / bulk sorters), mobile convention dealers (Profile 4 binder app & desk rigs), and high-volume trade-in stores",
     pricingModel: "$99 - $299/mo ($0 commission)",
     status: "In Development",
     targetCustomerProblem: `1. [Critical P0] [Profile 3, Profile 4] Microscopic Variant, Stamp & Edition Misidentification:
@@ -60,51 +60,81 @@ Modern card databases span over 250,000 unique prints. Many high-value cards sha
 Holographic foil cards feature micro-etched prismatic diffraction gratings. Under overhead store fluorescent lights or point-source camera LEDs, direct specular reflections blow out optical sensors in pure white saturation across card titles, artwork, and set symbols. Generic computer vision models fail completely without cross-polarized lighting, anti-glare diffuser hardware, or specular highlight normalization algorithms.
 
 3. [Critical P0] [Profile 3, Profile 2] Mechanical Feeder Jams, Friction Roller Wear & High-Value Card Damage:
-Automated sorting machines (Roca, CardBot, SortSwift Sorter) rely on rubber friction pick-up rollers and drive belts. Cards vary in paper stock, coating gloss, and thickness (standard 300gsm paper vs 55pt/100pt relic cards vs warped/curled foils). Mechanical feeders jam frequently, slip on glossy surfaces, or catch card edges, creasing or scuffing cards. A mechanical jam on a $500 Gem Mint vintage single creates catastrophic store liability.
+Automated sorting machines (Roca, CardBot, SortSwift Sorter) rely on rubber friction pick-up rollers and pneumatic drive belts. Cards vary in paper stock, coating gloss, and thickness (standard 300gsm paper vs 55pt/100pt relic cards vs warped/curled foils). Mechanical feeders jam frequently, slip on glossy surfaces, or catch card edges, creasing or scuffing cards. A mechanical jam on a $500 Gem Mint vintage single creates catastrophic store liability.
 
-4. [Critical P0] [Profile 3, Profile 4] Sub-Second Edge Inference vs. Prohibitive Cloud API Latency/Token Bills:
+4. [Critical P0] [Profile 3, Profile 2] Roca Sorter Proprietary "CSV Hell" & The Missing Live Inventory Bridge:
+Industrial sorters like the Roca Robotics TCG Sorter operate as closed data silos. After sorting 5,000 cards across physical bins, the software merely outputs raw, unstandardized CSV spreadsheets with proprietary column naming. Merchants are forced to manually clean, format, and upload CSVs into Shopify, BinderPOS, or TCGplayer. Because there is no real-time bi-directional API pipeline, cards remain unlisted for 24–48 hours, or inventory counts corrupt during import errors, completely severing physical binning from live digital commerce.
+
+5. [Critical P0] [Profile 3, Profile 2] Sifter Mid-Batch Jam De-Synchronization & Offset Inventory Corruption:
+When a mechanical sifter running at 1,000 cards/hour encounters a curled foil jam or a double-card pull midway through a 1,500-card hopper run, the hardware halts. Existing companion software loses the exact index position of the scanned image versus which card was physically diverted into which drop bin. The digital record becomes offset by +1 or -1 card from the physical stack, causing subsequent cards to be filed under the wrong physical bin coordinates and corrupting the entire batch ledger.
+
+6. [Critical P0] [Profile 3, Profile 4] Sub-Second Edge Inference vs. Prohibitive Cloud API Latency/Token Bills:
 Automated bulk sorting requires sub-100ms per card recognition (10–15 cards per second on conveyor systems, under 200ms on manual hand-placement). Sending high-res frames to cloud vision APIs (OpenAI GPT-4o, AWS Rekognition, Google Cloud Vision) takes 1,200ms–2,500ms of network latency per card and costs $0.01–$0.03 per image. Processing 50,000 cards a month generates $500–$1,500 in cloud compute bills alone while stalling sorting throughput to an unviable crawl.
 
-5. [Critical P0] [Profile 3, Profile 4] Subjective Grading Subjectivity & Sub-Pixel Edge/Corner Whitening Blindness:
+7. [Critical P0] [Profile 3, Profile 4] Subjective Grading Subjectivity & Sub-Pixel Edge/Corner Whitening Blindness:
 Human inspection grades across strict 5-tier scales (NM, LP, MP, HP, DMG). Standard optical camera setups lack the sub-pixel resolution and multi-angle lighting needed to distinguish a 0.2mm white corner nick, edge whitening, or surface micro-indentation from camera sensor dust. Misgrading an LP card as NM triggers negative marketplace feedback, return shipping costs, and seller account defect penalties.
 
-6. [Critical P0] [Profile 3, Profile 4] Counterfeit Detection & High-End Proxy Blindness:
+8. [Critical P0] [Profile 3, Profile 4] Counterfeit Detection & High-End Proxy Blindness:
 High-resolution counterfeits, fake holographic foil stamps, and re-backed Collector's Edition cards are increasingly sophisticated. Optical scanners without high-magnification macro zoom, rosette dot-pattern analysis, and black-core inspection blindly catalog fake cards into active inventory, creating massive legal liability and brand destruction when shipped to customers.
 
-7. [High P1] [Profile 3, Profile 1] Astronomical Hardware Capital Costs ($8,000–$40,000) & Punitive Machine Leases:
-Commercial industrial sorting machines require massive capital outlays: CardCastle CardBot cost ~$8,000 upfront; Roca Sorters require $1,500+/month leases plus thousands in setup deposits and freight; SortSwift Super Sorter costs $4,299 to $24,999 plus a $199/month device scan fee. Over 95% of local game stores cannot afford these astronomical equipment barriers and are locked out of automated intake.
+9. [High P1] [Profile 3, Profile 2] Roca Sorter Physical-to-Digital Bin Coordinate Handoff (The "Chaos Shelf Binding"):
+A 16-to-32-bin mechanical sorter drops cards into physical bins (e.g., Bin 1 = High Value Modern, Bin 4 = Commander Staples, Bin 8 = Bulk C/U). When the operator unloads physical Bin 1 into warehouse storage, existing software has no concept of 3D spatial coordinates. The software doesn't tell the warehouse WMS: 'These 45 cards are now bound to Box B-14 -> Row 2'. The cards sit in a physical holding tray until someone manually creates an inventory batch, defeating the efficiency of the sorter.
 
-8. [High P1] [Profile 3] Real-World Throughput Degradation & Constant Operator Babysitting:
+10. [High P1] [Profile 3, Profile 2] Silent Conveyor Misidentification & Missing Optical Quarantine Review:
+At 1,000+ cards/hour on high-speed conveyor belts, optical cameras misclassify 2%–4% of complex foil variants, alternate arts, or foreign languages. Current sifter software silently dumps these misidentified cards into standard inventory bins without flagging an anomaly. Weeks later, an online buyer orders a $150 serialized print, but the fulfillment clerk discovers a $1.50 regular copy was filed in that slot. Sifter management requires an asynchronous 'Optical Exception Quarantine Queue' that separates low-confidence classifications into a physical reject bin and prompts a 5-second human desktop review.
+
+11. [High P1] [Profile 3, Profile 4] 9-Pocket Binder Multi-Card Frame Detection & Segmentation:
+Customers and collectors bring in trade-in binders containing 9 to 12 cards per page across 50 pages (450–600 cards). Removing every card individually from tight plastic binder pockets for manual single-card scanning takes 45 to 60 minutes and risks creasing card corners. Scanner apps lack multi-object bounding-box segmentation to detect, de-skew, crop, and identify all 9 or 12 cards simultaneously in a single high-resolution camera snapshot.
+
+12. [High P1] [Profile 3, Profile 4] Desk-Mount Hands-Free Triggering & Auto-Motion / Foot-Pedal Integration:
+During high-volume manual desk scanning (Profile 3 intake stations & Profile 4 convention booths), operators hold cards with both hands. Forcing the user to tap a phone screen or press a keyboard key for every card causes severe wrist strain and slows intake to 4 cards per minute. Scanner apps lack intelligent hands-free auto-motion capture (triggering frame capture the microsecond a card enters the bounding box and stabilizes) or USB/Bluetooth foot-pedal shutter integration to achieve 25–40 cards per minute.
+
+13. [High P1] [Profile 3, Profile 2] Multi-Pass Radix Sorter Logistics & Re-Feed Instructions:
+Commercial mechanical sorters (Roca) have a limited number of physical sorting bins (typically 10 to 32 pockets). Sorting a 5,000-card collection into 50+ expansion sets or alphabetical order requires 2 to 4 sequential passes through the machine. Existing companion software lacks intelligent Radix/Bucket Multi-Pass guidance telling the machine operator: 'Pass 1 complete. Stack Bins 1–4 into Hopper for Pass 2 to sub-sort by Set Number; Bins 5–8 are finalized and ready for binning.'
+
+14. [High P1] [Profile 3, Profile 1] Astronomical Hardware Capital Costs ($8,000–$40,000) & Punitive Machine Leases:
+Commercial industrial sorting machines require massive capital outlays: CardCastle CardBot cost ~$8,000 upfront; Roca Sorters require $1,500+/month leases plus thousands in setup deposits and freight; SortSwift Super Sorter costs $4,299 to $24,999 plus a $199/month device scan fee. Over 95% of local game stores cannot afford these astronomical equipment barriers and are locked out of automated intake unless software turns everyday smartphones and $40 webcams into commercial-grade scanners.
+
+15. [High P1] [Profile 3] Real-World Throughput Degradation & Constant Operator Babysitting:
 While machine manufacturers advertise theoretical speeds of 1,000+ cards per hour, real-world LGS testing reveals actual speeds of only 400–600 cards per hour. Friction misfeeds, hopper double-pulls, flipped cards, and optical ambiguities force staff to babysit machines continuously, defeating the promise of unattended automation.
 
-9. [High P1] [Profile 3, Profile 4] Multi-Language OCR & Non-Latin Character Recognition:
+16. [High P1] [Profile 3, Profile 4] Multi-Language OCR & Non-Latin Character Recognition:
 Global TCGs feature Japanese, Korean, Traditional Chinese, Simplified Chinese, German, French, Italian, and Spanish prints. Japanese Pokémon cards share identical artwork with English counterparts but have completely different set codes, numbering, rarities, and secondary market values. Vision pipelines trained strictly on English fail on non-Latin characters, requiring tedious manual intervention.
 
-10. [High P1] [Profile 3, Profile 4] Sleeves, Toploaders & Semi-Rigid Plastic Glare Artifacts:
+17. [High P1] [Profile 3, Profile 4] Sleeves, Toploaders & Semi-Rigid Plastic Glare Artifacts:
 Customers bring valuable cards into stores inside matte Dragon Shield sleeves, penny sleeves, scratched plastic toploaders, or semi-rigid holders. Manually unsleeving 500 cards takes hours; scanning through protective plastic introduces severe scratches, dust artifacts, and matte diffusion that confuse optical feature matching.
 
-11. [High P1] [Profile 3] Curled Foil "Pringle" Feeding & Focal Plane Warping:
+18. [High P1] [Profile 3] Curled Foil "Pringle" Feeding & Focal Plane Warping:
 Modern foil cards curl aggressively due to ambient relative humidity changes. Severely curled cards catch on mechanical intake gates, cause hopper feeding jams, and present uneven focal planes where card borders are sharp while card centers are out of optical focus.
 
-12. [High P1] [Profile 4, Profile 3] Mobile Phone Camera Overheating & Ergonomic Fatigue:
+19. [High P1] [Profile 4, Profile 3] Mobile Phone Camera Overheating & Ergonomic Fatigue:
 Mobile scanning apps (Ludex, Delver Lens, Dragon Shield, TCGplayer app) demand continuous high-framerate GPU processing. After 15–20 minutes of continuous scanning, phone processors overheat, battery levels plunge, and screen brightness throttles. Furthermore, clerks holding an iPhone over cards for a 6-hour shift suffer severe repetitive wrist strain and neck fatigue.
 
-13. [Medium P2] [Profile 3, Profile 4] Textless, Full-Art & Borderless Cards Lacking Title Banners:
+20. [Medium P2] [Profile 3, Profile 2] Dynamic Inventory-Aware Sorter Routing (Not Just Static Sets):
+Roca companion software only allows sorting by static card attributes (e.g. Set, Color, Rarity). Merchants cannot configure intelligent commercial sorting rules based on live store inventory (e.g. 'Route cards to Bin 1 if Shopify stock = 0; route to Bin 2 if market price > $15; route to Bin 3 if store already holds 16+ copies to divert into Wholesale Bulk'). Lacking live inventory logic, sorting machines create mountains of unneeded duplicate singles.
+
+21. [Medium P2] [Profile 3, Profile 4] Textless, Full-Art & Borderless Cards Lacking Title Banners:
 Modern Secret Lairs, textless player rewards, and full-art showcase treatments lack traditional title banners, card frames, or set symbols. Systems relying on optical character recognition (OCR) of title text fail completely, requiring pure visual embedding hashes across complex artistic illustrations.
 
-14. [Medium P2] [Profile 3, Profile 4] Real-Time Multi-Marketplace Catalog & Price Indexing Latency:
+22. [Medium P2] [Profile 3, Profile 4] Real-Time Multi-Marketplace Catalog & Price Indexing Latency:
 Once a card image is classified into a set and card number, the engine must immediately fetch real-time market pricing (TCGplayer Market/Low/Direct, eBay Sold listings, Cardmarket 7-day average) without hitting rate limits or causing scanner UI freezing.
 
-15. [Medium P2] [Profile 3] Auto-Orientation & Inverted Feed Latency:
+23. [Medium P2] [Profile 3, Profile 2] High-Speed Conveyor Condition Blindness & Automatic Near-Mint Over-Grading:
+Because mechanical sorters fling cards past optical sensors at 30ms shutter speeds under uniform top-down lighting, they cannot detect light scratches, binder indentations, or back whitening. As a result, sorter software blindly labels 100% of sorted singles as 'Near Mint'. Merchants who upload these batches straight to TCGplayer suffer a 12%–18% customer return rate from buyers complaining about received Lightly Played or Moderately Played cards.
+
+24. [Medium P2] [Profile 3] Auto-Orientation & Inverted Feed Latency:
 Cards placed upside-down, inverted, or slightly rotated in manual scanning beds or automated chutes must undergo sub-10ms affine transformation and orientation normalization without stalling image processing queues.
 
-16. [Medium P2] [Profile 4, Profile 1, Profile 2] Zero-Day Prerelease Indexing Gaps:
+25. [Medium P2] [Profile 4, Profile 1, Profile 2] Zero-Day Prerelease Indexing Gaps:
 Set prerelease events occur 5–7 days before publisher databases and third-party market APIs publish finalized card IDs and pricing data. Vision systems that lack zero-day manual override queues fail completely during the highest-margin 72-hour launch window.
 
-17. [Low P3] [Profile 3, Profile 2] Cardboard Dust, Roller Lint & Optical Sensor Fogging:
+26. [Low P3] [Profile 3, Profile 2] Local Machine Daemon Resiliency vs. Warehouse Wi-Fi Drops:
+Industrial sorters operating in steel-frame warehouse environments suffer frequent Wi-Fi dead zones. Cloud-dependent sorter software that relies on continuous WebSocket pings freezes the physical sorting machine whenever an internet blip occurs, idling a machine that costs thousands of dollars a month. Sorter management requires a resilient local edge daemon that buffers sorting queues in local SQLite/IndexedDB and syncs when connectivity restores.
+
+27. [Low P3] [Profile 3, Profile 2] Cardboard Dust, Roller Lint & Optical Sensor Fogging:
 Bulk card sorting generates significant paper lint and microscopic cardboard dust. Over a 4-hour sorting shift, dust builds up on camera glass lenses and rubber roller surfaces, steadily degrading optical clarity and roller grip until physical cleaning is performed.
 
-18. [Low P3] [Profile 3, Profile 1] Direct Thermal Barcode Label Generation & Hardware Desync:
+28. [Low P3] [Profile 3, Profile 1] Direct Thermal Barcode Label Generation & Hardware Desync:
 After scanning and identifying cards, stores need immediate thermal barcode labels (Zebra/Dymo) printed so cards can be filed directly into bins. Scanner tools lacking raw ESC/POS / ZPL printer driver hooks force clerks to export CSV files to external label software.`,
 
     problemsToBuild: `1. Ultra Fine-Grained Visual Classification at Massive Scale:
@@ -120,15 +150,30 @@ Bulk sorting requires sub-100ms per card throughput (at least 10–20 cards per 
 Designing mechanical automated feeder hardware is notoriously difficult because cards vary in thickness (standard 300gsm paper vs. thick 55pt/100pt relic cards vs. foiled curled 'pringle' cards). Rubber pick-up rollers can scuff glossy card surfaces or ding fragile corners, turning a $500 Gem Mint card into an LP card and causing massive liability.
 
 5. Sub-Second Catalog & Market Price Indexing:
-Once a card image is classified into a set and card number, the engine must immediately fetch real-time market pricing (TCGplayer Market, Low, Mid, Direct, Cardmarket 7-day average, eBay Sold listings) and map it to the merchant's exact POS inventory schema in <50ms without hitting rate limits.`,
+Once a card image is classified into a set and card number, the engine must immediately fetch real-time market pricing (TCGplayer Market, Low, Mid, Direct, Cardmarket 7-day average, eBay Sold listings) and map it to the merchant's exact POS inventory schema in <50ms without hitting rate limits.
+
+6. High-Speed Sifter Machine Integration & CSV-Bypassing Direct Sync Daemon:
+Engineering a local communication daemon with Roca Robotics and industrial conveyor sorting machines that bypasses closed proprietary CSV dumps. Real-time mapping of physical machine bins (Trays 1–32) to warehouse chaos coordinate tags, mid-batch jam offset recovery, and an Asynchronous Optical Quarantine stream for <98% confidence scans.
+
+7. Multi-Card Bounding-Box Segmentation for 9-Pocket Binder Pages:
+YOLOv10 / RT-DETR edge model localized on 9-pocket and 12-pocket binder sheets, segmenting and perspective-correcting all cards simultaneously in sub-300ms from a single high-resolution camera capture without taking cards out of sleeves.
+
+8. Hands-Free Desk-Rig Motion Detection & Foot-Pedal Shutter Pipeline:
+Zero-click automated shutter triggering via optical-flow stillness detection, paired with standard WebHID / USB foot-pedal drivers for rapid 40-cards-per-minute ergonomic intake on fixed overhead camera mounts.`,
 
     competitorAnalysis: `1. CardCastle (CardBot):
 • Architecture & Implementation: Engineered a custom mechanical desktop sorting machine with 3D-printed hopper chutes, stepper motors, rubber drive belts, and an internal camera wired to an on-board Raspberry Pi that sends crops to their cloud servers.
 • Fatal Flaws & Shortcomings: Prohibitively expensive ($5,000–$10,000+ upfront lease/purchase price, putting it out of reach for 90% of local game stores); physical belt jams frequently on slightly warped/curled foil cards; max throughput capped at only 500–600 cards per hour; frequent mechanical maintenance required; tightly locked into CardCastle's proprietary software subscription with no direct sync into Shopify or BinderPOS.
 
-2. Rocata / Roca Sorter:
-• Architecture & Implementation: High-end industrial sorting machine with pneumatic suction cups and conveyor belts designed for large commercial distributors.
-• Fatal Flaws & Shortcomings: Enormous industrial footprint; costs $25,000 to $40,000+; requires high-pressure air compressors and dedicated facility space; completely inaccessible to ordinary brick-and-mortar retail shops.
+2. Roca Robotics / Roca Sorter & Sifter:
+• Architecture & Implementation: High-end industrial pneumatic sorting machine with suction cups, conveyor belts, and camera chutes designed for commercial operations processing 100,000+ cards/month.
+• Fatal Flaws & Software Gaps:
+  1. Proprietary CSV Silo: Companion software only exports rigid, proprietary CSV files requiring tedious spreadsheet re-mapping before uploading into Shopify/TCGplayer.
+  2. No WMS Spatial Shelf Binding: Physical sorting bins are disconnected from warehouse 3D shelf coordinates.
+  3. Mid-Batch Jam Count Corruption: When a feeder jam occurs mid-run, digital counters offset from physical drop bins, corrupting the inventory ledger.
+  4. Silent Misidentification: Blasts misidentified cards into active bins without an optical exception review quarantine.
+  5. High-Speed Condition Blindness: Labels 100% of cards as Near Mint, driving up buyer disputes on Lightly Played cards.
+  6. Enormous Financial Barrier: Costs $25,000 to $40,000+ or $1,500–$3,000/month leases plus maintenance fees.
 
 3. Mobile Phone Apps (Decktradr, Ludex, Delver Lens, Dragon Shield, TCGplayer App):
 • Architecture & Implementation: Mobile iOS/Android camera apps using phone cameras. Captured single frames are pre-processed with OpenCV edge detection and sent to cloud backend servers for embedding matching against card databases.

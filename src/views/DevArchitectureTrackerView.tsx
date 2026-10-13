@@ -140,6 +140,28 @@ export const DevArchitectureTrackerView: React.FC = () => {
     };
   }, [saasProducts]);
 
+  // Problem profile counts for targeting filters
+  const problemCounts = useMemo(() => {
+    let total = 0, target = 0, p3 = 0, p4 = 0, later = 0;
+    saasProducts.forEach((p) => {
+      const problems = p.targetCustomerProblem
+        ? p.targetCustomerProblem.split(/(?:^|\n+)(?=\d+\.\s)/).map((s) => s.trim()).filter(Boolean)
+        : [];
+      problems.forEach((prob) => {
+        total++;
+        const match = prob.match(/\[(Profile[^\]]+)\]/i);
+        const pStr = match ? match[1] : '';
+        const isP3 = pStr.includes('3');
+        const isP4 = pStr.includes('4');
+        if (isP3 || isP4) target++;
+        else later++;
+        if (isP3) p3++;
+        if (isP4) p4++;
+      });
+    });
+    return { all: total, target, p3, p4, later };
+  }, [saasProducts]);
+
   const filteredProducts = useMemo(() => {
     return saasProducts.filter((p) => {
       const matchSearch =
@@ -670,11 +692,11 @@ export const DevArchitectureTrackerView: React.FC = () => {
         {/* Filter Buttons */}
         <div className="flex flex-wrap items-center gap-1.5 w-full lg:w-auto">
           {[
-            { id: 'All', label: 'All Problems', count: 90 },
-            { id: 'Target', label: '⭐ Core Target (P3 & P4)', count: 73 },
-            { id: 'P3', label: '🟣 Profile 3 Only', count: 68 },
-            { id: 'P4', label: '🟢 Profile 4 Only', count: 35 },
-            { id: 'Later', label: '⏳ Later Production (P1/P2/P5)', count: 17 }
+            { id: 'All', label: 'All Problems', count: problemCounts.all },
+            { id: 'Target', label: '⭐ Core Target (P3 & P4)', count: problemCounts.target },
+            { id: 'P3', label: '🟣 Profile 3 Only', count: problemCounts.p3 },
+            { id: 'P4', label: '🟢 Profile 4 Only', count: problemCounts.p4 },
+            { id: 'Later', label: '⏳ Later Production (P1/P2/P5)', count: problemCounts.later }
           ].map((tab) => {
             const isActive = profileFilter === tab.id;
             return (
