@@ -62,6 +62,12 @@ interface CommercialArchetype {
   elasticity: string;
   phase: string;
   taskDescription: string;
+  primaryChannels?: string[];
+  primaryProducts?: string[];
+  operationalBottlenecks?: string;
+  externalCatalyst?: string;
+  decisionSpeed?: string;
+  virality?: string;
 }
 
 const COMMERCIAL_ARCHETYPES: CommercialArchetype[] = [
@@ -85,6 +91,12 @@ const COMMERCIAL_ARCHETYPES: CommercialArchetype[] = [
     savings: 150,
     elasticity: 'elastic (ε ≈ −1.2)',
     phase: 'Phase 2 Scale',
+    primaryChannels: ['LGS Facebook Groups', 'Direct Cold Outreach', 'Regional Distributor Reps'],
+    primaryProducts: ['Turnkey Hosted Buylist', 'Countertop AI Scanner', 'Shopify/Square 2-Way Sync'],
+    externalCatalyst: 'BinderPOS paused new store signups in Feb 2025; local stores seeking modern alternatives without commissions.',
+    operationalBottlenecks: 'Clerk counter time spent pricing bulk stacks manually, inventory desyncs between physical shelf and Shopify.',
+    decisionSpeed: '1–3 weeks (requires owner and staff alignment).',
+    virality: 'Moderate (Local players trade in cards, word of mouth among nearby store owners).',
     taskDescription: `**Who:** Neighbourhood physical hobby shop, 1–3 staff, 1 counter register (WPN / Play! Pokémon / Bandai TCG+).\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Physical Storefront (18.6% of total 40,250 SAM) |\n| SAM Size | 7,500 stores (US, CA, UK, W. Europe, ANZ) |\n| Website Ownership | ~55% have basic Shopify/Square site · ~45% have NO singles/buylist site |\n| Monthly singles GMV | $12k – $35k |\n| Singles SKUs | 10k – 35k |\n| Current stack | Shopify/Square POS + TCGplayer + spreadsheets / manual counter calculator |\n| Current software spend | $49 – $150/mo |\n\n**Elasticity:** elastic (ε ≈ −1.2) — sensitive to fixed monthly overhead and avoids % commissions.\n\n**Savings vs incumbent:** vs SortSwift Core ($249/mo) or BinderPOS ($150 base + 2.5% commission ≈ $275/mo) → saves ~$150+/mo.\n\n**Killer features:** Instant hosted/embedded Buylist Portal, phone-camera foil/variant trade-in scanner, 0% commission.`,
   },
   {
@@ -107,6 +119,12 @@ const COMMERCIAL_ARCHETYPES: CommercialArchetype[] = [
     savings: 1000,
     elasticity: 'extremely-inelastic (ε ≈ −0.3)',
     phase: 'Phase 1 Beachhead',
+    primaryChannels: ['Direct Executive Outreach', 'GAMA Expo', 'WPN Premier Forums'],
+    primaryProducts: ['High-Throughput Optical Scanner', 'Zero-Commission Sync Engine', 'Walk-in Kiosk Buylist'],
+    externalCatalyst: 'Paying $900–$1,688/mo in 2.5% BinderPOS commission taxes; looking to escape commission lock-in.',
+    operationalBottlenecks: 'Walk-in trade-in lines backing up during Friday Night Magic, high commission fees penalizing growth.',
+    decisionSpeed: '2–4 weeks (requires staff retraining and data migration).',
+    virality: 'High industry influence (other LGS owners copy what Premier stores use).',
     taskDescription: `**Who:** Large tournament/destination store, 5–15 staff, 2–4 registers, dedicated walk-in trade-in counter.\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Physical Storefront (6.0% of total 40,250 SAM) |\n| SAM Size | 2,400 stores (US, CA, UK, W. Europe, ANZ) |\n| Website Ownership | ~95% have a dedicated webstore (Shopify / BinderPOS / Storepass) |\n| Monthly singles GMV | $60k – $180k (≈45% online) |\n| Singles SKUs | 75k – 250k+ |\n| Current stack | BinderPOS ($150–$350 + 2.5%) / SortSwift Core+ ($369) / Storepass ($99–$999) |\n\n**Incumbent cost:**\n- $80k GMV → ~$36k online → $150 + $900 ≈ **$1,050/mo**\n- $150k GMV → ~$67.5k online → $150 + $1,688 ≈ **$1,840/mo**\n\nSavings at $299 flat: **~$750 – $1,540/mo**. BinderPOS paused new signups in Feb 2025 & TCGplayer shut down Direct Buylist in July 2024.\n\n**Elasticity:** extremely inelastic (ε ≈ −0.3). **Phase 1 beachhead.**`,
   },
   {
@@ -119,17 +137,23 @@ const COMMERCIAL_ARCHETYPES: CommercialArchetype[] = [
     websiteOwnership: '~20% Have Website · ~80% Have NO Website (Marketplaces Only)',
     noWebsitePct: 80,
     who: 'Online-only commercial vendors (5,500 large warehouse operations >$40k/mo + 4,000 full-time home-office sellers $8k–$40k/mo on TCGplayer Level 4, eBay & Cardmarket). ZERO physical store.',
-    monthlyGmv: '$8k – $250k/mo',
+    monthlyGmv: '$15k – $150k+/mo',
     skus: '15k – 500k+ listings',
-    currentStack: 'SortSwift ($219–$499 + $249 Box) + Card Dealer Pro ($99)',
-    wedge: 'TCGplayer killed Direct Buylist (July 2024); Aeethod gives the 80% without a website an Instant Hosted Buylist + 2-way Sync + Bulk/Foil Scanner.',
+    currentStack: 'SortSwift ($219–$499/mo + $249 Router Box + $12.99/sync slot) + Card Dealer Pro ($99) + Spreadsheets',
+    wedge: 'TCGplayer killed Direct Buylist (July 2024); Aeethod gives the 80% without a website an Instant Hosted Buylist + 2-way Sync + Smart Chaos Warehousing.',
     price: 249,
     wtp: 499,
     surplus: 250,
     savings: 375,
     elasticity: 'inelastic (ε ≈ −0.5)',
     phase: 'Phase 1 Beachhead',
-    taskDescription: `**Who:** Commercial online-only vendors (5,500 large warehouse operations >$40k/mo + 4,000 full-time home-office power sellers $8k–$40k/mo on TCGplayer Level 4 / Direct, eBay Top-Rated, Cardmarket), ZERO walk-in storefront.\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Non-Storefront Commercial Vendor (23.6% of total 40,250 SAM) |\n| SAM Size | 9,500 operations (5,500 warehouses + 4,000 full-time home-office online sellers) |\n| Website Ownership | Only ~20% have a website · ~80% sell ONLY on TCGplayer/eBay/Cardmarket |\n| Monthly singles GMV | $8k – $250k |\n| Listings | 15k – 500k+ |\n| Current stack | SortSwift ($219–$499/mo + $249 Sync Box) + Card Dealer Pro ($99) + TCG PowerTools |\n| Current software spend | $150 – $750/mo across 2–4 disconnected tools |\n\n**Pain:** TCGplayer killed its central Direct Buylist (July 2024), leaving online vendors with no website unable to run a public buylist; cross-channel double-sales between TCGplayer & eBay.\n\n**Elasticity:** inelastic (ε ≈ −0.5) — judged on intake speed & Hosted Buylist Portal (buylist.aeethod.com/vendor). **Phase 1 beachhead.**`,
+    primaryChannels: ['Reddit (r/magicTCG, r/eBaySellerAdvice)', 'Discord (Vendor Networks)', 'GEO (AI Search: Perplexity, ChatGPT)'],
+    primaryProducts: ['Smart Chaos Warehousing OS', 'Real-Time Omnichannel Sync', 'Turnkey Hosted Buylist Portal'],
+    externalCatalyst: 'July 2024 TCGplayer Direct Buylist shutdown left 80% with no website desperate for a turnkey buylist portal.',
+    operationalBottlenecks: 'Morning picking walks through alphabetical boxes (2–4 hrs), API rate limits (429 errors), cross-marketplace double-sales, lack of FIFO tax COGS.',
+    decisionSpeed: 'Instant (<2 hours, sole owner-operator swiping credit card at 2 AM).',
+    virality: 'Low public virality (operates from private warehouse/basement), but high Discord peer-to-peer referral.',
+    taskDescription: `**Who:** Online-only commercial vendors (5,500 large warehouse operations >$40k/mo + 4,000 full-time home-office power sellers $8k–$40k/mo on TCGplayer Level 4 / Direct, eBay Top-Rated, Cardmarket). ZERO walk-in storefront.\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Non-Storefront Commercial Vendor (23.6% of total 40,250 SAM) |\n| SAM Size | 9,500 operations (5,500 warehouses + 4,000 full-time home-office online sellers) |\n| Website Ownership | Only ~20% have a website · ~80% sell ONLY on TCGplayer/eBay/Cardmarket |\n| Monthly singles GMV | $15,000 – $150,000+/mo |\n| Catalog Depth | 15,000 – 500,000+ active listings |\n| Current stack | SortSwift ($219–$499/mo + $249 Sync Box + $12.99/sync slot) + Card Dealer Pro ($99) + Spreadsheets |\n| Current software spend | $350 – $750/mo across 2–4 disconnected tools |\n| Pricing / WTP | $249/mo (WTP: $499/mo | Surplus: +$250/mo | Inelastic ε ≈ −0.5) |\n| Decision-Making Speed | Instant (<2 hours, sole owner-operator swiping credit card at 2 AM) |\n| Churn Risk | Extremely Low (<1.5%/mo — sticky warehouse infrastructure) |\n\n### 🕒 Operational Day-in-the-Life & Hour-by-Hour Bottlenecks\n- **08:00 - 10:30 (Picking Nightmare):** Receives 150–400 orders overnight across TCGplayer and eBay. If storing alphabetically by set in 5,000-count monster boxes, pickers walk 4 miles pulling singles. A single misfiled card halts picking for 15 minutes.\n- **10:30 - 13:00 (Packing & Shipping):** Bubble mailers and thermal labels via ShipStation. Desyncs cause oversells of high-end singles, leading to eBay defect strikes and negative feedback.\n- **13:00 - 16:30 (Intake Bottleneck):** Opening incoming trade-in packages. Manually typing set numbers, holo variants, and conditions takes 8–12 human hours.\n- **16:30 - 19:00 (Repricing & Sync Lag):** Repricing triggers thousands of API calls, hitting HTTP 429 rate limits or Cloudflare challenge blocks.\n\n### ⚡ The External Shock: July 2024 TCGplayer Direct Buylist Shutdown\nTCGplayer terminated its central Direct Buylist program for 3rd-party sellers. Over 80% of Profile 3 vendors have NO website. Without TCGplayer Direct Buylist, their source of inventory evaporated. They urgently need a Turnkey Hosted Buylist Portal (buylist.aeethod.com/vendor) to source cards directly from players.\n\n### 💥 Incumbent Stack Vulnerabilities\n- **SortSwift:** Nickel-and-dimes with $12.99/month extra sync slots and forces a $249 hardware router box that drops connection.\n- **Card Dealer Pro:** Camera calibration drops and misses Japanese foil subset variants.\n- **Spreadsheets:** Lacks automated FIFO Cost-of-Goods-Sold (COGS) tracking, costing $2,000+ in accounting reconciliation fees.\n\n### 🎯 Aeethod OS Solution Mapping\n1. **Smart Chaos Warehousing OS (P0):** Random bin assignment (e.g. Bin B-14, Slot 12). Cuts pick/pack time by 65%. Zero alphabetizing needed.\n2. **Real-Time Omnichannel Sync Engine (P0):** Sub-second two-way inventory lock across eBay and TCGplayer. Prevents double-sales and 429 API throttling.\n3. **Turnkey Hosted Buylist Portal (P0):** Instant branded buylist link for their bio and Discord with automated shipping manifests and cash/credit payout rules.\n\n### 📣 Marketing & Acquisition Playbook\n- **Reddit (r/magicTCG, r/PokemonTCG, r/eBaySellerAdvice):** Technical breakdown posts showing how dynamic chaos binning cuts 4-hour pick times to 45 minutes.\n- **Discord (Vendor Buyout & Trade Networks):** Video clips demonstrating sub-second inventory locking during high-volatility set release days.\n- **GEO (Generative Engine Optimization):** Technical documentation targeting AI search queries like *\"best inventory software for TCGplayer sellers\"* and *\"how to manage TCG inventory without alphabetizing\"*.`,
   },
   {
     id: 'fb124dd7-a62e-4768-9857-39805e2c16ec',
@@ -141,17 +165,23 @@ const COMMERCIAL_ARCHETYPES: CommercialArchetype[] = [
     websiteOwnership: '<8% Have Website · 92%+ Have ZERO Website (IG / Whatnot / eBay)',
     noWebsitePct: 92,
     who: 'Weekend convention/card-show booth vendors (~8,500 across Collect-A-Con, Regionals & local hotel shows) + ~12,000 active Whatnot / TikTok / IG slab & singles dealers (ZERO physical store).',
-    monthlyGmv: '$3k – $60k/mo',
+    monthlyGmv: '$3k – $60k/mo ($10k – $50k per show weekend)',
     skus: '500 – 15,000 slabs & singles',
-    currentStack: 'Collectr / Shiny / Rare Candy ($0–$15) + Manual eBay/TCGplayer',
-    wedge: 'Instant Hosted Buylist URL (`buylist.aeethod.com/vendor`) + Event Drop-Off QR Table Tent + 3-second Camera Trade-In Calculator + Auto-Delist.',
+    currentStack: 'Collectr / Shiny / Rare Candy ($0–$15) + Manual phone calculator + Manual eBay/TCGplayer delisting',
+    wedge: 'Instant Hosted Buylist URL (buylist.aeethod.com/vendor) + Event Drop-Off QR Table Tent + 3-second Camera Trade-In Calculator + Pelican Case Auto-Delist.',
     price: 79,
     wtp: 149,
     surplus: 70,
     savings: 65,
     elasticity: 'bifurcated',
     phase: 'Phase 2 Scale',
-    taskDescription: `**Who:** Weekend convention/card-show table vendors (~8,500 across Collect-A-Con 900–1,300 booths/show, Pokémon Regionals, local hotel shows) & ~12,000 active Whatnot / TikTok Live / IG slab & singles dealers (1–3 staff, ZERO physical store).\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Non-Storefront Commercial Vendor (50.9% of total 40,250 SAM!) |\n| SAM Size | 20,500 active vendors (~8,500 circuit/local booth dealers + ~12,000 live-stream/IG vendors) |\n| Website Ownership | <8% have a website · 92%+ have ZERO website (rely on IG bio, Whatnot, eBay) |\n| Revenue | $3k – $60k/mo ($10k – $50k per major show weekend) |\n| SKUs | 500 – 15,000 high-velocity singles, holos & PSA/CGC slabs |\n| Current stack | Collectr / Shiny / Rare Candy calculator ($0–$15/mo) + manual eBay/TCGplayer delisting |\n\n**Pain:** 92% have no website to accept pre-show Event Drop-Off buylists; 25-minute manual calculator bottleneck at crowded show booths; selling a slab at a show leaves it live on eBay.\n\n**Pricing:** $79/mo (includes Instant Hosted Buylist Portal + QR Table Sign + Camera Trade-In Calculator + eBay/TCGplayer auto-delist). **Elasticity:** bifurcated.`,
+    primaryChannels: ['Instagram (Reels, DMs to booth vendors)', 'In-Person Card Shows (Collect-A-Con table tents)', 'Discord (Buyout/Trade servers)', 'GEO'],
+    primaryProducts: ['Event Drop-Off QR Table Tent Buylist', 'Pelican Case Multi-Location Soft-Lock', 'Mobile Camera AI Scanner'],
+    externalCatalyst: 'Explosion of Whatnot / TikTok Live auctions + Collect-A-Con weekend conventions + IRS 1099-K enforcement requiring formal inventory logs.',
+    operationalBottlenecks: 'Manual calculator & scrap-paper trade math at crowded booths ($200–$500 in lost margin/weekend), selling a card in-person while it double-sells on eBay, live-stream auction inventory reconciliation.',
+    decisionSpeed: 'Same-day impulse signup right before a weekend convention or live-stream ($79/mo).',
+    virality: 'Viral Trojan Horse: Acrylic QR table tents at Collect-A-Con seen by hundreds of collectors and neighboring booth dealers.',
+    taskDescription: `**Who:** Weekend convention/card-show table vendors (~8,500 across Collect-A-Con 900–1,300 booths/show, Pokémon Regionals, local hotel shows) & ~12,000 active Whatnot / TikTok Live / IG slab & singles dealers (1–3 staff, ZERO physical store).\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Non-Storefront Commercial Vendor (50.9% of total 40,250 SAM!) |\n| SAM Size | 20,500 active vendors (~8,500 circuit/local booth dealers + ~12,000 live-stream/IG vendors) |\n| Website Ownership | <8% have a website · 92%+ have ZERO website (rely on IG bio, Whatnot, eBay) |\n| Monthly singles GMV | $3,000 – $60,000/mo ($10,000 – $50,000 per show weekend) |\n| Catalog Depth | 500 – 15,000 high-velocity singles, holos & PSA/CGC slabs |\n| Current stack | Collectr / Shiny / Rare Candy calculator ($0–$15/mo) + manual phone calculator + manual eBay/TCGplayer delisting |\n| Current software spend | $0 – $50/mo |\n| Pricing / WTP | $79/mo (WTP: $149/mo | Surplus: +$70/mo | Bifurcated elasticity) |\n| Decision-Making Speed | Same-day impulse signup right before a weekend convention or live-stream ($79/mo) |\n| Virality Factor | Extremely High (Public show booths, live streams, Instagram stories, QR table tents) |\n\n### 🕒 Operational Day-in-the-Life & Hour-by-Hour Bottlenecks\n- **Card Show Trade Night Frenzy:** Crowds surround the 8-ft table with trade binders. The dealer juggles a phone checking TCGplayer comps, a calculator doing 70% cash / 80% trade math, and watching display cases to prevent theft. Calculation mistakes lose $200–$500 in margin every weekend.\n- **The Pelican Case Desync Disaster:** A customer buys a $350 raw Charizard off the table for cash. While packing it, the exact same card sells on eBay because the dealer couldn't manually delete the listing on a spotty convention Wi-Fi connection. Results in eBay order cancellation strikes.\n- **Live-Stream Auction Reconciliations:** On Whatnot or TikTok Live, running 30-second sudden-death auctions. Slabs fly off the shelf while tracked on paper notes. Post-stream reconciliation takes 2–3 hours late at night.\n\n### ⚡ The External Shock: Live-Stream Explosion & IRS 1099-K Reporting\nWhatnot and TikTok Live exploded into multi-million dollar live-shopping channels, while Collect-A-Con expanded to 900–1,300 vendor booths per show. Concurrently, IRS 1099-K tax reporting rules require hobby dealers to formalize inventory tracking and digital receipts.\n\n### 💥 Why Current Tools Fail Them Completely\n- **LGS Software (BinderPOS, CrystalCommerce):** Completely unusable: requires desktop hardware, barcode scanners, high fixed monthly retainers, and 2.5% GMV taxes.\n- **Collectr / Shiny:** Great for casual collection tracking, but has zero multi-channel sync, zero buylist checkout, and no trade-in soft-locks.\n- **Spreadsheets on iPhone:** Editing Google Sheets on a phone in a loud hall with spotty LTE is impossible.\n\n### 🎯 Aeethod OS Solution Mapping & The Viral Trojan Horse\n1. **Event Drop-Off QR Table Tent & Mobile Buylist ($79/mo):** Acrylic table-tent QR stand. Attendees scan the QR code to submit trade-in cards, choose cash or trade credit, and hand them over.\n2. **Pelican Case Multi-Location Soft-Lock (P0):** Mobile toggle marks cards as \"In Show Case\", instantly delisting or quantity-zeroing them on eBay and TCGplayer until the show ends.\n3. **Mobile Camera AI Scanner (P0):** High-speed phone camera scanning to identify raw singles, holos, and slabs in 2 seconds flat with automatic trade margin calculation.\n\n### 📣 Marketing & Acquisition Playbook\n- **Instagram (Reels, Stories, DMs):** High-energy reels contrasting manual calculator math vs. Aeethod QR table-tent checkout. Direct outreach to vendors tagged at upcoming Collect-A-Con shows.\n- **In-Person Viral Flywheel:** Dealers at card shows see neighboring booths using the Aeethod QR table tent and instant trade-in app. Dealers ask: *\"What software is that?\"*\n- **Discord:** Active presence in vendor buyout, trade, and regional convention planning channels.\n- **GEO:** Content targeting queries like *\"how to manage inventory at card shows\"* and *\"card show inventory sync with eBay\"*.`,
   },
   {
     id: '724948ae-5c88-46eb-9b65-a4c9b5da0366',
@@ -173,6 +203,12 @@ const COMMERCIAL_ARCHETYPES: CommercialArchetype[] = [
     savings: 2500,
     elasticity: 'completely-inelastic (ε ≈ −0.1)',
     phase: 'Phase 3 Expansion',
+    primaryChannels: ['Enterprise Direct Sales', 'Industry Conferences', 'LinkedIn Retail Execs'],
+    primaryProducts: ['Enterprise Multi-Warehouse Ledger', 'Inter-Store Transfer Routing', 'Custom ERP Connectors'],
+    externalCatalyst: 'Siloed inventory across 5+ locations causing localized stockouts and high custom software maintenance fees.',
+    operationalBottlenecks: 'Inability to view real-time fleet inventory across all stores, high per-seat / per-store software pricing.',
+    decisionSpeed: '1–3 months (requires enterprise RFP, SLA review, IT approval).',
+    virality: 'Low public virality, high enterprise industry case study value.',
     taskDescription: `**Who:** 3–15 physical stores + central fulfillment depot, 20–100 staff.\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Physical Storefront Chain (~1,400 total rooftops across 350 parent organizations) |\n| SAM Size | 350 enterprise chains (~500 globally) |\n| Website Ownership | 100% have enterprise websites |\n| Monthly singles GMV | $150k – $800k+ |\n| SKUs | 500k – 2M+ |\n| Current stack | Storepass Enterprise ($1,500 – $4,999/mo), TCG Sync Enterprise ($2,499/mo), custom ERP |\n\n**Pain:** Inventory siloed per store, no automated inter-store transfers, high per-location software fees.\n\n**Elasticity:** completely inelastic (ε ≈ −0.1) — decided on uptime, RBAC, SLA. **Phase 3.**`,
   },
 ];
@@ -199,7 +235,9 @@ export const EconomicsView: React.FC = () => {
       const existing = db.tasks.find((t) => t.id === arch.id);
       if (
         existing &&
-        (existing.title !== arch.title || Number(existing.fields?.['economics--sam']) !== arch.sam)
+        (existing.title !== arch.title ||
+          Number(existing.fields?.['economics--sam']) !== arch.sam ||
+          existing.description !== arch.taskDescription)
       ) {
         update('tasks', arch.id, {
           title: arch.title,
@@ -343,13 +381,13 @@ export const EconomicsView: React.FC = () => {
       name: 'WTP & Merchant Price Sensitivity',
       tag: 'Customer Micro-Economics',
       icon: '💵',
-      summary: 'Empirical WTP across the 5 commercial retail archetypes (10,250 Physical Stores vs 19,500 Commercial Vendors).',
+      summary: 'Empirical WTP across the 5 commercial retail archetypes (10,250 Physical Stores vs 30,000 Commercial Vendors — 40,250 SAM).',
       formula: 'Surplus_{merchant} = WTP_{archetype} - Price_{Aeethod}',
-      coreAnalysis: `Willingness to Pay (WTP) for software varies systematically across the 29,750 commercial merchants:
+      coreAnalysis: `Willingness to Pay (WTP) for software varies systematically across the 40,250 commercial merchants:
 - **Profile 1: Indie Single-Store LGS (7,500 stores — 45% lack a singles website)**: WTP is $149/mo. At Aeethod's $99/mo starter price, the merchant captures **+$50/mo consumer surplus** plus an instant hosted buylist.
 - **Profile 2: High-Volume Premier LGS (2,400 stores — 95% have webstores)**: WTP is $599/mo. Processing $80k+/mo in GMV on BinderPOS (2.5%) costs $1,050+/mo. At Aeethod's $299/mo Pro tier, they capture **+$300/mo software surplus** plus **+$750–$1,540/mo in avoided commissions**!
-- **Profile 3: Online Warehouse PowerSeller (5,500 non-storefront vendors — 75% lack a website)**: WTP is $499/mo. Needs bulk foil scanning, multi-marketplace sync, and a Hosted Buylist Portal since TCGplayer killed Direct Buylist.
-- **Profile 4: Card-Show Booth & Live-Stream Vendor (14,000 non-storefront vendors — 92% lack a website)**: WTP is $149/mo. Needs an instant Hosted Buylist with Event Drop-Off QR codes, camera trade-in calculator, and eBay/TCGplayer auto-delist at $79/mo.
+- **Profile 3: Online Warehouse & Home-Office PowerSeller (9,500 non-storefront vendors — 80% lack a website)**: WTP is $499/mo. Needs Smart Chaos Warehousing, sub-second multi-marketplace sync, and a Turnkey Hosted Buylist Portal since TCGplayer killed Direct Buylist. At $249/mo, captures **+$250/mo consumer surplus**.
+- **Profile 4: Card-Show Booth & Live-Stream Vendor (20,500 non-storefront vendors — 92% lack a website)**: WTP is $149/mo. Needs an instant Hosted Buylist with Event Drop-Off QR table tents, camera trade-in calculator, and Pelican Case auto-delist at $79/mo. Captures **+$70/mo consumer surplus**.
 - **Profile 5: Multi-Store Regional Chain (350 chains / ~1,400 rooftops)**: WTP is $1,499/mo. Needs multi-location sync, central warehouse transfers, and RBAC at $699/mo.`,
       tradeoff: 'Commission pricing punishes high-volume stores; flat-rate pricing creates massive consumer surplus that turns stores into passionate brand evangelists.',
     },
@@ -1386,6 +1424,52 @@ export const EconomicsView: React.FC = () => {
                         <span className="font-mono text-slate-300">{arch.currentStack}</span>
                       </div>
                     </div>
+
+                    {/* Marketing Acquisition Channels */}
+                    {arch.primaryChannels && arch.primaryChannels.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                        <span className="text-[9px] font-mono uppercase text-slate-500 font-bold">Channels:</span>
+                        {arch.primaryChannels.map((ch) => (
+                          <span
+                            key={ch}
+                            className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-medium"
+                          >
+                            {ch}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Core Suite Fit */}
+                    {arch.primaryProducts && arch.primaryProducts.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[9px] font-mono uppercase text-slate-500 font-bold">Core Suite:</span>
+                        {arch.primaryProducts.map((prod) => (
+                          <span
+                            key={prod}
+                            className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-medium"
+                          >
+                            {prod}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* External Catalyst Banner */}
+                    {arch.externalCatalyst && (
+                      <div className="text-[11px] text-amber-200/90 bg-amber-500/10 border border-amber-500/25 rounded-lg px-2.5 py-1.5 leading-snug">
+                        <strong className="text-amber-400 font-mono uppercase text-[9px] mr-1">⚡ Catalyst:</strong>
+                        {arch.externalCatalyst}
+                      </div>
+                    )}
+
+                    {/* Operational Bottlenecks */}
+                    {arch.operationalBottlenecks && (
+                      <div className="text-[11px] text-rose-200/90 bg-rose-500/8 border border-rose-500/20 rounded-lg px-2.5 py-1.5 leading-snug">
+                        <strong className="text-rose-400 font-mono uppercase text-[9px] mr-1">🛑 Daily Bottleneck:</strong>
+                        {arch.operationalBottlenecks}
+                      </div>
+                    )}
 
                     {/* Aeethod Wedge Callout */}
                     <div className="text-[11px] text-cyan-200/90 bg-cyan-500/8 border border-cyan-500/20 rounded-lg px-3 py-2 leading-snug">

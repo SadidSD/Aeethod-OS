@@ -1605,8 +1605,8 @@
     {
       "id": "400b5daf-d8a2-42c5-9f29-49433289b381",
       "topicId": "economics",
-      "title": "Profile 3 — Warehouse PowerSeller (TCGplayer / eBay / Cardmarket)",
-      "description": "**Who:** online-only operation, 3–8 warehouse staff, no walk-ins.\n\n| Metric | Value |\n|---|---|\n| SAM | 3,500 operations (> $500k/yr singles) |\n| Monthly singles GMV | $50k – $250k |\n| Listings | 50k – 500k+ |\n| Current stack | TCG Automate + SortSwift + generic repricers + TCG PowerTools (EU) + scripts |\n| Current software spend | $350 – $900/mo across 3–4 vendors |\n\n**Pain:** cross-channel desync → double-sales → marketplace defects. Intake labour bottleneck.\n\n**Elasticity:** inelastic (ε ≈ −0.5) — judged on labour saved. **Phase 1 beachhead.**",
+      "title": "Profile 3 — Online Warehouse & Home-Office PowerSeller (Vendor)",
+      "description": "**Who:** Online-only commercial vendors (5,500 large warehouse operations >$40k/mo + 4,000 full-time home-office power sellers $8k–$40k/mo on TCGplayer Level 4 / Direct, eBay Top-Rated, Cardmarket). ZERO walk-in storefront.\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Non-Storefront Commercial Vendor (23.6% of total 40,250 SAM) |\n| SAM Size | 9,500 operations (5,500 warehouses + 4,000 full-time home-office online sellers) |\n| Website Ownership | Only ~20% have a website · ~80% sell ONLY on TCGplayer/eBay/Cardmarket |\n| Monthly singles GMV | $15,000 – $150,000+/mo |\n| Catalog Depth | 15,000 – 500,000+ active listings |\n| Current stack | SortSwift ($219–$499/mo + $249 Sync Box + $12.99/sync slot) + Card Dealer Pro ($99) + Spreadsheets |\n| Current software spend | $350 – $750/mo across 2–4 disconnected tools |\n| Pricing / WTP | $249/mo (WTP: $499/mo | Surplus: +$250/mo | Inelastic ε ≈ −0.5) |\n| Decision-Making Speed | Instant (<2 hours, sole owner-operator swiping credit card at 2 AM) |\n| Churn Risk | Extremely Low (<1.5%/mo — sticky warehouse infrastructure) |\n\n### 🕒 Operational Day-in-the-Life & Hour-by-Hour Bottlenecks\n- **08:00 - 10:30 (Picking Nightmare):** Receives 150–400 orders overnight across TCGplayer and eBay. If storing alphabetically by set in 5,000-count monster boxes, pickers walk 4 miles pulling singles. A single misfiled card halts picking for 15 minutes.\n- **10:30 - 13:00 (Packing & Shipping):** Bubble mailers and thermal labels via ShipStation. Desyncs cause oversells of high-end singles, leading to eBay defect strikes and negative feedback.\n- **13:00 - 16:30 (Intake Bottleneck):** Opening incoming trade-in packages. Manually typing set numbers, holo variants, and conditions takes 8–12 human hours.\n- **16:30 - 19:00 (Repricing & Sync Lag):** Repricing triggers thousands of API calls, hitting HTTP 429 rate limits or Cloudflare challenge blocks.\n\n### ⚡ The External Shock: July 2024 TCGplayer Direct Buylist Shutdown\nTCGplayer terminated its central Direct Buylist program for 3rd-party sellers. Over 80% of Profile 3 vendors have NO website. Without TCGplayer Direct Buylist, their source of inventory evaporated. They urgently need a Turnkey Hosted Buylist Portal (`buylist.aeethod.com/vendor`) to source cards directly from players.\n\n### 💥 Incumbent Stack Vulnerabilities\n- **SortSwift:** Nickel-and-dimes with $12.99/month extra sync slots and forces a $249 hardware router box that drops connection.\n- **Card Dealer Pro:** Camera calibration drops and misses Japanese foil subset variants.\n- **Spreadsheets:** Lacks automated FIFO Cost-of-Goods-Sold (COGS) tracking, costing $2,000+ in accounting reconciliation fees.\n\n### 🎯 Aeethod OS Solution Mapping\n1. **Smart Chaos Warehousing OS (P0):** Random bin assignment (e.g. Bin B-14, Slot 12). Cuts pick/pack time by 65%. Zero alphabetizing needed.\n2. **Real-Time Omnichannel Sync Engine (P0):** Sub-second two-way inventory lock across eBay and TCGplayer. Prevents double-sales and 429 API throttling.\n3. **Turnkey Hosted Buylist Portal (P0):** Instant branded buylist link for their bio and Discord with automated shipping manifests and cash/credit payout rules.\n\n### 📣 Marketing & Acquisition Playbook\n- **Reddit (`r/magicTCG`, `r/PokemonTCG`, `r/eBaySellerAdvice`):** Technical breakdown posts showing how dynamic chaos binning cuts 4-hour pick times to 45 minutes.\n- **Discord (Vendor Buyout & Trade Networks):** Video clips demonstrating sub-second inventory locking during high-volatility set release days.\n- **GEO (Generative Engine Optimization):** Technical documentation targeting AI search queries like *\"best inventory software for TCGplayer sellers\"* and *\"how to manage TCG inventory without alphabetizing\"*.",
       "status": "todo",
       "priority": "high",
       "assignee": "",
@@ -1620,7 +1620,7 @@
         "economics--wtp": 499,
         "economics--surplus": 250,
         "economics--savings": 375,
-        "economics--sam": 3500,
+        "economics--sam": 9500,
         "economics--elasticity": "inelastic",
         "economics--phase": "phase-1-beachhead"
       },
@@ -1630,13 +1630,13 @@
       "sprintId": null,
       "epicId": null,
       "createdAt": "2026-10-04T16:52:42.701Z",
-      "updatedAt": "2026-10-04T16:52:42.701Z"
+      "updatedAt": "2026-10-13T23:30:00.000Z"
     },
     {
       "id": "fb124dd7-a62e-4768-9857-39805e2c16ec",
       "topicId": "economics",
-      "title": "Profile 4 — Traveling Circuit / Show Dealer",
-      "description": "**Who:** convention & card-show vendors (Collect-A-Con, MagicCon, regionals), 1–3 staff.\n\n| Metric | Value |\n|---|---|\n| SAM | 4,600 active dealers |\n| Revenue per show weekend | $10k – $60k |\n| SKUs | 500 – 5,000 high-value (slabs, vintage) |\n| Current stack | Square / SnapSale ($39–$89) / DeckTradr ($49–$129) / Double Holo |\n\n**Pain:** no signal in convention halls; items sold at the booth stay live online.\n\n**Pricing:** $79/mo or $29 per-show pass. **Elasticity:** bifurcated — elastic off-season, inelastic during shows. Savings ≈ $0 on software; value is offline reliability + auto-delist.",
+      "title": "Profile 4 — Card-Show Booth Dealer & Live-Stream Vendor (Vendor)",
+      "description": "**Who:** Weekend convention/card-show table vendors (~8,500 across Collect-A-Con 900–1,300 booths/show, Pokémon Regionals, local hotel shows) & ~12,000 active Whatnot / TikTok Live / IG slab & singles dealers (1–3 staff, ZERO physical store).\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Non-Storefront Commercial Vendor (50.9% of total 40,250 SAM!) |\n| SAM Size | 20,500 active vendors (~8,500 circuit/local booth dealers + ~12,000 live-stream/IG vendors) |\n| Website Ownership | <8% have a website · 92%+ have ZERO website (rely on IG bio, Whatnot, eBay) |\n| Monthly singles GMV | $3,000 – $60,000/mo ($10,000 – $50,000 per show weekend) |\n| Catalog Depth | 500 – 15,000 high-velocity singles, holos & PSA/CGC slabs |\n| Current stack | Collectr / Shiny / Rare Candy calculator ($0–$15/mo) + manual phone calculator + manual eBay/TCGplayer delisting |\n| Current software spend | $0 – $50/mo |\n| Pricing / WTP | $79/mo (WTP: $149/mo | Surplus: +$70/mo | Bifurcated elasticity) |\n| Decision-Making Speed | Same-day impulse signup right before a weekend convention or live-stream ($79/mo) |\n| Virality Factor | Extremely High (Public show booths, live streams, Instagram stories, QR table tents) |\n\n### 🕒 Operational Day-in-the-Life & Hour-by-Hour Bottlenecks\n- **Card Show Trade Night Frenzy:** Crowds surround the 8-ft table with trade binders. The dealer juggles a phone checking TCGplayer comps, a calculator doing 70% cash / 80% trade math, and watching display cases to prevent theft. Calculation mistakes lose $200–$500 in margin every weekend.\n- **The Pelican Case Desync Disaster:** A customer buys a $350 raw Charizard off the table for cash. While packing it, the exact same card sells on eBay because the dealer couldn't manually delete the listing on a spotty convention Wi-Fi connection. Results in eBay order cancellation strikes.\n- **Live-Stream Auction Reconciliations:** On Whatnot or TikTok Live, running 30-second sudden-death auctions. Slabs fly off the shelf while tracked on paper notes. Post-stream reconciliation takes 2–3 hours late at night.\n\n### ⚡ The External Shock: Live-Stream Explosion & IRS 1099-K Reporting\nWhatnot and TikTok Live exploded into multi-million dollar live-shopping channels, while Collect-A-Con expanded to 900–1,300 vendor booths per show. Concurrently, IRS 1099-K tax reporting rules require hobby dealers to formalize inventory tracking and digital receipts.\n\n### 💥 Why Current Tools Fail Them Completely\n- **LGS Software (BinderPOS, CrystalCommerce):** Completely unusable: requires desktop hardware, barcode scanners, high fixed monthly retainers, and 2.5% GMV taxes.\n- **Collectr / Shiny:** Great for casual collection tracking, but has zero multi-channel sync, zero buylist checkout, and no trade-in soft-locks.\n- **Spreadsheets on iPhone:** Editing Google Sheets on a phone in a loud hall with spotty LTE is impossible.\n\n### 🎯 Aeethod OS Solution Mapping & The Viral Trojan Horse\n1. **Event Drop-Off QR Table Tent & Mobile Buylist ($79/mo):** Acrylic table-tent QR stand. Attendees scan the QR code to submit trade-in cards, choose cash or trade credit, and hand them over.\n2. **Pelican Case Multi-Location Soft-Lock (P0):** Mobile toggle marks cards as \"In Show Case\", instantly delisting or quantity-zeroing them on eBay and TCGplayer until the show ends.\n3. **Mobile Camera AI Scanner (P0):** High-speed phone camera scanning to identify raw singles, holos, and slabs in 2 seconds flat with automatic trade margin calculation.\n\n### 📣 Marketing & Acquisition Playbook\n- **Instagram (Reels, Stories, DMs):** High-energy reels contrasting manual calculator math vs. Aeethod QR table-tent checkout. Direct outreach to vendors tagged at upcoming Collect-A-Con shows.\n- **In-Person Viral Flywheel:** Dealers at card shows see neighboring booths using the Aeethod QR table tent and instant trade-in app. Dealers ask: *\"What software is that?\"*\n- **Discord:** Active presence in vendor buyout, trade, and regional convention planning channels.\n- **GEO:** Content targeting queries like *\"how to manage inventory at card shows\"* and *\"card show inventory sync with eBay\"*.",
       "status": "todo",
       "priority": "normal",
       "assignee": "",
@@ -1647,10 +1647,10 @@
       "parentId": null,
       "fields": {
         "economics--price": 79,
-        "economics--wtp": 119,
-        "economics--surplus": 40,
-        "economics--savings": 0,
-        "economics--sam": 4600,
+        "economics--wtp": 149,
+        "economics--surplus": 70,
+        "economics--savings": 65,
+        "economics--sam": 20500,
         "economics--elasticity": "bifurcated",
         "economics--phase": "phase-2-scale"
       },
@@ -1660,7 +1660,7 @@
       "sprintId": null,
       "epicId": null,
       "createdAt": "2026-10-04T16:52:42.701Z",
-      "updatedAt": "2026-10-04T16:52:42.701Z"
+      "updatedAt": "2026-10-13T23:30:00.000Z"
     },
     {
       "id": "724948ae-5c88-46eb-9b65-a4c9b5da0366",
