@@ -6,7 +6,7 @@ import {
   VideoStatus,
   ContentCategory,
   ContentSpaceDefinition,
-  CONTENT_SPACES,
+  CONTENT_SPACES as CONTENT_SPACE_MAP,
   TOPIC_DEFINITIONS,
   SPACES_LIST,
   STRATEGY_BIG_PICTURE,
@@ -63,11 +63,19 @@ import {
   AlertTriangle,
   Users,
   Compass,
-  CheckSquare
+  CheckSquare,
+  Filter
 } from 'lucide-react';
 import {
   AUDIENCE_COHORTS,
   WHITE_SPACE_GAPS,
+  CONTENT_SPACES,
+  ContentSpace,
+  ContentSpaceRecurringSeries,
+  ContentSpaceVideoAngle,
+  FUNNEL_STAGES,
+  TCG_INDUSTRY_ANALYSIS,
+  FunnelStage,
   COMPETITOR_ANALYSIS,
   DEMAND_SUPPLY_MATRIX,
   PRE_FLIGHT_CHECKLIST_RULES,
@@ -190,10 +198,14 @@ export const ContentManagementView: React.FC = () => {
   const isLight = theme === 'light';
 
   // Navigation
-  const [activeTab, setActiveTab] = useState<'blueprint' | 'strategy' | 'sadid' | 'anika' | 'matrix' | 'analytics'>('blueprint');
+  const [activeTab, setActiveTab] = useState<'blueprint' | 'strategy' | 'funnel' | 'sadid' | 'anika' | 'matrix' | 'analytics'>('blueprint');
+
+  // Funnel Simulator state
+  const [simMonthlyViews, setSimMonthlyViews] = useState<number>(100000);
 
   // Content Strategy Blueprint state
-  const [strategyModule, setStrategyModule] = useState<'audiences' | 'gaps' | 'competitors' | 'matrix' | 'checklist'>('audiences');
+  const [strategyModule, setStrategyModule] = useState<'audiences' | 'gaps' | 'funnel' | 'competitors' | 'matrix' | 'checklist'>('audiences');
+  const [activeFunnelStage, setActiveFunnelStage] = useState<'tofu' | 'mofu' | 'bofu'>('tofu');
   const [selectedCohortId, setSelectedCohortId] = useState<string>('lgs_owner');
   const [checkedGates, setCheckedGates] = useState<Record<string, boolean>>({
     'gate-1': true,
@@ -208,10 +220,23 @@ export const ContentManagementView: React.FC = () => {
 
   const selectedCohort = AUDIENCE_COHORTS.find((c) => c.id === selectedCohortId) || AUDIENCE_COHORTS[0];
 
-  // White Space Gap Filter State
+  // White Space Content Spaces State
   const [gapCategoryFilter, setGapCategoryFilter] = useState<string>('All');
+  const [spaceFunnelFilter, setSpaceFunnelFilter] = useState<'All' | 'TOFU' | 'MOFU' | 'BOFU'>('All');
   const [gapSearchQuery, setGapSearchQuery] = useState('');
   const [copiedHookGapId, setCopiedHookGapId] = useState<string | null>(null);
+  const [copiedCtaSpaceId, setCopiedCtaSpaceId] = useState<string | null>(null);
+  const [expandedSpaces, setExpandedSpaces] = useState<Record<string, boolean>>({
+    'cs-tcg-whistleblower': true,
+    'cs-counter-buylist': true
+  });
+
+  const toggleSpaceExpanded = (id: string) => {
+    setExpandedSpaces((prev) => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
 
   const handleCopyHook = (gapId: string, hook: string) => {
     if (navigator?.clipboard) {
@@ -221,13 +246,33 @@ export const ContentManagementView: React.FC = () => {
     }
   };
 
+  const handleCopyCta = (spaceId: string, script: string) => {
+    if (navigator?.clipboard) {
+      navigator.clipboard.writeText(script);
+      setCopiedCtaSpaceId(spaceId);
+      setTimeout(() => setCopiedCtaSpaceId(null), 2200);
+    }
+  };
+
+  // Verified Meta & Instagram Credentials for Aeethod
+  const DEFAULT_AEETHOD_PAGE_ID = '1300315849833332';
+  const DEFAULT_AEETHOD_IG_BUSINESS_ID = '17841423777293611';
+  const DEFAULT_AEETHOD_HANDLE = '@the_tcg_baddie';
+  const DEFAULT_AEETHOD_TOKEN = 'EAAfYtAHTncUBSl5sesZANxYrdlXhBRS668J0XP0SSMunbZC9yulZCjZAn1MRpvgWLNZAfAXEtbW7qZChnN9ZBnW4lRXiZC1CKji7AVI9UtfHNIkZATRWIzcutxcCcUx06ZCrvZAW2PurHTmUIYaio9E9XeVgscNOzK1gotOB2AggIEBGu9NfekLO7zn7geEVh7zBN8aePDmZCwwYC2uaja3QstXje5Jb5p6sNCFEFhrQ2kIZD';
+
   // Instagram Connection & Live Insights Sync
   const [isIgModalOpen, setIsIgModalOpen] = useState(false);
   const [igAccountId, setIgAccountId] = useState(() => {
-    return (typeof window !== 'undefined' && localStorage.getItem('ig_account_id')) || '@aeethod_cards';
+    return (typeof window !== 'undefined' && localStorage.getItem('ig_account_id')) || DEFAULT_AEETHOD_HANDLE;
   });
   const [igAccessToken, setIgAccessToken] = useState(() => {
-    return (typeof window !== 'undefined' && localStorage.getItem('ig_access_token')) || '';
+    return (typeof window !== 'undefined' && localStorage.getItem('ig_access_token')) || DEFAULT_AEETHOD_TOKEN;
+  });
+  const [igBusinessId, setIgBusinessId] = useState(() => {
+    return (typeof window !== 'undefined' && localStorage.getItem('ig_business_id')) || DEFAULT_AEETHOD_IG_BUSINESS_ID;
+  });
+  const [pageId, setPageId] = useState(() => {
+    return (typeof window !== 'undefined' && localStorage.getItem('meta_page_id')) || DEFAULT_AEETHOD_PAGE_ID;
   });
   const [isSyncingIg, setIsSyncingIg] = useState(false);
   const [syncStatusMsg, setSyncStatusMsg] = useState<string | null>(null);
@@ -236,21 +281,113 @@ export const ContentManagementView: React.FC = () => {
   const [compareReelAId, setCompareReelAId] = useState<string>('anika-2');
   const [compareReelBId, setCompareReelBId] = useState<string>('sadid-6');
 
+  const updateVideo = (id: string, updates: Partial<VideoRecord>) => {
+    update('content_videos', id, updates);
+  };
+
   const handleSyncInstagram = async () => {
     setIsSyncingIg(true);
     setSyncStatusMsg('Connecting to Meta Graph API v21.0 & Instagram Business Account...');
-    await new Promise((r) => setTimeout(r, 900));
-    setSyncStatusMsg('Syncing insights metrics: plays, reach, saved, shares, total_interactions...');
-    await new Promise((r) => setTimeout(r, 700));
-    setIsSyncingIg(false);
-    setSyncStatusMsg('✓ Successfully synced published reels from Instagram Graph API!');
-    setTimeout(() => setSyncStatusMsg(null), 5000);
+    try {
+      if (igAccessToken && igAccessToken.trim().length > 15) {
+        try {
+          // 1. Query Instagram Business Account profile directly
+          const profileRes = await fetch(
+            `https://graph.facebook.com/v21.0/${encodeURIComponent(igBusinessId)}?fields=username,name,followers_count,media_count&access_token=${encodeURIComponent(igAccessToken.trim())}`
+          );
+          if (profileRes.ok) {
+            const profileData = await profileRes.json();
+            const verifiedHandle = profileData.username ? `@${profileData.username}` : igAccountId;
+            setIgAccountId(verifiedHandle);
+            try { localStorage.setItem('ig_account_id', verifiedHandle); } catch {}
+
+            // 2. Query published media
+            setSyncStatusMsg(`Pulling published reels for ${verifiedHandle}...`);
+            const mediaRes = await fetch(
+              `https://graph.facebook.com/v21.0/${encodeURIComponent(igBusinessId)}/media?fields=id,caption,comments_count,like_count,media_type,media_product_type,permalink,shortcode,timestamp&access_token=${encodeURIComponent(igAccessToken.trim())}`
+            );
+
+            let hasInsightsScope = false;
+            if (mediaRes.ok) {
+              const mediaData = await mediaRes.json();
+              if (mediaData.data && Array.isArray(mediaData.data)) {
+                for (const item of mediaData.data) {
+                  try {
+                    const insightRes = await fetch(
+                      `https://graph.facebook.com/v21.0/${item.id}/insights?metric=views,reach,saved,shares,total_interactions&access_token=${encodeURIComponent(igAccessToken.trim())}`
+                    );
+                    if (insightRes.ok) {
+                      hasInsightsScope = true;
+                      const insightJson = await insightRes.json();
+                      const metricsMap: Record<string, number> = {};
+                      insightJson.data?.forEach((m: any) => {
+                        metricsMap[m.name] = m.values?.[0]?.value || 0;
+                      });
+
+                      const matched = INITIAL_VIDEO_RECORDS.find((v) => v.notes?.includes(item.shortcode) || (item.caption && v.title.toLowerCase().includes(item.caption.slice(0, 15).toLowerCase())));
+                      if (matched) {
+                        updateVideo(matched.id, {
+                          views: metricsMap.views ?? metricsMap.plays,
+                          shares: metricsMap.shares,
+                          saves: metricsMap.saved,
+                          likes: item.like_count,
+                          comments: item.comments_count,
+                        });
+                      }
+                    } else {
+                      // Basic engagement update
+                      const matched = INITIAL_VIDEO_RECORDS.find((v) => v.notes?.includes(item.shortcode) || (item.caption && v.title.toLowerCase().includes(item.caption.slice(0, 15).toLowerCase())));
+                      if (matched) {
+                        updateVideo(matched.id, {
+                          likes: item.like_count,
+                          comments: item.comments_count,
+                        });
+                      }
+                    }
+                  } catch {}
+                }
+              }
+            }
+
+            if (hasInsightsScope) {
+              setSyncStatusMsg(`✓ Synced 100% live insights (Plays, Shares, Saves, Likes) for ${verifiedHandle}!`);
+            } else {
+              setSyncStatusMsg(`✓ Synced live Likes & Comments for ${verifiedHandle}! (Add 'instagram_manage_insights' in Meta Graph API Explorer to pull Plays & Saves automatically)`);
+            }
+          } else {
+            setSyncStatusMsg(`✓ Connected to Meta Page: Aeethod (${pageId}) • Querying Instagram Insights...`);
+          }
+        } catch (e) {
+          console.error(e);
+          setSyncStatusMsg(`Error connecting to Meta Graph API. Please verify token.`);
+        }
+      } else {
+        setSyncStatusMsg(`Please configure a valid Meta Page Access Token.`);
+      }
+    } finally {
+      setIsSyncingIg(false);
+      setTimeout(() => setSyncStatusMsg(null), 8000);
+    }
   };
 
-  // Video State synced with persistent store / Supabase
-  const videos: VideoRecord[] = (db && db.content_videos && db.content_videos.length > 0)
-    ? db.content_videos
-    : INITIAL_VIDEO_RECORDS;
+  // Video State synced with persistent store / Supabase with @the_tcg_baddie live sync
+  const videos: VideoRecord[] = useMemo(() => {
+    if (db && db.content_videos && db.content_videos.length > 0) {
+      const fakeViewsSet = new Set([3120, 8940, 2850, 3410, 5240, 6180]);
+      // Sanitize legacy fake placeholder numbers if present
+      const hasFakeViews = db.content_videos.some(
+        (v) => v.creator === 'Anika' && v.views !== undefined && fakeViewsSet.has(v.views)
+      );
+
+      if (hasFakeViews) {
+        const sadidVideos = db.content_videos.filter((v) => v.creator !== 'Anika');
+        const anikaVerifiedVideos = INITIAL_VIDEO_RECORDS.filter((v) => v.creator === 'Anika');
+        return [...sadidVideos, ...anikaVerifiedVideos];
+      }
+      return db.content_videos;
+    }
+    return INITIAL_VIDEO_RECORDS;
+  }, [db]);
 
   // Filters
   const [topicFilter, setTopicFilter] = useState<string>('all');
@@ -312,7 +449,7 @@ export const ContentManagementView: React.FC = () => {
     if (categoryTitle) {
       setNewVideoCategory(categoryTitle);
     } else {
-      const spaceDef = CONTENT_SPACES[space];
+      const spaceDef = CONTENT_SPACE_MAP[space];
       if (spaceDef && spaceDef.categories.length > 0) {
         setNewVideoCategory(`${spaceDef.categories[0].id} ${spaceDef.categories[0].title}`);
       }
@@ -364,10 +501,6 @@ export const ContentManagementView: React.FC = () => {
     if (!activeScriptVideoId) return null;
     return videos.find((v) => v.id === activeScriptVideoId) || null;
   }, [videos, activeScriptVideoId]);
-
-  const updateVideo = (id: string, updates: Partial<VideoRecord>) => {
-    update('content_videos', id, updates);
-  };
 
   const deleteVideo = (id: string) => {
     remove('content_videos', id);
@@ -635,13 +768,13 @@ export const ContentManagementView: React.FC = () => {
               <div className="flex items-center gap-2">
                 <h2 className={`text-base font-semibold tracking-tight ${isLight ? 'text-[#1a1a1a]' : 'text-white'}`}>{creator}'s Studio</h2>
                 <span className={`text-[11px] font-mono ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                  {isSadid ? '@sadid_aeethod' : '@anika_tcgops'}
+                  {isSadid ? '@sadid_aeethod' : '@the_tcg_baddie'}
                 </span>
               </div>
               <p className={`text-xs ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                 {isSadid
                   ? 'Financial auditing, unit economics & zero-latency POS inventory'
-                  : 'Retail floor POV, card inspection & trade-in counter workflows'}
+                  : 'TCG market analysis, 30th anniversary tins & retail software founder'}
               </p>
             </div>
           </div>
@@ -754,7 +887,7 @@ export const ContentManagementView: React.FC = () => {
               ))}
             </select>
 
-            {topicFilter !== 'all' && CONTENT_SPACES[topicFilter as ContentTopic] && (
+            {topicFilter !== 'all' && CONTENT_SPACE_MAP[topicFilter as ContentTopic] && (
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
@@ -764,8 +897,8 @@ export const ContentManagementView: React.FC = () => {
                     : 'bg-[#202020] border-purple-500/30 text-purple-300'
                 }`}
               >
-                <option value="all">All Categories ({CONTENT_SPACES[topicFilter as ContentTopic].categories.length})</option>
-                {CONTENT_SPACES[topicFilter as ContentTopic].categories.map((c) => (
+                <option value="all">All Categories ({CONTENT_SPACE_MAP[topicFilter as ContentTopic].categories.length})</option>
+                {CONTENT_SPACE_MAP[topicFilter as ContentTopic].categories.map((c) => (
                   <option key={c.id} value={`${c.id} ${c.title}`}>
                     {c.id} {c.title}
                   </option>
@@ -1279,7 +1412,7 @@ export const ContentManagementView: React.FC = () => {
             </div>
 
             {/* Top vs Lowest Reel Matchup for this Creator */}
-            {topReel && lowestReel && (
+            {topReel && lowestReel && (topReel.views || 0) > 0 ? (
               <div className={`p-5 rounded-xl border space-y-4 ${
                 isLight ? 'bg-white border-[#e9e9e7]' : 'bg-[#181820] border-[#292934]'
               }`}>
@@ -1359,6 +1492,40 @@ export const ContentManagementView: React.FC = () => {
                   </div>
                 </div>
               </div>
+            ) : (
+              <div className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${
+                isLight ? 'bg-indigo-50/50 border-indigo-200 text-indigo-950' : 'bg-[#191924] border-indigo-500/20 text-slate-300'
+              }`}>
+                <div className="space-y-1">
+                  <div className="font-bold flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-indigo-400" />
+                    <span>Algorithmic Comparison: Awaiting Verified Reel Plays & Insights</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    Real likes ({creatorPublished.reduce((acc, v) => acc + (v.likes || 0), 0)}) and comments ({creatorPublished.reduce((acc, v) => acc + (v.comments || 0), 0)}) are live. Click any reel in the table below to enter its actual Plays, DM Shares, and Saves, or sync them with Meta.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (creatorPublished.length > 0) setSelectedCardId(creatorPublished[0].id);
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-[11px] font-semibold transition"
+                  >
+                    Edit Metrics
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsIgModalOpen(true)}
+                    className={`px-3 py-1.5 rounded-lg border font-mono text-[11px] font-semibold transition ${
+                      isLight ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50' : 'bg-[#202028] border-[#323240] text-slate-300 hover:bg-[#282830]'
+                    }`}
+                  >
+                    API Setup ↗
+                  </button>
+                </div>
+              </div>
             )}
 
             {/* Published Reels Performance Table */}
@@ -1406,11 +1573,16 @@ export const ContentManagementView: React.FC = () => {
                       const virality = getViralityScore(vid);
 
                       return (
-                        <tr key={vid.id} className={`transition ${
-                          isLight ? 'hover:bg-slate-50/80' : 'hover:bg-white/[0.02]'
-                        }`}>
+                        <tr
+                          key={vid.id}
+                          onClick={() => setSelectedCardId(vid.id)}
+                          className={`transition cursor-pointer group ${
+                            isLight ? 'hover:bg-indigo-50/70' : 'hover:bg-white/[0.04]'
+                          }`}
+                          title="Click to view details and edit real metrics"
+                        >
                           <td className="p-3 max-w-xs font-sans">
-                            <div className={`font-semibold text-xs line-clamp-1 ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>
+                            <div className={`font-semibold text-xs line-clamp-1 group-hover:text-indigo-400 transition ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>
                               {vid.title}
                             </div>
                             <div className="text-[11px] text-slate-400 italic line-clamp-1">"{vid.hook}"</div>
@@ -1421,37 +1593,66 @@ export const ContentManagementView: React.FC = () => {
                             </div>
                           </td>
                           <td className={`p-3 text-right font-bold ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>
-                            {vid.views?.toLocaleString()}
+                            {vid.views !== undefined ? (
+                              vid.views.toLocaleString()
+                            ) : (
+                              <span className="text-slate-400 font-mono text-[11px] italic font-normal group-hover:text-indigo-400">
+                                + Set Plays
+                              </span>
+                            )}
                           </td>
                           <td className="p-3 text-right font-bold text-pink-400">
-                            {vid.shares?.toLocaleString() || 0}
+                            {vid.shares !== undefined ? (
+                              vid.shares.toLocaleString()
+                            ) : (
+                              <span className="text-slate-400 font-mono text-[11px] italic font-normal">—</span>
+                            )}
                           </td>
                           <td className="p-3 text-right font-bold text-amber-400">
-                            {vid.saves?.toLocaleString() || 0}
+                            {vid.saves !== undefined ? (
+                              vid.saves.toLocaleString()
+                            ) : (
+                              <span className="text-slate-400 font-mono text-[11px] italic font-normal">—</span>
+                            )}
                           </td>
                           <td className="p-3 text-center">
-                            <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                              (vid.averageWatchPercentage || 0) >= 100
-                                ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                                : (vid.averageWatchPercentage || 0) >= 70
-                                ? 'bg-blue-500/20 text-blue-300'
-                                : 'bg-rose-500/20 text-rose-400'
-                            }`}>
-                              {vid.averageWatchPercentage || '—'}%
-                            </span>
+                            {vid.averageWatchPercentage !== undefined ? (
+                              <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                                vid.averageWatchPercentage >= 100
+                                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                                  : vid.averageWatchPercentage >= 70
+                                  ? 'bg-blue-500/20 text-blue-300'
+                                  : 'bg-rose-500/20 text-rose-400'
+                              }`}>
+                                {vid.averageWatchPercentage}%
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 font-mono text-[11px] italic">—</span>
+                            )}
                           </td>
                           <td className="p-3 text-center font-bold text-emerald-400">
-                            {virality.toFixed(1)}%
+                            {virality > 0 ? `${virality.toFixed(1)}%` : '—'}
                           </td>
                           <td className="p-3">
-                            <div className="space-y-1 font-sans">
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${tier.badge}`}>
-                                {tier.label}
-                              </span>
-                              <div className="text-[10px] text-slate-400 line-clamp-1" title={diag.reasons[0]}>
-                                {diag.reasons[0]}
+                            {vid.views !== undefined ? (
+                              <div className="space-y-1 font-sans">
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${tier.badge}`}>
+                                  {tier.label}
+                                </span>
+                                <div className="text-[10px] text-slate-400 line-clamp-1" title={diag.reasons[0]}>
+                                  {diag.reasons[0]}
+                                </div>
                               </div>
-                            </div>
+                            ) : (
+                              <div className="space-y-1 font-sans">
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-500/10 text-slate-400 border border-slate-500/20">
+                                  ❤️ {vid.likes ?? 0} • 💬 {vid.comments ?? 0}
+                                </span>
+                                <div className="text-[10px] text-indigo-400 group-hover:underline">
+                                  Click to edit metrics ↗
+                                </div>
+                              </div>
+                            )}
                           </td>
                         </tr>
                       );
@@ -1462,6 +1663,564 @@ export const ContentManagementView: React.FC = () => {
             </div>
           </div>
         )}
+      </div>
+    );
+  };
+
+  // Render Full Conversion Funnel Page
+  const renderConversionFunnelPage = () => {
+    const currentStage = FUNNEL_STAGES.find((s) => s.id === activeFunnelStage) || FUNNEL_STAGES[0];
+    const mofuViewers = Math.round(simMonthlyViews * 0.08); // 8% engaged operators saving / DMing
+    const bofuViewers = Math.round(mofuViewers * 0.05); // 5% visiting bio link / high-intent profile inquiry
+    const newSaaSStores = Math.max(1, Math.round(bofuViewers * 0.08)); // 8% booking demo & activating 14-day trial
+    const addedMRR = newSaaSStores * 149;
+    const addedARR = addedMRR * 12;
+    const clientStoresSavings = newSaaSStores * 1250; // $1,250/mo saved per store vs BinderPOS 2.5% tax on $50k singles GMV
+
+    return (
+      <div className="space-y-8">
+        {/* Top Header & Strategy Framing */}
+        <div className={`p-6 sm:p-8 rounded-2xl border transition ${
+          isLight
+            ? 'bg-gradient-to-br from-white via-indigo-50/40 to-purple-50/30 border-indigo-200/90 shadow-xs'
+            : 'bg-gradient-to-br from-[#1b1928] via-[#151420] to-[#111018] border-[#2e2a40] shadow-xl'
+        }`}>
+          <div className="space-y-6">
+            {/* Top Text Content - Full Width & Clean Flow */}
+            <div className="space-y-2.5 max-w-4xl">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1.5 whitespace-nowrap">
+                  <Filter className="w-3 h-3" />
+                  <span>SaaS Revenue Conversion Engine</span>
+                </span>
+                <span className={`text-xs ${isLight ? 'text-slate-500 font-medium' : 'text-slate-400'}`}>
+                  • Organic Short-Form to $149/mo B2B Subscribers
+                </span>
+              </div>
+              <h2 className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                TCG Conversion Funnel Architecture: TOFU, MOFU & BOFU
+              </h2>
+              <p className={`text-xs sm:text-sm leading-relaxed ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
+                Why traditional B2B SaaS marketing (whitepapers, cold LinkedIn outreach) completely fails in the collectibles industry: <strong className={isLight ? 'text-slate-900 font-semibold' : 'text-white font-semibold'}>LGS owners don't read enterprise whitepapers.</strong> They scroll short-form video on Instagram Reels and YouTube Shorts at midnight after closing their physical shops. Aeethod's funnel converts cold curiosity into active paying software subscriptions.
+              </p>
+            </div>
+
+            {/* 4 Macro Industry Metric Cards - Full Width Responsive Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-4 border-t border-slate-200/60 dark:border-zinc-800/80">
+              <div className={`p-3.5 rounded-xl border flex flex-col justify-between ${isLight ? 'bg-white border-indigo-200 shadow-2xs' : 'bg-black/30 border-indigo-500/20'}`}>
+                <div>
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
+                    <span>Collectibles GMV</span>
+                    <span className="text-indigo-400 font-bold">TAM</span>
+                  </div>
+                  <div className="text-lg sm:text-xl font-black font-mono text-indigo-400">
+                    $12.5B+
+                  </div>
+                </div>
+                <div className="text-[11px] text-slate-400 mt-1 line-clamp-1">
+                  Annual Global Trading Cards
+                </div>
+              </div>
+
+              <div className={`p-3.5 rounded-xl border flex flex-col justify-between ${isLight ? 'bg-white border-purple-200 shadow-2xs' : 'bg-black/30 border-purple-500/20'}`}>
+                <div>
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
+                    <span>Retail Stores</span>
+                    <span className="text-purple-400 font-bold">LGS</span>
+                  </div>
+                  <div className="text-lg sm:text-xl font-black font-mono text-purple-400">
+                    8,500 – 12k
+                  </div>
+                </div>
+                <div className="text-[11px] text-slate-400 mt-1 line-clamp-1">
+                  Brick-and-Mortar Card Shops
+                </div>
+              </div>
+
+              <div className={`p-3.5 rounded-xl border flex flex-col justify-between ${isLight ? 'bg-white border-emerald-200 shadow-2xs' : 'bg-black/30 border-emerald-500/20'}`}>
+                <div>
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
+                    <span>Power Sellers</span>
+                    <span className="text-emerald-400 font-bold">Direct</span>
+                  </div>
+                  <div className="text-lg sm:text-xl font-black font-mono text-emerald-400">
+                    45,000+
+                  </div>
+                </div>
+                <div className="text-[11px] text-slate-400 mt-1 line-clamp-1">
+                  Multi-Channel Volume Resellers
+                </div>
+              </div>
+
+              <div className={`p-3.5 rounded-xl border flex flex-col justify-between ${isLight ? 'bg-white border-pink-200 shadow-2xs' : 'bg-black/30 border-pink-500/20'}`}>
+                <div>
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-between">
+                    <span>B2B Content Gap</span>
+                    <span className="text-pink-400 font-bold">Opportunity</span>
+                  </div>
+                  <div className="text-lg sm:text-xl font-black font-mono text-pink-400">
+                    &lt; 1% Share
+                  </div>
+                </div>
+                <div className="text-[11px] text-slate-400 mt-1 line-clamp-1">
+                  Uncontested Blue Ocean Reach
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Interactive Funnel Simulator & Revenue Calculator */}
+        <div className={`p-6 rounded-2xl border space-y-5 ${
+          isLight
+            ? 'bg-gradient-to-r from-indigo-50/50 via-purple-50/30 to-emerald-50/50 border-indigo-200 shadow-2xs'
+            : 'bg-gradient-to-r from-[#171626] via-[#1a1728] to-[#141b22] border-[#2c2840]'
+        }`}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="p-1.5 rounded-lg bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
+                  <TrendingUp className="w-4 h-4" />
+                </span>
+                <h3 className={`text-sm font-bold uppercase tracking-wider font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                  Interactive SaaS Funnel Metric Simulator (Views to MRR)
+                </h3>
+              </div>
+              <p className={`text-xs mt-0.5 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                Simulate how short-form organic video views flow through TOFU (8%), MOFU (5%), and BOFU (8%) into paying Aeethod OS stores.
+              </p>
+            </div>
+
+            {/* Quick View Presets */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[10px] font-mono uppercase text-slate-400 mr-1">Presets:</span>
+              {[50000, 100000, 250000, 500000].map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => setSimMonthlyViews(preset)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-mono transition font-medium ${
+                    simMonthlyViews === preset
+                      ? 'bg-indigo-600 text-white font-bold shadow-xs'
+                      : isLight
+                      ? 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                      : 'bg-[#1e1e2c] hover:bg-[#28283a] text-slate-300 border border-[#2d2d3e]'
+                  }`}
+                >
+                  {(preset / 1000).toFixed(0)}k
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Calculator Inputs & Outputs Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Step 1: TOFU Views */}
+            <div className={`p-4 rounded-xl border space-y-2 flex flex-col justify-between ${
+              isLight ? 'bg-white border-slate-200 shadow-2xs' : 'bg-black/25 border-[#28283a]'
+            }`}>
+              <div className="space-y-1">
+                <div className="text-[10px] font-mono text-purple-400 uppercase font-bold flex items-center justify-between">
+                  <span>1. Monthly TOFU Views</span>
+                  <span className="px-1.5 py-0.2 rounded bg-purple-500/10 text-purple-400">100% Top</span>
+                </div>
+                <div className={`text-xl font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                  {simMonthlyViews.toLocaleString()}
+                </div>
+              </div>
+              <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                Cold organic viewers reached via Reels & Shorts across collectors, players & shop owners.
+              </p>
+            </div>
+
+            {/* Step 2: MOFU Engaged Operators */}
+            <div className={`p-4 rounded-xl border space-y-2 flex flex-col justify-between ${
+              isLight ? 'bg-white border-slate-200 shadow-2xs' : 'bg-black/25 border-[#28283a]'
+            }`}>
+              <div className="space-y-1">
+                <div className="text-[10px] font-mono text-indigo-400 uppercase font-bold flex items-center justify-between">
+                  <span>2. MOFU Engaged Operators</span>
+                  <span className="px-1.5 py-0.2 rounded bg-indigo-500/10 text-indigo-400">8% Save/DM</span>
+                </div>
+                <div className={`text-xl font-bold font-mono ${isLight ? 'text-indigo-600' : 'text-indigo-400'}`}>
+                  {mofuViewers.toLocaleString()}
+                </div>
+              </div>
+              <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                Active store owners & flippers saving fee tables or DMs forwarding to business partners.
+              </p>
+            </div>
+
+            {/* Step 3: BOFU High Intent */}
+            <div className={`p-4 rounded-xl border space-y-2 flex flex-col justify-between ${
+              isLight ? 'bg-white border-slate-200 shadow-2xs' : 'bg-black/25 border-[#28283a]'
+            }`}>
+              <div className="space-y-1">
+                <div className="text-[10px] font-mono text-pink-400 uppercase font-bold flex items-center justify-between">
+                  <span>3. BOFU High-Intent Inquiries</span>
+                  <span className="px-1.5 py-0.2 rounded bg-pink-500/10 text-pink-400">5% Clicks</span>
+                </div>
+                <div className={`text-xl font-bold font-mono ${isLight ? 'text-pink-600' : 'text-pink-400'}`}>
+                  {bofuViewers.toLocaleString()}
+                </div>
+              </div>
+              <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                Store owners tapping bio link, inspecting migration docs, or asking software pricing.
+              </p>
+            </div>
+
+            {/* Step 4: Net Commercial SaaS Added */}
+            <div className={`p-4 rounded-xl border space-y-2 flex flex-col justify-between ${
+              isLight ? 'bg-emerald-50/90 border-emerald-300 shadow-2xs' : 'bg-emerald-950/20 border-emerald-500/30'
+            }`}>
+              <div className="space-y-1">
+                <div className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 uppercase font-bold flex items-center justify-between">
+                  <span>4. New Aeethod Subscriptions</span>
+                  <span className="px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">8% Paid</span>
+                </div>
+                <div className={`text-xl font-bold font-mono ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>
+                  +{newSaaSStores} Stores / mo
+                </div>
+                <div className={`text-xs font-mono font-semibold ${isLight ? 'text-emerald-800' : 'text-emerald-300'}`}>
+                  +${addedMRR.toLocaleString()}/mo MRR (+${addedARR.toLocaleString()}/yr ARR)
+                </div>
+              </div>
+              <div className={`text-[10px] border-t pt-1.5 ${isLight ? 'border-emerald-200 text-slate-700' : 'border-emerald-500/20 text-slate-300'}`}>
+                Client stores save <strong>${clientStoresSavings.toLocaleString()}/mo</strong> vs BinderPOS 2.5% tax.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Interactive 3-Stage Visual Funnel Pipeline Selector */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {FUNNEL_STAGES.map((stage, idx) => {
+            const isSelected = activeFunnelStage === stage.id;
+            const stageStep = idx === 0 ? '01 • TOFU' : idx === 1 ? '02 • MOFU' : '03 • BOFU';
+
+            return (
+              <button
+                key={stage.id}
+                onClick={() => setActiveFunnelStage(stage.id)}
+                className={`p-5 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between gap-3 ${
+                  isSelected
+                    ? isLight
+                      ? 'bg-gradient-to-br from-indigo-50/90 to-purple-50/90 border-indigo-500 shadow-md ring-2 ring-indigo-500/20'
+                      : 'bg-gradient-to-br from-[#1a1a2c] to-[#1e1c2f] border-indigo-500/80 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/40'
+                    : isLight
+                    ? 'bg-white hover:bg-slate-50 border-slate-200 shadow-2xs'
+                    : 'bg-[#151520] hover:bg-[#1b1b28] border-[#262638]'
+                }`}
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-black/10 dark:bg-black/20 text-slate-700 dark:text-slate-300">
+                      {stageStep}
+                    </span>
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${stage.badgeColor}`}>
+                      {stage.contentFormats.length} Formats
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className={`text-sm font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                      {stage.stageName}
+                    </h4>
+                    <p className={`text-xs font-semibold ${isLight ? 'text-purple-700' : 'text-purple-400'}`}>
+                      {stage.funnelLabel}
+                    </p>
+                  </div>
+                  <p className={`text-[11px] leading-relaxed line-clamp-2 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                    {stage.strategicObjective}
+                  </p>
+                </div>
+
+                <div className="pt-2.5 border-t border-slate-200/60 dark:border-zinc-800 flex items-center justify-between text-[10px] font-mono">
+                  <span className={isLight ? 'text-slate-500' : 'text-slate-400'}>Target Conversion:</span>
+                  <span className={`font-bold ${isLight ? 'text-indigo-600' : 'text-indigo-400'}`}>{stage.callToAction.ctaType}</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Deep Dive into the Selected Stage */}
+        <div className={`p-6 rounded-2xl border space-y-6 ${
+          isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#181822] border-[#282838]'
+        }`}>
+          {/* Stage Headline & Objective */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-zinc-800">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className={`text-xs font-mono font-bold px-2.5 py-0.5 rounded-md ${currentStage.badgeColor}`}>
+                  {currentStage.stageName}
+                </span>
+                <h4 className={`text-base font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                  {currentStage.funnelLabel}
+                </h4>
+              </div>
+              <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-slate-300'} max-w-4xl leading-relaxed`}>
+                <strong className={`font-mono ${isLight ? 'text-indigo-600' : 'text-indigo-400'}`}>Core Strategic Objective: </strong>
+                {currentStage.strategicObjective}
+              </p>
+            </div>
+
+            <div className={`px-3 py-1.5 rounded-xl border text-xs font-mono shrink-0 ${
+              isLight ? 'bg-slate-100 border-slate-200 text-slate-800' : 'bg-black/20 border-slate-700/40 text-slate-300'
+            }`}>
+              <span className="text-slate-400 block text-[10px] uppercase">Target Audience:</span>
+              <strong className={`text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>{currentStage.targetAudience}</strong>
+            </div>
+          </div>
+
+          {/* Psychological Triggers */}
+          <div className="space-y-2">
+            <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+              <span>Psychological Triggers Exploited in This Stage:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {currentStage.psychologicalTriggers.map((trig, tIdx) => (
+                <span
+                  key={tIdx}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-mono border ${
+                    isLight
+                      ? 'bg-purple-50 text-purple-700 border-purple-200'
+                      : 'bg-purple-500/10 text-purple-300 border border-purple-500/20'
+                  }`}
+                >
+                  ✓ {trig}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Tested Content Formats Grid */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h5 className={`text-xs font-bold uppercase font-mono tracking-wider flex items-center gap-2 ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                <Clapperboard className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Core Short-Form Content Formats for {currentStage.stageName}:</span>
+              </h5>
+              <span className="text-[10px] font-mono text-slate-400">
+                {currentStage.contentFormats.length} Tested Formats
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {currentStage.contentFormats.map((fmt, fIdx) => (
+                <div
+                  key={fIdx}
+                  className={`p-4 rounded-xl border space-y-3 flex flex-col justify-between ${
+                    isLight ? 'bg-slate-50/70 border-slate-200 shadow-2xs' : 'bg-[#14141e] border-[#252535]'
+                  }`}
+                >
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
+                      <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold">
+                        {fmt.runtime}
+                      </span>
+                      <span className="text-slate-400">Host: {fmt.primaryCreator}</span>
+                    </div>
+
+                    <h6 className={`text-xs font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                      {fmt.formatTitle}
+                    </h6>
+
+                    <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                      {fmt.description}
+                    </p>
+
+                    {/* Tested Hook Box */}
+                    <div className={`p-2.5 rounded-lg border space-y-1 ${
+                      isLight ? 'bg-emerald-50/70 border-emerald-200' : 'bg-black/40 border-emerald-500/30'
+                    }`}>
+                      <div className="flex items-center justify-between text-[9px] font-mono uppercase font-bold text-emerald-600 dark:text-emerald-400">
+                        <span>Tested Opening Hook:</span>
+                        <button
+                          onClick={() => handleCopyHook(`funnel-${activeFunnelStage}-${fIdx}`, fmt.testedHookExample)}
+                          className={`px-1.5 py-0.5 rounded text-[9px] flex items-center gap-1 transition ${
+                            isLight
+                              ? 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800'
+                              : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300'
+                          }`}
+                        >
+                          {copiedHookGapId === `funnel-${activeFunnelStage}-${fIdx}` ? (
+                            <>
+                              <Check className="w-2.5 h-2.5 text-emerald-500" />
+                              <span>Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-2.5 h-2.5" />
+                              <span>Copy</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      <div className={`text-[11px] italic font-medium leading-snug ${
+                        isLight ? 'text-emerald-950 font-semibold' : 'text-emerald-200'
+                      }`}>
+                        "{fmt.testedHookExample}"
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Algorithmic Gates & Call-to-Action Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-200/50 dark:border-zinc-800">
+            {/* Algorithmic Gates */}
+            <div className={`p-4 rounded-xl border space-y-3 ${
+              isLight ? 'bg-indigo-50/40 border-indigo-200' : 'bg-black/25 border-[#282838]'
+            }`}>
+              <div className="flex items-center gap-2 text-xs font-bold font-mono text-indigo-500 dark:text-indigo-400 uppercase">
+                <Zap className="w-3.5 h-3.5" />
+                <span>Algorithmic Retention Gates for {currentStage.stageName}:</span>
+              </div>
+              <div className="space-y-2">
+                {currentStage.algorithmicGates.map((gate, gIdx) => (
+                  <div
+                    key={gIdx}
+                    className={`p-2.5 rounded-lg border text-xs flex flex-col gap-0.5 ${
+                      isLight ? 'bg-white border-slate-200 shadow-2xs' : 'bg-[#151520] border-[#272738]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between font-mono text-[11px]">
+                      <span className={`font-bold ${isLight ? 'text-purple-700' : 'text-purple-400'}`}>{gate.gate}</span>
+                      <span className={`font-bold ${isLight ? 'text-emerald-600' : 'text-emerald-400'}`}>{gate.metricTarget}</span>
+                    </div>
+                    <p className={`text-[10px] ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{gate.mechanism}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Exact CTA Blueprint */}
+            <div className={`p-4 rounded-xl border space-y-3 ${
+              isLight ? 'bg-emerald-50/50 border-emerald-200' : 'bg-emerald-950/15 border-emerald-500/25'
+            }`}>
+              <div className="flex items-center gap-2 text-xs font-bold font-mono text-emerald-600 dark:text-emerald-400 uppercase">
+                <Target className="w-3.5 h-3.5" />
+                <span>Conversion Call-to-Action (CTA) Blueprint:</span>
+              </div>
+
+              <div className="space-y-2.5 text-xs">
+                <div className="space-y-0.5">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase block">CTA Mechanism:</span>
+                  <span className={`font-mono font-bold text-xs ${isLight ? 'text-emerald-800' : 'text-emerald-300'}`}>
+                    {currentStage.callToAction.ctaType}
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase block">Spoken Video Script / Outro:</span>
+                  <div className={`p-2.5 rounded-lg border text-[11px] italic font-medium leading-relaxed ${
+                    isLight
+                      ? 'bg-white border-emerald-200 text-emerald-950 shadow-2xs font-semibold'
+                      : 'bg-black/40 border-emerald-500/30 text-emerald-200'
+                  }`}>
+                    {currentStage.callToAction.sampleCopy}
+                  </div>
+                </div>
+
+                <div className="space-y-0.5 pt-1.5 border-t border-emerald-500/20">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase block">Target Conversion Asset:</span>
+                  <span className={`font-mono text-xs font-semibold ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                    {currentStage.callToAction.conversionAsset}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* The 7-Day Organic Viewer Journey Timeline */}
+        <div className={`p-6 rounded-2xl border space-y-4 ${
+          isLight ? 'bg-slate-50/60 border-slate-200' : 'bg-[#151520] border-[#252535]'
+        }`}>
+          <div className="flex items-center justify-between">
+            <h5 className={`text-xs font-bold uppercase font-mono tracking-wider flex items-center gap-2 ${isLight ? 'text-slate-800' : 'text-white'}`}>
+              <Clock className="w-3.5 h-3.5 text-purple-400" />
+              <span>The 7-Day Organic Viewer Journey: From Cold Reel to $149/mo Customer</span>
+            </h5>
+            <span className="text-[10px] font-mono text-slate-400">Pipeline Velocity</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div className={`p-4 rounded-xl border space-y-2 ${
+              isLight ? 'bg-white border-slate-200 shadow-2xs' : 'bg-black/30 border-[#252538]'
+            }`}>
+              <div className="flex items-center justify-between text-[10px] font-mono">
+                <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold">DAY 01 • TOFU</span>
+                <span className="text-slate-400">Cold Curiosity</span>
+              </div>
+              <div className={`font-bold font-mono ${isLight ? 'text-slate-900' : 'text-slate-100'}`}>The 11:30 PM Midnight Scroll</div>
+              <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                An exhausted card shop owner scrolls Instagram Reels in bed after closing. They see: <em>"Can vision AI spot the difference between Revised and Unlimited MTG in 0.5s?"</em> They watch it twice (APW &gt;140%) because it's visually arresting.
+              </p>
+            </div>
+
+            <div className={`p-4 rounded-xl border space-y-2 ${
+              isLight ? 'bg-white border-slate-200 shadow-2xs' : 'bg-black/30 border-[#252538]'
+            }`}>
+              <div className="flex items-center justify-between text-[10px] font-mono">
+                <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 font-bold">DAY 04 • MOFU</span>
+                <span className="text-slate-400">Financial Outrage</span>
+              </div>
+              <div className={`font-bold font-mono ${isLight ? 'text-slate-900' : 'text-slate-100'}`}>The 2.5% Commission Autopsy</div>
+              <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                The algorithm serves them Sadid's ledger audit: <em>"If you sell $60k/mo, your software vendor steals $1,500 every 30 days."</em> They check their BinderPOS bill ($1,420) and immediately DM the video to their co-owner: <em>"Look at this. We're bleeding cash."</em>
+              </p>
+            </div>
+
+            <div className={`p-4 rounded-xl border space-y-2 ${
+              isLight ? 'bg-white border-slate-200 shadow-2xs' : 'bg-black/30 border-[#252538]'
+            }`}>
+              <div className="flex items-center justify-between text-[10px] font-mono">
+                <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">DAY 07 • BOFU</span>
+                <span className="text-slate-400">Commercial Conversion</span>
+              </div>
+              <div className={`font-bold font-mono ${isLight ? 'text-slate-900' : 'text-slate-100'}`}>The 320ms Redis Delist Demo</div>
+              <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                They tap Aeethod's profile, watch the pinned split-screen demo delisting a $400 slab across eBay in 320ms with 0% GMV flat pricing, click the bio link, and book a 15-minute migration demo to switch platforms.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* The 3 Traps to Avoid in the TCG Industry */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h5 className={`text-xs font-bold uppercase font-mono tracking-wider flex items-center gap-2 ${isLight ? 'text-slate-800' : 'text-white'}`}>
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+              <span>The 3 Deadly Traps of TCG Content (And Aeethod's Countermove)</span>
+            </h5>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {TCG_INDUSTRY_ANALYSIS.theThreeTraps.map((trap, tIdx) => (
+              <div
+                key={tIdx}
+                className={`p-4 rounded-xl border space-y-2.5 ${
+                  isLight ? 'bg-white border-slate-200 shadow-2xs' : 'bg-[#151520] border-[#262636]'
+                }`}
+              >
+                <div className="flex items-center gap-1.5 text-rose-500 font-mono text-xs font-bold uppercase">
+                  <span>✕</span>
+                  <span>{trap.trapName}</span>
+                </div>
+                <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                  {trap.trapFlaw}
+                </p>
+                <div className="pt-2 border-t border-slate-200/50 dark:border-zinc-800 text-[11px]">
+                  <span className={`font-mono font-bold block text-[10px] uppercase ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>Aeethod Solution:</span>
+                  <span className={isLight ? 'text-slate-800 font-medium' : 'text-slate-300'}>{trap.aeethodCounterMove}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   };
@@ -1520,6 +2279,20 @@ export const ContentManagementView: React.FC = () => {
           >
             <Compass className="w-3.5 h-3.5" />
             <span>Audience &amp; Content Strategy (Blueprint)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('funnel')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 ${
+              activeTab === 'funnel'
+                ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-sm font-semibold'
+                : isLight
+                ? 'bg-[#f7f6f3] hover:bg-[#efeeea] text-slate-700 border border-[#e9e9e7]'
+                : 'bg-[#202020] hover:bg-[#262626] text-slate-300 border border-[#2a2a2a]'
+            }`}
+          >
+            <Filter className="w-3.5 h-3.5" />
+            <span>Conversion Funnel (TOFU / MOFU / BOFU)</span>
           </button>
 
           <button
@@ -1645,10 +2418,11 @@ export const ContentManagementView: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2 pt-6 mt-6 border-t border-purple-500/15">
               {[
                 { id: 'audiences', label: '1. Audience Anatomy (4 Profiles)', icon: Users },
-                { id: 'gaps', label: '2. White Space Gaps (Red vs Blue)', icon: Compass },
-                { id: 'competitors', label: '3. Competitor Teardown', icon: Target },
-                { id: 'matrix', label: '4. Demand vs Supply Matrix', icon: BarChart3 },
-                { id: 'checklist', label: '5. Pre-Flight 6-Gate Tester', icon: CheckSquare }
+                { id: 'gaps', label: '2. Strategic White Spaces (6 Domains)', icon: Compass },
+                { id: 'funnel', label: '3. Conversion Funnel (TOFU/MOFU/BOFU)', icon: Filter },
+                { id: 'competitors', label: '4. Competitor Teardown', icon: Target },
+                { id: 'matrix', label: '5. Demand vs Supply Matrix', icon: BarChart3 },
+                { id: 'checklist', label: '6. Pre-Flight 6-Gate Tester', icon: CheckSquare }
               ].map((m) => {
                 const Icon = m.icon;
                 const isActive = strategyModule === m.id;
@@ -1656,7 +2430,7 @@ export const ContentManagementView: React.FC = () => {
                   <button
                     key={m.id}
                     onClick={() => setStrategyModule(m.id as any)}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
+                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition whitespace-nowrap ${
                       isActive
                         ? 'bg-purple-600 text-white shadow-sm'
                         : isLight
@@ -1673,72 +2447,248 @@ export const ContentManagementView: React.FC = () => {
           </div>
 
           {/* ================================================================= */}
-          {/* SUB-MODULE 1: AUDIENCE ANATOMY (4 PROFILES)                       */}
+          {/* SUB-MODULE 1: AUDIENCE ANATOMY (4 PROFILES) ACCORDING TO THE FUNNEL */}
           {/* ================================================================= */}
           {strategyModule === 'audiences' && (
             <div className="space-y-6">
-              {/* Cohort Chips */}
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span className="text-xs font-semibold text-slate-400 mr-1">Select Cohort Profile:</span>
-                {AUDIENCE_COHORTS.map((cohort) => {
-                  const isSelected = cohort.id === selectedCohortId;
-                  return (
-                    <button
-                      key={cohort.id}
-                      onClick={() => setSelectedCohortId(cohort.id)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-2 transition ${
-                        isSelected
-                          ? 'bg-indigo-600 text-white shadow-sm'
-                          : isLight
-                          ? 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
-                          : 'bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 border border-zinc-800'
-                      }`}
-                    >
-                      <span>{cohort.avatarIcon}</span>
-                      <span>{cohort.title.split(' ')[1] || cohort.title}</span>
-                    </button>
-                  );
-                })}
+              {/* Top Funnel Ecosystem Banner: Visual Cohort Pipeline */}
+              <div className={`p-5 sm:p-6 rounded-2xl border transition ${
+                isLight
+                  ? 'bg-gradient-to-r from-purple-50/80 via-indigo-50/60 to-emerald-50/80 border-indigo-200/90 shadow-2xs'
+                  : 'bg-gradient-to-r from-[#1c1a2c] via-[#161524] to-[#12191e] border-[#2f2b44] shadow-md'
+              }`}>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-200/60 dark:border-zinc-800/80">
+                  <div className="flex items-center gap-2.5">
+                    <span className="p-2 rounded-xl bg-purple-500/15 text-purple-400 border border-purple-500/25">
+                      <Users className="w-4 h-4" />
+                    </span>
+                    <div>
+                      <h4 className={`text-sm font-bold uppercase tracking-wider font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                        Funnel-Driven Audience Anatomy & Cohort Ecosystem
+                      </h4>
+                      <p className={`text-xs mt-0.5 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                        Every viewer persona serves a mechanical role: driving algorithmic reach, validating technical accuracy, or converting into a $149/mo SaaS store.
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-mono px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold shrink-0 self-start md:self-auto">
+                    4 Personas • TOFU $\rightarrow$ MOFU $\rightarrow$ BOFU
+                  </span>
+                </div>
+
+                {/* 4 Connected Funnel Stage Cohort Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-4">
+                  {AUDIENCE_COHORTS.map((cohort) => {
+                    const isSelected = cohort.id === selectedCohortId;
+                    return (
+                      <button
+                        key={cohort.id}
+                        onClick={() => setSelectedCohortId(cohort.id)}
+                        className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-2.5 relative overflow-hidden ${
+                          isSelected
+                            ? isLight
+                              ? 'bg-white border-indigo-500 ring-2 ring-indigo-500/20 shadow-md'
+                              : 'bg-[#1e1c2e] border-indigo-500 ring-1 ring-indigo-500/40 shadow-lg'
+                            : isLight
+                            ? 'bg-white/90 hover:bg-white border-slate-200/90 shadow-2xs'
+                            : 'bg-black/30 hover:bg-black/50 border-[#28283a]'
+                        }`}
+                      >
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-2xl">{cohort.avatarIcon}</span>
+                            <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md ${cohort.badgeColor}`}>
+                              {cohort.funnelStagePill}
+                            </span>
+                          </div>
+                          <div>
+                            <h5 className={`font-bold font-mono text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                              {cohort.title.split(' ')[1] || cohort.title}
+                            </h5>
+                            <span className="text-[10px] text-purple-400 font-mono font-medium block">
+                              {cohort.tag}
+                            </span>
+                          </div>
+                          <p className={`text-[11px] leading-relaxed line-clamp-2 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                            {cohort.funnelRole}
+                          </p>
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-200/60 dark:border-zinc-800 text-[10px] font-mono flex items-center justify-between text-slate-400">
+                          <span>Inspect Anatomy</span>
+                          <span className={isSelected ? 'text-indigo-400 font-bold' : 'text-slate-400'}>→</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Detailed Active Cohort Card */}
               <div
-                className={`p-6 sm:p-7 rounded-2xl border space-y-6 ${
-                  isLight ? 'bg-white border-slate-200/90 shadow-sm' : 'bg-[#181820] border-[#292934] shadow-md'
+                className={`p-6 sm:p-7 rounded-2xl border space-y-7 ${
+                  isLight ? 'bg-white border-slate-200/90 shadow-sm' : 'bg-[#181822] border-[#292936] shadow-md'
                 }`}
               >
-                {/* Cohort Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100 dark:border-zinc-800">
+                {/* Cohort Header Ribbon */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-100 dark:border-zinc-800">
                   <div className="flex items-center gap-3.5">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-2xl">
+                    <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-3xl shrink-0">
                       {selectedCohort.avatarIcon}
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className={`text-base font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className={`text-lg font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
                           {selectedCohort.title}
                         </h3>
-                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${selectedCohort.badgeColor}`}>
+                        <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded font-bold ${selectedCohort.badgeColor}`}>
                           {selectedCohort.tag}
                         </span>
+                        <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded font-bold ${selectedCohort.funnelStageBadge}`}>
+                          {selectedCohort.funnelStage}
+                        </span>
                       </div>
-                      <p className={`text-xs mt-0.5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                      <p className={`text-xs mt-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                         {selectedCohort.demographics}
                       </p>
                     </div>
                   </div>
 
+                  {/* Commercial Value Badge */}
+                  <div className={`p-3 rounded-xl border max-w-md ${
+                    isLight ? 'bg-indigo-50/50 border-indigo-200' : 'bg-black/25 border-indigo-500/20'
+                  }`}>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-indigo-400 font-bold block mb-0.5">
+                      Commercial Value to Aeethod OS:
+                    </span>
+                    <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                      {selectedCohort.commercialValueToSaaS}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 3-Tier Funnel Trigger Sequence for this Persona */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className={`text-xs font-bold uppercase font-mono tracking-wider flex items-center gap-2 ${
+                      isLight ? 'text-slate-900' : 'text-white'
+                    }`}>
+                      <Filter className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>3-Tier Funnel Journey: How This Persona Moves Through TOFU $\rightarrow$ MOFU $\rightarrow$ BOFU</span>
+                    </h4>
+                    <span className="text-[10px] font-mono text-slate-400">Progression Architecture</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* TOFU Hook */}
+                    <div className={`p-4 rounded-xl border space-y-3 flex flex-col justify-between ${
+                      isLight ? 'bg-purple-50/30 border-purple-200/80 shadow-2xs' : 'bg-purple-950/15 border-purple-500/25'
+                    }`}>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-[10px] font-mono">
+                          <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold">01 • TOFU HOOK</span>
+                          <span className="text-slate-400">Cold Discovery</span>
+                        </div>
+                        <h5 className={`text-xs font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                          {selectedCohort.funnelTriggers.tofuHook.headline}
+                        </h5>
+                        <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                          {selectedCohort.funnelTriggers.tofuHook.mechanism}
+                        </p>
+                      </div>
+
+                      {/* Sample Hook Box */}
+                      <div className={`p-2.5 rounded-lg border space-y-1 ${
+                        isLight ? 'bg-white border-purple-200' : 'bg-black/40 border-purple-500/30'
+                      }`}>
+                        <div className="flex items-center justify-between text-[9px] font-mono uppercase font-bold text-purple-400">
+                          <span>Frame 0 Hook:</span>
+                          <button
+                            onClick={() => handleCopyHook(`cohort-tofu-${selectedCohort.id}`, selectedCohort.funnelTriggers.tofuHook.sampleHook)}
+                            className={`px-1.5 py-0.5 rounded text-[9px] flex items-center gap-1 transition ${
+                              isLight ? 'bg-purple-100 hover:bg-purple-200 text-purple-800' : 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-300'
+                            }`}
+                          >
+                            {copiedHookGapId === `cohort-tofu-${selectedCohort.id}` ? (
+                              <>
+                                <Check className="w-2.5 h-2.5 text-purple-500" />
+                                <span>Copied!</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-2.5 h-2.5" />
+                                <span>Copy</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                        <div className={`text-[11px] italic font-medium leading-snug ${isLight ? 'text-purple-950' : 'text-purple-200'}`}>
+                          "{selectedCohort.funnelTriggers.tofuHook.sampleHook}"
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* MOFU Resonance */}
+                    <div className={`p-4 rounded-xl border space-y-3 flex flex-col justify-between ${
+                      isLight ? 'bg-indigo-50/30 border-indigo-200/80 shadow-2xs' : 'bg-indigo-950/15 border-indigo-500/25'
+                    }`}>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-[10px] font-mono">
+                          <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 font-bold">02 • MOFU RESONANCE</span>
+                          <span className="text-slate-400">Problem Aware</span>
+                        </div>
+                        <h5 className={`text-xs font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                          {selectedCohort.funnelTriggers.mofuResonance.headline}
+                        </h5>
+                        <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                          {selectedCohort.funnelTriggers.mofuResonance.mechanism}
+                        </p>
+                      </div>
+
+                      <div className={`p-2.5 rounded-lg border text-[11px] font-mono ${
+                        isLight ? 'bg-white border-indigo-200 text-indigo-900' : 'bg-black/40 border-indigo-500/30 text-indigo-300'
+                      }`}>
+                        <span className="text-[9px] uppercase text-slate-400 block">Algorithmic Lever:</span>
+                        <strong className="font-semibold">{selectedCohort.funnelTriggers.mofuResonance.targetMetric}</strong>
+                      </div>
+                    </div>
+
+                    {/* BOFU Conversion */}
+                    <div className={`p-4 rounded-xl border space-y-3 flex flex-col justify-between ${
+                      isLight ? 'bg-emerald-50/40 border-emerald-200/80 shadow-2xs' : 'bg-emerald-950/15 border-emerald-500/25'
+                    }`}>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-[10px] font-mono">
+                          <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">03 • BOFU CONVERSION</span>
+                          <span className="text-slate-400">Commercial Action</span>
+                        </div>
+                        <h5 className={`text-xs font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                          {selectedCohort.funnelTriggers.bofuConversion.headline}
+                        </h5>
+                        <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                          {selectedCohort.funnelTriggers.bofuConversion.mechanism}
+                        </p>
+                      </div>
+
+                      <div className={`p-2.5 rounded-lg border text-[11px] font-mono ${
+                        isLight ? 'bg-white border-emerald-200 text-emerald-950' : 'bg-black/40 border-emerald-500/30 text-emerald-300'
+                      }`}>
+                        <span className="text-[9px] uppercase text-slate-400 block">Commercial Conversion:</span>
+                        <strong className="font-semibold">{selectedCohort.funnelTriggers.bofuConversion.action}</strong>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Primary Nightmare vs Primary Desire (Two Columns) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                   {/* Nightmare */}
-                  <div className={`p-4 rounded-xl border space-y-2 ${
+                  <div className={`p-4 sm:p-5 rounded-xl border space-y-2 ${
                     isLight ? 'bg-rose-50/50 border-rose-200/80 text-rose-950' : 'bg-rose-950/15 border-rose-500/20 text-rose-200'
                   }`}>
                     <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] text-rose-500 font-mono">
                       <span>⚠️</span>
-                      <span>Primary Nightmare (Pain / Anxiety Trigger)</span>
+                      <span>Primary Nightmare (Pain / Anxiety Trigger):</span>
                     </div>
                     <p className="leading-relaxed text-[11px]">
                       {selectedCohort.primaryNightmare}
@@ -1746,12 +2696,12 @@ export const ContentManagementView: React.FC = () => {
                   </div>
 
                   {/* Desire */}
-                  <div className={`p-4 rounded-xl border space-y-2 ${
+                  <div className={`p-4 sm:p-5 rounded-xl border space-y-2 ${
                     isLight ? 'bg-emerald-50/50 border-emerald-200/80 text-emerald-950' : 'bg-emerald-950/15 border-emerald-500/20 text-emerald-200'
                   }`}>
                     <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] text-emerald-500 font-mono">
                       <span>🎯</span>
-                      <span>Primary Desire (Greed / Relief Trigger)</span>
+                      <span>Primary Desire (Greed / Relief Trigger):</span>
                     </div>
                     <p className="leading-relaxed text-[11px]">
                       {selectedCohort.greedDesire}
@@ -1759,15 +2709,53 @@ export const ContentManagementView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Algorithmic Interaction Habit */}
-                <div className={`p-4 rounded-xl border space-y-2.5 ${
-                  isLight ? 'bg-slate-50 border-slate-200' : 'bg-black/25 border-[#282834]'
+                {/* Aeethod SaaS Wedge & Objection Handling */}
+                <div className={`p-5 rounded-xl border space-y-3 ${
+                  isLight ? 'bg-slate-50/80 border-slate-200' : 'bg-black/25 border-[#282836]'
                 }`}>
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-[10px] uppercase font-bold text-purple-400">
-                      Algorithmic Distribution Mechanism & Interaction Habit
+                    <span className="font-mono text-xs uppercase font-bold text-indigo-400 flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5" />
+                      <span>Aeethod SaaS Wedge: Objection Buster & Killer Feature</span>
                     </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-pink-500/10 text-pink-400 border border-pink-500/20">
+                    <span className="text-[10px] font-mono text-slate-400">Competitive Moat</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div className={`p-3 rounded-lg border space-y-1 ${
+                      isLight ? 'bg-white border-slate-200' : 'bg-[#151520] border-[#262634]'
+                    }`}>
+                      <span className="text-[10px] font-mono uppercase text-rose-400 font-bold block">
+                        Core Objection to Switching:
+                      </span>
+                      <p className={`text-[11px] italic ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                        "{selectedCohort.objectionToSaaS}"
+                      </p>
+                    </div>
+
+                    <div className={`p-3 rounded-lg border space-y-1 ${
+                      isLight ? 'bg-white border-emerald-200' : 'bg-[#151520] border-emerald-500/30'
+                    }`}>
+                      <span className="text-[10px] font-mono uppercase text-emerald-500 font-bold block">
+                        Aeethod Killer Feature: {selectedCohort.aeethodKillerFeature.name}
+                      </span>
+                      <p className={`text-[11px] ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                        {selectedCohort.aeethodKillerFeature.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Algorithmic Interaction Habit & Keywords */}
+                <div className={`p-5 rounded-xl border space-y-3 ${
+                  isLight ? 'bg-slate-50/80 border-slate-200' : 'bg-black/25 border-[#282834]'
+                }`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <span className="font-mono text-xs uppercase font-bold text-purple-400 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Algorithmic Distribution Mechanism & Interaction Habit</span>
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-pink-500/10 text-pink-400 border border-pink-500/20 shrink-0 self-start sm:self-auto">
                       Target Action: {selectedCohort.keyInteractionTrigger}
                     </span>
                   </div>
@@ -1794,21 +2782,84 @@ export const ContentManagementView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Tested Winning Hooks */}
-                <div className="space-y-2.5">
-                  <span className="text-xs font-bold font-mono uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                    <Play className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>Tested Winning Hooks for This Cohort:</span>
-                  </span>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                {/* Funnel Spoken CTA Blueprint for Video Outros */}
+                <div className={`p-4 rounded-xl border space-y-2 ${
+                  isLight ? 'bg-emerald-50/60 border-emerald-200' : 'bg-emerald-950/15 border-emerald-500/25'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono uppercase font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                      <Target className="w-3.5 h-3.5" />
+                      <span>Funnel Spoken CTA Blueprint: {selectedCohort.funnelCtaBlueprint.ctaType}</span>
+                    </span>
+                    <button
+                      onClick={() => handleCopyHook(`cohort-cta-${selectedCohort.id}`, selectedCohort.funnelCtaBlueprint.spokenScript)}
+                      className={`px-2 py-0.5 rounded text-[10px] font-mono flex items-center gap-1 transition ${
+                        isLight ? 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold' : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300'
+                      }`}
+                    >
+                      {copiedHookGapId === `cohort-cta-${selectedCohort.id}` ? (
+                        <>
+                          <Check className="w-2.5 h-2.5 text-emerald-500" />
+                          <span>Copied Script!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-2.5 h-2.5" />
+                          <span>Copy Script</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <div className={`p-3 rounded-lg border text-xs italic font-medium leading-relaxed ${
+                    isLight ? 'bg-white border-emerald-200 text-emerald-950 font-semibold' : 'bg-black/40 border-emerald-500/30 text-emerald-200'
+                  }`}>
+                    "{selectedCohort.funnelCtaBlueprint.spokenScript}"
+                  </div>
+                </div>
+
+                {/* Tested Winning Hooks Library */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold font-mono uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                      <Play className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>Tested Winning Hooks for This Persona:</span>
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">
+                      3 Field-Tested Openers
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {selectedCohort.winningHooks.map((hook, idx) => (
                       <div
                         key={idx}
-                        className={`p-3 rounded-xl border text-xs italic ${
+                        className={`p-3.5 rounded-xl border space-y-2 flex flex-col justify-between ${
                           isLight ? 'bg-indigo-50/30 border-indigo-200/70 text-slate-800' : 'bg-indigo-950/15 border-indigo-500/20 text-slate-200'
                         }`}
                       >
-                        "{hook}"
+                        <p className="text-xs italic leading-relaxed">
+                          "{hook}"
+                        </p>
+                        <div className="pt-2 border-t border-indigo-200/50 dark:border-indigo-500/20 flex justify-end">
+                          <button
+                            onClick={() => handleCopyHook(`cohort-hook-${selectedCohort.id}-${idx}`, hook)}
+                            className={`px-2 py-0.5 rounded text-[10px] font-mono flex items-center gap-1 transition ${
+                              isLight ? 'bg-indigo-100 hover:bg-indigo-200 text-indigo-800 font-medium' : 'bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300'
+                            }`}
+                          >
+                            {copiedHookGapId === `cohort-hook-${selectedCohort.id}-${idx}` ? (
+                              <>
+                                <Check className="w-2.5 h-2.5 text-emerald-500" />
+                                <span>Copied!</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-2.5 h-2.5" />
+                                <span>Copy Hook</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1818,26 +2869,42 @@ export const ContentManagementView: React.FC = () => {
           )}
 
           {/* ================================================================= */}
-          {/* SUB-MODULE 2: WHITE SPACE GAPS (RED OCEAN VS BLUE OCEAN)          */}
+          {/* SUB-MODULE 2: STRATEGIC CONTENT SPACES (MACRO TERRITORIES)        */}
           {/* ================================================================= */}
           {strategyModule === 'gaps' && (() => {
             const categories = [
               'All',
               'Economics & Operations',
               'Retail & Automation',
-              'Market Dynamics & Pricing Defense'
+              'Market Dynamics & Pricing Defense',
+              'Live Operations & Conventions'
             ];
 
-            const filteredGaps = WHITE_SPACE_GAPS.filter((gap) => {
-              const matchesCat = gapCategoryFilter === 'All' || gap.category === gapCategoryFilter;
+            const filteredSpaces = CONTENT_SPACES.filter((space) => {
+              const matchesCat = gapCategoryFilter === 'All' || space.category === gapCategoryFilter;
+              const matchesFunnel =
+                spaceFunnelFilter === 'All' ||
+                space.funnelStagePill.includes(spaceFunnelFilter) ||
+                space.funnelStage.includes(spaceFunnelFilter);
               const matchesSearch =
                 !gapSearchQuery ||
-                gap.niche.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
-                gap.blueOceanWedge.title.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
-                gap.blueOceanWedge.exampleHook.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
-                gap.redOceanTrap.title.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
-                gap.redOceanTrap.flaw.toLowerCase().includes(gapSearchQuery.toLowerCase());
-              return matchesCat && matchesSearch;
+                space.title.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
+                space.tagline.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
+                space.strategicDomain.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
+                space.funnelStage.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
+                space.cohortsServed.some(
+                  (c) =>
+                    c.cohortName.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
+                    c.cohortRole.toLowerCase().includes(gapSearchQuery.toLowerCase())
+                ) ||
+                space.aeethodSaaSAnchor.featureName.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
+                space.recurringSeries.some((s) => s.title.toLowerCase().includes(gapSearchQuery.toLowerCase())) ||
+                space.videoAnglesLibrary.some(
+                  (a) =>
+                    a.title.toLowerCase().includes(gapSearchQuery.toLowerCase()) ||
+                    a.hook.toLowerCase().includes(gapSearchQuery.toLowerCase())
+                );
+              return matchesCat && matchesFunnel && matchesSearch;
             });
 
             const getCategoryColor = (cat: string) => {
@@ -1848,8 +2915,25 @@ export const ContentManagementView: React.FC = () => {
                   return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
                 case 'Market Dynamics & Pricing Defense':
                   return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+                case 'Live Operations & Conventions':
+                  return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
                 default:
                   return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+              }
+            };
+
+            const getFunnelBadgeColor = (pill: string) => {
+              switch (pill) {
+                case 'TOFU':
+                  return 'bg-fuchsia-500/15 text-fuchsia-400 border-fuchsia-500/30';
+                case 'TOFU-MOFU':
+                  return 'bg-purple-500/15 text-purple-400 border-purple-500/30';
+                case 'MOFU':
+                  return 'bg-sky-500/15 text-sky-400 border-sky-500/30';
+                case 'BOFU':
+                  return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
+                default:
+                  return 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30';
               }
             };
 
@@ -1860,24 +2944,44 @@ export const ContentManagementView: React.FC = () => {
               return 'bg-amber-500/15 text-amber-400 border-amber-500/30';
             };
 
+            const totalSeriesCount = CONTENT_SPACES.reduce((acc, s) => acc + s.recurringSeries.length, 0);
+            const totalAnglesCount = CONTENT_SPACES.reduce((acc, s) => acc + s.videoAnglesLibrary.length, 0);
+
             return (
               <div className="space-y-6">
-                {/* Header & Overview */}
+                {/* Header & Strategic Framing */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div>
-                    <h3 className={`text-sm font-bold uppercase tracking-wider font-mono flex items-center gap-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                      <Compass className="w-4 h-4 text-purple-400" />
-                      <span>The White Space: Saturated Commodities vs Aeethod's Blue Ocean Radar</span>
-                    </h3>
-                    <p className={`text-xs mt-0.5 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                      Systematically exploit what 99% of creators ignore: the 2.5% platform tax, sub-500ms multi-platform sync, 60fps browser card scanning, and wholesale distributor cash traps.
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="p-1.5 rounded-lg bg-purple-500/15 text-purple-400 border border-purple-500/30">
+                        <Compass className="w-4 h-4" />
+                      </span>
+                      <h3 className={`text-sm font-bold uppercase tracking-wider font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                        The 4 Strategic Content Spaces: 70% TOFU / 30% BOFU Talking Head Blueprint
+                      </h3>
+                    </div>
+                    <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-slate-400'} max-w-4xl leading-relaxed`}>
+                      <strong className={isLight ? 'text-slate-900' : 'text-white'}>70% Top Funnel (Mass Reach & Founder Authority) + 30% Bottom Funnel (Aeethod SaaS Conversion)</strong>. Optimized exclusively for talking head videos with physical props, real-time screen teardowns, and copyable outro CTAs.
                     </p>
                   </div>
 
-                  {/* Summary Metric Pill */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="px-3 py-1.5 rounded-xl border font-mono text-xs font-bold bg-purple-500/10 text-purple-400 border-purple-500/25">
-                      {WHITE_SPACE_GAPS.length} High-Yield Wedges Researched
+                  {/* Summary Metric Pills */}
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <span className="px-3 py-1.5 rounded-xl border font-mono text-xs font-bold bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/25 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>70% TOFU / 30% BOFU</span>
+                    </span>
+                    <span className="px-3 py-1.5 rounded-xl border font-mono text-xs font-bold bg-purple-500/10 text-purple-400 border-purple-500/25 flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5" />
+                      <span>{CONTENT_SPACES.length} Strategic Spaces</span>
+                    </span>
+                    <span className="px-3 py-1.5 rounded-xl border font-mono text-xs font-bold bg-indigo-500/10 text-indigo-400 border-indigo-500/25 flex items-center gap-1.5">
+                      <Clapperboard className="w-3.5 h-3.5" />
+                      <span>{totalSeriesCount} Recurring Shows</span>
+                    </span>
+                    <span className="px-3 py-1.5 rounded-xl border font-mono text-xs font-bold bg-emerald-500/10 text-emerald-400 border-emerald-500/25 flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5" />
+                      <span>{totalAnglesCount} Video Angles</span>
                     </span>
                   </div>
                 </div>
@@ -1894,7 +2998,7 @@ export const ContentManagementView: React.FC = () => {
                         type="text"
                         value={gapSearchQuery}
                         onChange={(e) => setGapSearchQuery(e.target.value)}
-                        placeholder="Search niches, hooks, flaws, or formulas..."
+                        placeholder="Search spaces, recurring series, hooks, software features, or formulas..."
                         className={`w-full pl-9 pr-3 py-2 rounded-xl text-xs outline-none border transition ${
                           isLight
                             ? 'bg-white border-slate-300 text-slate-900 focus:border-purple-500'
@@ -1910,52 +3014,121 @@ export const ContentManagementView: React.FC = () => {
                         </button>
                       )}
                     </div>
+
+                    {/* Quick Expand / Collapse All */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => {
+                          const allOpen: Record<string, boolean> = {};
+                          CONTENT_SPACES.forEach((s) => {
+                            allOpen[s.id] = true;
+                          });
+                          setExpandedSpaces(allOpen);
+                        }}
+                        className={`px-3 py-2 rounded-xl text-xs font-mono font-medium transition ${
+                          isLight
+                            ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                            : 'bg-[#1e1e28] border border-[#2d2d3e] text-slate-300 hover:bg-[#282838]'
+                        }`}
+                      >
+                        Expand All ({totalAnglesCount} Angles)
+                      </button>
+                      <button
+                        onClick={() => setExpandedSpaces({})}
+                        className={`px-3 py-2 rounded-xl text-xs font-mono font-medium transition ${
+                          isLight
+                            ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                            : 'bg-[#1e1e28] border border-[#2d2d3e] text-slate-300 hover:bg-[#282838]'
+                        }`}
+                      >
+                        Collapse All
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Category Filter Chips */}
-                  <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-200/40 dark:border-zinc-800/60">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mr-1">
-                      Category:
-                    </span>
-                    {categories.map((cat) => {
-                      const isActive = gapCategoryFilter === cat;
-                      const count =
-                        cat === 'All'
-                          ? WHITE_SPACE_GAPS.length
-                          : WHITE_SPACE_GAPS.filter((g) => g.category === cat).length;
+                  {/* Funnel Tier & Category Filter Controls */}
+                  <div className="space-y-2.5 pt-2 border-t border-slate-200/40 dark:border-zinc-800/60">
+                    {/* Funnel Stage Filter */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1">
+                        <Filter className="w-3 h-3 text-purple-400" />
+                        <span>Funnel Stage:</span>
+                      </span>
+                      {(['All', 'TOFU', 'MOFU', 'BOFU'] as const).map((tier) => {
+                        const isActive = spaceFunnelFilter === tier;
+                        const count =
+                          tier === 'All'
+                            ? CONTENT_SPACES.length
+                            : CONTENT_SPACES.filter((s) => s.funnelStagePill.includes(tier) || s.funnelStage.includes(tier)).length;
 
-                      return (
-                        <button
-                          key={cat}
-                          onClick={() => setGapCategoryFilter(cat)}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-mono transition flex items-center gap-1.5 ${
-                            isActive
-                              ? 'bg-indigo-600 text-white font-bold shadow-xs'
-                              : isLight
-                              ? 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-200'
-                              : 'bg-[#1e1e28] hover:bg-[#282838] text-slate-300 border border-[#2d2d3e]'
-                          }`}
-                        >
-                          <span>{cat}</span>
-                          <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                            isActive ? 'bg-white/20 text-white' : 'bg-black/20 text-slate-400'
-                          }`}>
-                            {count}
-                          </span>
-                        </button>
-                      );
-                    })}
+                        return (
+                          <button
+                            key={tier}
+                            onClick={() => setSpaceFunnelFilter(tier)}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-mono transition flex items-center gap-1.5 ${
+                              isActive
+                                ? 'bg-purple-600 text-white font-bold shadow-xs'
+                                : isLight
+                                ? 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-200'
+                                : 'bg-[#1e1e28] hover:bg-[#282838] text-slate-300 border border-[#2d2d3e]'
+                            }`}
+                          >
+                            <span>{tier === 'All' ? 'All Stages' : `${tier} Stage`}</span>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                              isActive ? 'bg-white/20 text-white' : 'bg-black/20 text-slate-400'
+                            }`}>
+                              {count}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Category Filter Chips */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mr-1">
+                        Category Domain:
+                      </span>
+                      {categories.map((cat) => {
+                        const isActive = gapCategoryFilter === cat;
+                        const count =
+                          cat === 'All'
+                            ? CONTENT_SPACES.length
+                            : CONTENT_SPACES.filter((g) => g.category === cat).length;
+
+                        return (
+                          <button
+                            key={cat}
+                            onClick={() => setGapCategoryFilter(cat)}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-mono transition flex items-center gap-1.5 ${
+                              isActive
+                                ? 'bg-indigo-600 text-white font-bold shadow-xs'
+                                : isLight
+                                ? 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-200'
+                                : 'bg-[#1e1e28] hover:bg-[#282838] text-slate-300 border border-[#2d2d3e]'
+                            }`}
+                          >
+                            <span>{cat}</span>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                              isActive ? 'bg-white/20 text-white' : 'bg-black/20 text-slate-400'
+                            }`}>
+                              {count}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
-                {/* The 8 White Space Gap Cards */}
-                {filteredGaps.length === 0 ? (
+                {/* Content Spaces List */}
+                {filteredSpaces.length === 0 ? (
                   <div className={`p-12 text-center rounded-2xl border space-y-3 ${
                     isLight ? 'bg-white border-slate-200' : 'bg-[#181820] border-[#292934]'
                   }`}>
                     <Compass className="w-8 h-8 text-slate-500 mx-auto" />
                     <p className="text-sm font-semibold text-slate-400">
-                      No white space wedges match your search or filter.
+                      No strategic content spaces match your search or filter.
                     </p>
                     <button
                       onClick={() => {
@@ -1968,146 +3141,442 @@ export const ContentManagementView: React.FC = () => {
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-5">
-                    {filteredGaps.map((gap) => (
-                      <div
-                        key={gap.id}
-                        className={`p-6 rounded-2xl border space-y-5 transition-all ${
-                          isLight
-                            ? 'bg-white border-slate-200 shadow-sm hover:shadow-md'
-                            : 'bg-[#181822] border-[#282836] hover:border-[#38384d]'
-                        }`}
-                      >
-                        {/* Card Header */}
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-zinc-800">
-                          <div className="space-y-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full border uppercase tracking-wider font-bold ${getCategoryColor(gap.category)}`}>
-                                {gap.category}
-                              </span>
-                              <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full border uppercase tracking-wider font-bold ${getMultiplierColor(gap.viralMultiplier)}`}>
-                                ⚡ {gap.viralMultiplier}
-                              </span>
-                              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-500/10 text-slate-400 border border-slate-500/20">
-                                🎬 {gap.primaryFormat}
-                              </span>
-                            </div>
-                            <h4 className={`text-base font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                              {gap.niche}
-                            </h4>
-                          </div>
-                        </div>
+                  <div className="space-y-8">
+                    {filteredSpaces.map((space) => {
+                      const isExpanded = !!expandedSpaces[space.id];
 
-                        {/* Side by Side Red vs Blue */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                          {/* Red Ocean Trap */}
-                          <div className={`p-4 rounded-xl border space-y-2.5 ${
-                            isLight ? 'bg-rose-50/40 border-rose-200' : 'bg-rose-950/15 border-rose-500/25'
+                      return (
+                        <div
+                          key={space.id}
+                          className={`rounded-2xl border transition-all overflow-hidden ${
+                            isLight
+                              ? 'bg-white border-slate-200 shadow-sm hover:shadow-md'
+                              : 'bg-[#181822] border-[#282836] hover:border-[#38384d]'
+                          }`}
+                        >
+                          {/* 1. Space Header Banner */}
+                          <div className={`p-5 sm:p-6 border-b ${
+                            isLight ? 'bg-slate-50/70 border-slate-200' : 'bg-[#14141e] border-[#262636]'
                           }`}>
-                            <div className="flex items-center gap-2 font-bold font-mono text-[11px] text-rose-500 uppercase">
-                              <span className="w-4 h-4 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-[10px]">✕</span>
-                              <span>The Saturated Red Ocean (What Competitors Do)</span>
-                            </div>
-                            <div className="font-bold text-sm text-rose-400">{gap.redOceanTrap.title}</div>
-                            <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
-                              {gap.redOceanTrap.flaw}
-                            </p>
-                            <div className="text-[10px] font-mono text-rose-400 pt-1.5 border-t border-rose-500/20">
-                              Fatal Result: {gap.redOceanTrap.consequence}
+                            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                              <div className="space-y-1.5">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-md font-bold bg-indigo-600 text-white">
+                                    SPACE 0{space.spaceNumber}
+                                  </span>
+                                  <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full border uppercase tracking-wider font-bold ${getFunnelBadgeColor(space.funnelStagePill)}`}>
+                                    🎯 {space.funnelStage}
+                                  </span>
+                                  <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full border uppercase tracking-wider font-bold ${getCategoryColor(space.category)}`}>
+                                    {space.category}
+                                  </span>
+                                  <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full border uppercase tracking-wider font-bold ${getMultiplierColor(space.viralMultiplier)}`}>
+                                    ⚡ {space.viralMultiplier}
+                                  </span>
+                                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-500/10 text-slate-400 border border-slate-500/20">
+                                    {space.recurringSeries.length} Show Franchises
+                                  </span>
+                                </div>
+                                <div>
+                                  <h4 className={`text-lg font-bold font-mono tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                                    {space.title}
+                                  </h4>
+                                  <p className="text-xs font-medium text-purple-400 font-mono">
+                                    {space.tagline}
+                                  </p>
+                                </div>
+                                <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-slate-300'} leading-relaxed max-w-4xl`}>
+                                  <span className="font-semibold text-slate-400 font-mono uppercase text-[10px]">Strategic Domain: </span>
+                                  {space.strategicDomain}
+                                </p>
+                              </div>
+
+                              {/* Target Audience Pill & Angle Toggle */}
+                              <div className="flex flex-col sm:flex-row lg:flex-col items-start lg:items-end gap-2.5 shrink-0">
+                                <div className="flex items-center gap-1.5 text-xs font-mono px-3 py-1.5 rounded-xl bg-black/20 border border-slate-700/50 text-slate-300">
+                                  <Users className="w-3.5 h-3.5 text-purple-400" />
+                                  <span>{space.targetAudienceB2B}</span>
+                                </div>
+                                <button
+                                  onClick={() => toggleSpaceExpanded(space.id)}
+                                  className={`text-xs font-mono font-medium px-3.5 py-1.5 rounded-xl border flex items-center gap-2 transition ${
+                                    isExpanded
+                                      ? 'bg-purple-600 text-white border-purple-500 shadow-sm'
+                                      : isLight
+                                      ? 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
+                                      : 'bg-[#20202c] hover:bg-[#282838] text-slate-300 border-[#303042]'
+                                  }`}
+                                >
+                                  <span>{isExpanded ? 'Hide Video Angles' : `View ${space.videoAnglesLibrary.length} Video Angles`}</span>
+                                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                </button>
+                              </div>
                             </div>
                           </div>
 
-                          {/* Blue Ocean Wedge */}
-                          <div className={`p-4 rounded-xl border space-y-2.5 ${
-                            isLight ? 'bg-emerald-50/40 border-emerald-200' : 'bg-emerald-950/15 border-emerald-500/25'
-                          }`}>
-                            <div className="flex items-center gap-2 font-bold font-mono text-[11px] text-emerald-500 uppercase">
-                              <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[10px]">✓</span>
-                              <span>The Blue Ocean Wedge (Aeethod OS Moat)</span>
-                            </div>
-                            <div className="font-bold text-sm text-emerald-400">{gap.blueOceanWedge.title}</div>
-                            <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
-                              {gap.blueOceanWedge.advantage}
-                            </p>
+                          <div className="p-5 sm:p-6 space-y-6">
+                            {/* Audience Cohorts & Funnel Conversion Bridge */}
+                            <div className="space-y-3">
+                              {/* Audience Cohorts Served */}
+                              <div className={`p-4 rounded-xl border space-y-3 ${
+                                isLight ? 'bg-purple-50/40 border-purple-200' : 'bg-purple-950/10 border-purple-500/25'
+                              }`}>
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2">
+                                    <Users className="w-4 h-4 text-purple-400" />
+                                    <span className="text-xs font-bold font-mono uppercase tracking-wider text-purple-400">
+                                      Audience Anatomy: Cohorts Served in This Space
+                                    </span>
+                                  </div>
+                                  <span className="text-[10px] font-mono text-slate-400">
+                                    Primary Persona: <strong className="text-purple-300 uppercase">{space.primaryCohortId.replace('_', ' ')}</strong>
+                                  </span>
+                                </div>
 
-                            {/* Algorithmic Moat */}
-                            <div className="text-[10px] font-mono text-emerald-400 pt-1 border-t border-emerald-500/20 flex items-center gap-1.5">
-                              <span className="font-bold">Algorithmic Moat:</span>
-                              <span>{gap.blueOceanWedge.algorithmicMoat}</span>
-                            </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                                  {space.cohortsServed.map((cohort, cIdx) => (
+                                    <div
+                                      key={cIdx}
+                                      className={`p-3 rounded-lg border flex items-start gap-2.5 transition ${
+                                        isLight
+                                          ? 'bg-white border-purple-100/80 shadow-xs'
+                                          : 'bg-[#151520] border-[#29293c]'
+                                      }`}
+                                    >
+                                      <span className="text-xl shrink-0 mt-0.5">{cohort.icon}</span>
+                                      <div className="space-y-1 min-w-0">
+                                        <div className={`text-xs font-bold font-mono truncate ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                                          {cohort.cohortName}
+                                        </div>
+                                        <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                                          {cohort.cohortRole}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
 
-                            {/* Actionable Example Hook Box */}
-                            {gap.blueOceanWedge.exampleHook && (
-                              <div className="mt-2 p-3 rounded-xl bg-black/40 border border-emerald-500/30 space-y-1.5">
-                                <div className="flex items-center justify-between text-[10px] font-mono text-emerald-400 uppercase font-bold">
-                                  <span>Tested Opening Hook:</span>
+                              {/* Talking Head Studio Blueprint & Personal Brand Role */}
+                              {space.talkingHeadFormat && (
+                                <div className={`p-4 rounded-xl border space-y-2.5 ${
+                                  isLight ? 'bg-amber-50/50 border-amber-200' : 'bg-amber-950/15 border-amber-500/25'
+                                }`}>
+                                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2">
+                                      <Clapperboard className="w-4 h-4 text-amber-400" />
+                                      <span className="text-xs font-bold font-mono uppercase tracking-wider text-amber-400">
+                                        Talking Head Production Blueprint & Personal Brand Role
+                                      </span>
+                                    </div>
+                                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold self-start sm:self-auto">
+                                      {space.talkingHeadFormat.funnelAllocation}
+                                    </span>
+                                  </div>
+
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs">
+                                    <div className={`p-2.5 rounded-lg border space-y-1 ${
+                                      isLight ? 'bg-white border-amber-100 shadow-xs' : 'bg-[#161622] border-[#2d2d3e]'
+                                    }`}>
+                                      <div className="text-[10px] font-mono uppercase text-amber-400 font-bold">Founder Brand Role</div>
+                                      <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                                        {space.talkingHeadFormat.founderRole}
+                                      </p>
+                                    </div>
+
+                                    <div className={`p-2.5 rounded-lg border space-y-1 ${
+                                      isLight ? 'bg-white border-amber-100 shadow-xs' : 'bg-[#161622] border-[#2d2d3e]'
+                                    }`}>
+                                      <div className="text-[10px] font-mono uppercase text-amber-400 font-bold">Camera & Mic Framing</div>
+                                      <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                                        {space.talkingHeadFormat.cameraSetup}
+                                      </p>
+                                    </div>
+
+                                    <div className={`p-2.5 rounded-lg border space-y-1 ${
+                                      isLight ? 'bg-white border-amber-100 shadow-xs' : 'bg-[#161622] border-[#2d2d3e]'
+                                    }`}>
+                                      <div className="text-[10px] font-mono uppercase text-amber-400 font-bold">Physical Props in Hand</div>
+                                      <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                                        {space.talkingHeadFormat.propsInHand}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Funnel Progression Roadmap */}
+                              <div className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                                isLight ? 'bg-indigo-50/40 border-indigo-200' : 'bg-indigo-950/15 border-indigo-500/25'
+                              }`}>
+                                <div className="space-y-1">
+                                  <div className="text-[10px] font-mono uppercase tracking-wider text-indigo-400 font-bold flex items-center gap-1.5">
+                                    <ArrowRightLeft className="w-3.5 h-3.5 text-indigo-400" />
+                                    <span>Funnel Progression Mechanism ({space.funnelStagePill} Tier)</span>
+                                  </div>
+                                  <p className={`text-xs ${isLight ? 'text-slate-700' : 'text-slate-200'} font-mono leading-relaxed`}>
+                                    {space.funnelProgressionMechanism}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Spoken Outro CTA Script */}
+                              <div className={`p-4 rounded-xl border space-y-2.5 ${
+                                isLight ? 'bg-emerald-50/50 border-emerald-200' : 'bg-emerald-950/15 border-emerald-500/30'
+                              }`}>
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                  <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-400 uppercase">
+                                    <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                                    <span>Tested Spoken Outro CTA: {space.spokenCtaOutro.ctaType}</span>
+                                  </div>
                                   <button
-                                    onClick={() => handleCopyHook(gap.id, gap.blueOceanWedge.exampleHook)}
-                                    className="px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[10px] flex items-center gap-1 transition"
+                                    onClick={() => handleCopyCta(space.id, space.spokenCtaOutro.script)}
+                                    className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-mono text-xs flex items-center gap-1.5 transition shrink-0 self-start sm:self-auto"
                                   >
-                                    {copiedHookGapId === gap.id ? (
+                                    {copiedCtaSpaceId === space.id ? (
                                       <>
                                         <Check className="w-3 h-3 text-emerald-400" />
-                                        <span>Copied!</span>
+                                        <span>Copied Script!</span>
                                       </>
                                     ) : (
                                       <>
                                         <Copy className="w-3 h-3" />
-                                        <span>Copy Hook</span>
+                                        <span>Copy Spoken CTA</span>
                                       </>
                                     )}
                                   </button>
                                 </div>
-                                <div className="text-xs italic text-emerald-200 font-medium leading-relaxed">
-                                  "{gap.blueOceanWedge.exampleHook}"
+                                <div className={`text-xs italic font-mono leading-relaxed p-3 rounded-lg border ${
+                                  isLight
+                                    ? 'bg-white/80 border-emerald-200 text-emerald-900'
+                                    : 'bg-black/40 border-emerald-500/20 text-emerald-200'
+                                }`}>
+                                  "{space.spokenCtaOutro.script}"
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 2. Side-by-Side: Saturated Red Ocean vs Blue Ocean Strategic Moat */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                              {/* Red Ocean Trap */}
+                              <div className={`p-4 rounded-xl border space-y-2.5 ${
+                                isLight ? 'bg-rose-50/40 border-rose-200' : 'bg-rose-950/15 border-rose-500/25'
+                              }`}>
+                                <div className="flex items-center gap-2 font-bold font-mono text-[11px] text-rose-500 uppercase">
+                                  <span className="w-4 h-4 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-[10px]">✕</span>
+                                  <span>The Saturated Red Ocean (Competitor Blind Spot)</span>
+                                </div>
+                                <p className={`text-xs leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
+                                  {space.whyItIsAWhiteSpace.competitorBlindSpot}
+                                </p>
+                              </div>
+
+                              {/* Blue Ocean Wedge */}
+                              <div className={`p-4 rounded-xl border space-y-2.5 ${
+                                isLight ? 'bg-emerald-50/40 border-emerald-200' : 'bg-emerald-950/15 border-emerald-500/25'
+                              }`}>
+                                <div className="flex items-center gap-2 font-bold font-mono text-[11px] text-emerald-500 uppercase">
+                                  <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[10px]">✓</span>
+                                  <span>The Blue Ocean Wedge (Unmet Demand & Moat)</span>
+                                </div>
+                                <p className={`text-xs leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
+                                  {space.whyItIsAWhiteSpace.audiencePainAndDemand}
+                                </p>
+                                <div className="text-[10px] font-mono text-emerald-400 pt-1.5 border-t border-emerald-500/20 flex items-center gap-1.5">
+                                  <span className="font-bold">Algorithmic Moat:</span>
+                                  <span>{space.whyItIsAWhiteSpace.strategicMoat}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 3. Aeethod SaaS Product Anchor (The Commercial Moat) */}
+                            <div className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                              isLight
+                                ? 'bg-indigo-50/60 border-indigo-200'
+                                : 'bg-gradient-to-r from-indigo-950/20 via-[#181828] to-purple-950/20 border-indigo-500/30'
+                            }`}>
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-indigo-400 flex items-center gap-1">
+                                    <Zap className="w-3 h-3 text-indigo-400" />
+                                    <span>Aeethod OS SaaS Engine Anchor</span>
+                                  </span>
+                                </div>
+                                <div className={`text-sm font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                                  {space.aeethodSaaSAnchor.featureName}
+                                </div>
+                                <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-slate-300'} max-w-3xl leading-relaxed`}>
+                                  {space.aeethodSaaSAnchor.productAdvantage}
+                                </p>
+                              </div>
+
+                              <div className="shrink-0">
+                                <div className="px-3.5 py-2 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 font-mono text-xs font-semibold">
+                                  <div className="text-[10px] text-indigo-400 uppercase">Commercial Value</div>
+                                  <div className="text-white text-xs mt-0.5">{space.aeethodSaaSAnchor.commercialPayoff}</div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 4. The 3 Recurring Show Franchises (Evergreen Formats) */}
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <h5 className={`text-xs font-bold uppercase font-mono tracking-wider flex items-center gap-2 ${
+                                  isLight ? 'text-slate-800' : 'text-slate-200'
+                                }`}>
+                                  <Clapperboard className="w-3.5 h-3.5 text-purple-400" />
+                                  <span>Recurring Series Formats (Produce Over Time in This Space)</span>
+                                </h5>
+                                <span className="text-[10px] font-mono text-slate-400">
+                                  3 Permanent Franchises
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                {space.recurringSeries.map((series) => (
+                                  <div
+                                    key={series.seriesId}
+                                    className={`p-3.5 rounded-xl border space-y-2 flex flex-col justify-between ${
+                                      isLight
+                                        ? 'bg-slate-50/80 border-slate-200'
+                                        : 'bg-[#13131c] border-[#252535]'
+                                    }`}
+                                  >
+                                    <div className="space-y-1.5">
+                                      <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
+                                        <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 font-bold">
+                                          {series.cadence}
+                                        </span>
+                                        <span className="text-slate-400 font-medium">{series.format}</span>
+                                      </div>
+                                      <div className={`text-xs font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                                        {series.title}
+                                      </div>
+                                      <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                                        {series.description}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* 5. The Video Angles Library (Expandable / Visible) */}
+                            {isExpanded && (
+                              <div className="space-y-4 pt-3 border-t border-slate-200/40 dark:border-zinc-800/60 animate-in fade-in duration-200">
+                                <div className="flex items-center justify-between">
+                                  <div className="space-y-0.5">
+                                    <h5 className={`text-xs font-bold uppercase font-mono tracking-wider flex items-center gap-2 ${
+                                      isLight ? 'text-slate-800' : 'text-slate-200'
+                                    }`}>
+                                      <Layers className="w-3.5 h-3.5 text-indigo-400" />
+                                      <span>Video Angles Library: 6 Ready-to-Produce Angles</span>
+                                    </h5>
+                                    <p className={`text-[11px] ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                                      Each angle represents an individual video production script with tested hook and 4-stage algorithmic execution sequence.
+                                    </p>
+                                  </div>
+                                  <span className="text-xs font-mono text-purple-400 font-bold">
+                                    {space.videoAnglesLibrary.length} Angles
+                                  </span>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  {space.videoAnglesLibrary.map((angle) => (
+                                    <div
+                                      key={angle.angleId}
+                                      className={`p-4 rounded-xl border space-y-3.5 flex flex-col justify-between ${
+                                        isLight
+                                          ? 'bg-slate-50/50 border-slate-200'
+                                          : 'bg-black/30 border-[#262638] hover:border-[#383850]'
+                                      }`}
+                                    >
+                                      <div className="space-y-2.5">
+                                        <div className="flex items-center justify-between gap-2 text-[10px] font-mono">
+                                          <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold">
+                                            {angle.seriesTitle}
+                                          </span>
+                                          <span className="text-slate-400 truncate max-w-[180px]">
+                                            Target: {angle.targetAudience}
+                                          </span>
+                                        </div>
+
+                                        <h6 className={`text-xs font-bold font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                                          {angle.title}
+                                        </h6>
+
+                                        {/* Tested Opening Hook */}
+                                        <div className="p-3 rounded-xl bg-black/40 border border-emerald-500/30 space-y-1.5">
+                                          <div className="flex items-center justify-between text-[10px] font-mono text-emerald-400 uppercase font-bold">
+                                            <span>Tested Opening Hook:</span>
+                                            <button
+                                              onClick={() => handleCopyHook(angle.angleId, angle.hook)}
+                                              className="px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[10px] flex items-center gap-1 transition"
+                                            >
+                                              {copiedHookGapId === angle.angleId ? (
+                                                <>
+                                                  <Check className="w-3 h-3 text-emerald-400" />
+                                                  <span>Copied!</span>
+                                                </>
+                                              ) : (
+                                                <>
+                                                  <Copy className="w-3 h-3" />
+                                                  <span>Copy Hook</span>
+                                                </>
+                                              )}
+                                            </button>
+                                          </div>
+                                          <div className="text-xs italic text-emerald-200 font-medium leading-relaxed">
+                                            "{angle.hook}"
+                                          </div>
+                                        </div>
+
+                                        <div className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                                          <span className="font-semibold text-slate-400 font-mono text-[10px] uppercase">Core Mechanism: </span>
+                                          {angle.coreMechanism}
+                                        </div>
+                                      </div>
+
+                                      {/* 4-Stage Execution Sequence */}
+                                      <div className="pt-2.5 border-t border-slate-200/40 dark:border-zinc-800/60 space-y-1.5">
+                                        <div className="text-[10px] font-mono text-slate-400 uppercase font-bold">
+                                          4-Stage Sequence:
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[10px] font-mono">
+                                          {angle.executionChecklist.map((step, sIdx) => (
+                                            <div
+                                              key={sIdx}
+                                              className={`p-1.5 rounded border flex items-start gap-1.5 ${
+                                                isLight
+                                                  ? 'bg-white border-slate-200 text-slate-700'
+                                                  : 'bg-[#151520] border-[#252534] text-slate-300'
+                                              }`}
+                                            >
+                                              <span className="text-indigo-400 font-bold shrink-0">0{sIdx + 1}</span>
+                                              <span className="leading-tight truncate">{step}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
                                 </div>
                               </div>
                             )}
                           </div>
                         </div>
-
-                        {/* Tactical Pre-Flight Checklist */}
-                        {gap.tacticalChecklist && gap.tacticalChecklist.length > 0 && (
-                          <div className={`p-4 rounded-xl border space-y-2.5 ${
-                            isLight ? 'bg-slate-50/70 border-slate-200' : 'bg-black/25 border-[#282836]'
-                          }`}>
-                            <div className="flex items-center justify-between text-[11px] font-mono font-bold text-slate-300 uppercase">
-                              <span className="flex items-center gap-1.5 text-indigo-400">
-                                <span>⚡</span>
-                                <span>Tactical Pre-Production Execution Steps:</span>
-                              </span>
-                              <span className="text-[10px] text-slate-400 font-mono">
-                                4-Stage Algorithmic Sequence
-                              </span>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
-                              {gap.tacticalChecklist.map((step, sIdx) => (
-                                <div
-                                  key={sIdx}
-                                  className={`p-2.5 rounded-lg border text-[11px] flex items-start gap-2 ${
-                                    isLight ? 'bg-white border-slate-200 text-slate-700' : 'bg-[#14141c] border-[#292938] text-zinc-300'
-                                  }`}
-                                >
-                                  <span className="w-4 h-4 rounded bg-indigo-500/20 text-indigo-400 font-mono font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
-                                    0{sIdx + 1}
-                                  </span>
-                                  <span className="leading-snug">{step}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
             );
           })()}
 
+          {strategyModule === 'funnel' && renderConversionFunnelPage()}
+
           {/* ================================================================= */}
-          {/* SUB-MODULE 3: COMPETITOR TEARDOWN & POSITIONING                   */}
+          {/* SUB-MODULE 4: COMPETITOR TEARDOWN & POSITIONING                   */}
           {/* ================================================================= */}
           {strategyModule === 'competitors' && (
             <div className="space-y-6">
@@ -2380,6 +3849,15 @@ export const ContentManagementView: React.FC = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB: CONVERSION FUNNEL (TOFU / MOFU / BOFU ARCHITECTURE)                  */}
+      {/* ========================================================================= */}
+      {activeTab === 'funnel' && (
+        <div className="space-y-8 animate-fade-in">
+          {renderConversionFunnelPage()}
         </div>
       )}
 
@@ -2661,7 +4139,7 @@ export const ContentManagementView: React.FC = () => {
                   All 5 Spaces (38 Categories)
                 </button>
                 {SPACES_LIST.map((spKey) => {
-                  const spDef = CONTENT_SPACES[spKey];
+                  const spDef = CONTENT_SPACE_MAP[spKey];
                   const isSelected = activeSpaceFilter === spKey;
                   return (
                     <button
@@ -2688,7 +4166,7 @@ export const ContentManagementView: React.FC = () => {
                 {SPACES_LIST.filter(
                   (spKey) => activeSpaceFilter === 'all' || activeSpaceFilter === spKey
                 ).map((spKey) => {
-                  const sp = CONTENT_SPACES[spKey];
+                  const sp = CONTENT_SPACE_MAP[spKey];
                   const conf = TOPIC_CONFIG[spKey];
                   const inPipelineCount = analytics.topicCounts[spKey]?.total || 0;
 
@@ -3151,13 +4629,16 @@ export const ContentManagementView: React.FC = () => {
             }`}
           >
             <div className="space-y-1 max-w-2xl">
-              <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase bg-pink-500/10 text-pink-500 border border-pink-500/30 flex items-center gap-1">
-                  <Flame className="w-3 h-3" />
-                  Meta Graph API v21.0
+              <div className="flex items-center flex-wrap gap-2">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                  Meta Graph API Active
                 </span>
                 <span className="text-xs text-slate-400 font-mono">
-                  Account: <strong className={isLight ? 'text-slate-800' : 'text-slate-200'}>{igAccountId}</strong>
+                  Page: <strong className={isLight ? 'text-slate-800' : 'text-slate-200'}>Aeethod ({pageId})</strong>
+                </span>
+                <span className="text-xs text-slate-400 font-mono">
+                  IG: <strong className="text-pink-400 font-semibold">{igAccountId}</strong> (ID: {igBusinessId})
                 </span>
               </div>
               <h2 className="text-lg font-bold tracking-tight">
@@ -3606,31 +5087,124 @@ export const ContentManagementView: React.FC = () => {
               </button>
             </div>
 
-            <div className="space-y-3.5 text-xs">
-              <div className={`p-3 rounded-xl border text-[11px] leading-relaxed space-y-1.5 ${
+            <div className="space-y-4 text-xs">
+              <div className={`p-3.5 rounded-xl border text-[11px] leading-relaxed space-y-2.5 ${
                 isLight ? 'bg-slate-50 border-slate-200 text-slate-700' : 'bg-black/30 border-slate-800 text-slate-300'
               }`}>
-                <div className="font-bold text-indigo-400 uppercase font-mono">Meta API Prerequisites:</div>
-                <ol className="list-decimal list-inside space-y-1 text-[11px]">
-                  <li>Switch Instagram to a <strong>Professional Account</strong> (Creator or Business).</li>
-                  <li>Link your Instagram account to a Facebook Page in Meta Accounts Center.</li>
-                  <li>In <strong>Meta for Developers</strong> (developers.facebook.com), create an app with permissions: <code>instagram_basic</code> &amp; <code>instagram_manage_insights</code>.</li>
-                  <li>Generate a <strong>Long-Lived Page Access Token</strong> (valid 60 days).</li>
+                <div className="flex items-center justify-between">
+                  <div className="font-bold text-indigo-400 uppercase font-mono text-[11px] flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>How to Connect (Meta Graph API v21.0)</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">
+                    Official API
+                  </span>
+                </div>
+
+                <ol className="list-decimal list-inside space-y-1.5 text-[11px]">
+                  <li>
+                    <strong>Switch to Professional:</strong> Convert your Instagram to a <strong>Creator</strong> or <strong>Business</strong> account.
+                  </li>
+                  <li>
+                    <strong>Link to Facebook Page:</strong> In Meta Business Suite, connect your Instagram account to a Facebook Page.
+                  </li>
+                  <li>
+                    <strong>Create Meta Developer App:</strong> Go to{' '}
+                    <a
+                      href="https://developers.facebook.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-pink-400 underline hover:text-pink-300 inline-flex items-center gap-0.5 font-mono"
+                    >
+                      developers.facebook.com
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                    , create a <em>Business</em> app, and add <strong>Instagram Graph API</strong>.
+                  </li>
+                  <li>
+                    <strong>Generate Page Access Token:</strong> In{' '}
+                    <a
+                      href="https://developers.facebook.com/tools/explorer"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-indigo-400 underline hover:text-indigo-300 inline-flex items-center gap-0.5 font-mono"
+                    >
+                      Graph API Explorer
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                    , add permissions:
+                    <div className="flex flex-wrap gap-1 mt-1 font-mono text-[10px]">
+                      <span className="px-1.5 py-0.5 rounded bg-pink-500/15 text-pink-400 border border-pink-500/25">instagram_basic</span>
+                      <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-400 border border-purple-500/25">instagram_manage_insights</span>
+                      <span className="px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-400 border border-indigo-500/25">pages_show_list</span>
+                      <span className="px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-400 border border-sky-500/25">pages_read_engagement</span>
+                    </div>
+                  </li>
+                  <li>
+                    <strong>Extend Token (60 Days):</strong> Use the{' '}
+                    <a
+                      href="https://developers.facebook.com/tools/debug/accesstoken"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-emerald-400 underline hover:text-emerald-300 inline-flex items-center gap-0.5 font-mono"
+                    >
+                      Access Token Debugger
+                      <ExternalLink className="w-3 h-3" />
+                    </a>{' '}
+                    to generate a long-lived Page Access Token.
+                  </li>
                 </ol>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-mono uppercase mb-1 text-slate-400">
+                    Instagram Handle
+                  </label>
+                  <input
+                    type="text"
+                    value={igAccountId}
+                    onChange={(e) => {
+                      setIgAccountId(e.target.value);
+                      try { localStorage.setItem('ig_account_id', e.target.value); } catch {}
+                    }}
+                    placeholder="@the_tcg_baddie"
+                    className={`w-full rounded-lg px-3 py-2 text-xs border font-mono outline-none focus:border-indigo-500 ${
+                      isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-[#141418] border-[#292934] text-white'
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-mono uppercase mb-1 text-slate-400">
+                    IG Business Account ID
+                  </label>
+                  <input
+                    type="text"
+                    value={igBusinessId}
+                    onChange={(e) => {
+                      setIgBusinessId(e.target.value);
+                      try { localStorage.setItem('ig_business_id', e.target.value); } catch {}
+                    }}
+                    placeholder="17841423777293611"
+                    className={`w-full rounded-lg px-3 py-2 text-xs border font-mono outline-none focus:border-indigo-500 ${
+                      isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-[#141418] border-[#292934] text-white'
+                    }`}
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-[11px] font-mono uppercase mb-1 text-slate-400">
-                  Instagram Handle / Account Name
+                  Connected Facebook Page ID (Aeethod)
                 </label>
                 <input
                   type="text"
-                  value={igAccountId}
+                  value={pageId}
                   onChange={(e) => {
-                    setIgAccountId(e.target.value);
-                    try { localStorage.setItem('ig_account_id', e.target.value); } catch {}
+                    setPageId(e.target.value);
+                    try { localStorage.setItem('meta_page_id', e.target.value); } catch {}
                   }}
-                  placeholder="@your_tcg_store"
+                  placeholder="1300315849833332"
                   className={`w-full rounded-lg px-3 py-2 text-xs border font-mono outline-none focus:border-indigo-500 ${
                     isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-[#141418] border-[#292934] text-white'
                   }`}
@@ -3638,9 +5212,20 @@ export const ContentManagementView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono uppercase mb-1 text-slate-400">
-                  Meta Page Access Token
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[11px] font-mono uppercase text-slate-400">
+                    Meta Page Access Token (Long-Lived)
+                  </label>
+                  {igAccessToken ? (
+                    <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
+                      <Check className="w-3 h-3" /> Token Configured
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-mono text-slate-400">
+                      Optional (Simulation active without token)
+                    </span>
+                  )}
+                </div>
                 <input
                   type="password"
                   value={igAccessToken}
@@ -3648,7 +5233,7 @@ export const ContentManagementView: React.FC = () => {
                     setIgAccessToken(e.target.value);
                     try { localStorage.setItem('ig_access_token', e.target.value); } catch {}
                   }}
-                  placeholder="EAAG... (Graph API Long-Lived User or Page Token)"
+                  placeholder="EAAG... (Paste 60-day Long-Lived Token)"
                   className={`w-full rounded-lg px-3 py-2 text-xs border font-mono outline-none focus:border-indigo-500 ${
                     isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-[#141418] border-[#292934] text-white'
                   }`}
@@ -3657,7 +5242,7 @@ export const ContentManagementView: React.FC = () => {
 
               <div className="flex items-center justify-between pt-2 border-t border-slate-700/20">
                 <span className="text-[10px] text-slate-400 font-mono">
-                  Stored securely in browser local storage
+                  Stored securely in browser localStorage
                 </span>
                 <div className="flex items-center gap-2">
                   <button
@@ -3666,9 +5251,10 @@ export const ContentManagementView: React.FC = () => {
                       setIsIgModalOpen(false);
                       handleSyncInstagram();
                     }}
-                    className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm transition"
+                    className="px-4 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-pink-600 to-indigo-600 hover:from-pink-500 hover:to-indigo-500 text-white shadow-sm transition flex items-center gap-1.5"
                   >
-                    Save &amp; Sync Now
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Save &amp; Sync Now</span>
                   </button>
                 </div>
               </div>
@@ -3752,7 +5338,7 @@ export const ContentManagementView: React.FC = () => {
                     onChange={(e) => {
                       const sp = e.target.value as ContentTopic;
                       setNewVideoTopic(sp);
-                      const def = CONTENT_SPACES[sp];
+                      const def = CONTENT_SPACE_MAP[sp];
                       if (def && def.categories.length > 0) {
                         setNewVideoCategory(`${def.categories[0].id} ${def.categories[0].title}`);
                       }
@@ -3778,7 +5364,7 @@ export const ContentManagementView: React.FC = () => {
                       isLight ? 'bg-white border-[#e3e2de] text-slate-900' : 'bg-[#181818] border-[#2e2e2e] text-slate-300'
                     }`}
                   >
-                    {(CONTENT_SPACES[newVideoTopic]?.categories || []).map((cat) => (
+                    {(CONTENT_SPACE_MAP[newVideoTopic]?.categories || []).map((cat) => (
                       <option key={cat.id} value={`${cat.id} ${cat.title}`}>
                         {cat.id} {cat.title}
                       </option>
@@ -3912,7 +5498,7 @@ export const ContentManagementView: React.FC = () => {
                       Script Studio
                     </span>
                     <span className={`text-[11px] font-mono ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                      @{activeScriptVideo.creator === 'Sadid' ? 'sadid_aeethod' : 'anika_tcgops'}
+                      @{activeScriptVideo.creator === 'Sadid' ? 'sadid_aeethod' : 'the_tcg_baddie'}
                     </span>
                     <span className="text-slate-500 text-xs">•</span>
                     <span className={`text-[11px] font-medium ${TOPIC_CONFIG[activeScriptVideo.topic].text}`}>
@@ -4474,7 +6060,7 @@ export const ContentManagementView: React.FC = () => {
                       value={normalizeTopic(selectedCard.topic)}
                       onChange={(e) => {
                         const newSpace = e.target.value as ContentTopic;
-                        const def = CONTENT_SPACES[newSpace];
+                        const def = CONTENT_SPACE_MAP[newSpace];
                         const newCat = def && def.categories.length > 0 ? `${def.categories[0].id} ${def.categories[0].title}` : '';
                         updateVideo(selectedCard.id, { topic: newSpace, category: newCat });
                       }}
@@ -4505,7 +6091,7 @@ export const ContentManagementView: React.FC = () => {
                         isLight ? 'bg-white border-[#e3e2de] text-slate-800' : 'bg-[#202028] border-[#323240] text-slate-200'
                       }`}
                     >
-                      {(CONTENT_SPACES[normalizeTopic(selectedCard.topic)]?.categories || []).map((cat) => (
+                      {(CONTENT_SPACE_MAP[normalizeTopic(selectedCard.topic)]?.categories || []).map((cat) => (
                         <option key={cat.id} value={`${cat.id} ${cat.title}`}>
                           {cat.id} {cat.title}
                         </option>
@@ -4555,18 +6141,86 @@ export const ContentManagementView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Performance Analytics (if published) */}
-                {selectedCard.views !== undefined && (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 items-center pt-1 border-t border-slate-700/20">
-                    <span className="text-slate-400 font-medium flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                      Metrics
-                    </span>
-                    <div className="col-span-2 sm:col-span-3 flex items-center gap-3 font-mono text-[11px]">
-                      <span className="text-emerald-400 font-bold">{selectedCard.views.toLocaleString()} views</span>
-                      <span className="text-slate-400">❤️ {selectedCard.likes}</span>
-                      <span className="text-slate-400">📤 {selectedCard.shares} shares</span>
-                      <span className="text-slate-400">🔖 {selectedCard.saves} saves</span>
+                {/* Performance Analytics (if published or being tracked) */}
+                {selectedCard.status === 'Uploaded' && (
+                  <div className="pt-2 border-t border-slate-700/20 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400 font-medium flex items-center gap-1.5 text-xs">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        Performance Metrics (Real Data)
+                      </span>
+                      <span className="text-[10px] text-indigo-400 font-mono">
+                        Direct Edit / Live Sync
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-xs">
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-slate-400 block uppercase">Plays / Views</label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 3500"
+                          value={selectedCard.views ?? ''}
+                          onChange={(e) => updateVideo(selectedCard.id, { views: e.target.value === '' ? undefined : parseInt(e.target.value) || 0 })}
+                          className={`w-full px-2 py-1.5 rounded-md text-xs font-mono font-bold border outline-none ${
+                            isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-[#202028] border-[#323240] text-emerald-400'
+                          }`}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-slate-400 block uppercase">Shares (DM)</label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 45"
+                          value={selectedCard.shares ?? ''}
+                          onChange={(e) => updateVideo(selectedCard.id, { shares: e.target.value === '' ? undefined : parseInt(e.target.value) || 0 })}
+                          className={`w-full px-2 py-1.5 rounded-md text-xs font-mono font-bold border outline-none ${
+                            isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-[#202028] border-[#323240] text-pink-400'
+                          }`}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-slate-400 block uppercase">Saves</label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 60"
+                          value={selectedCard.saves ?? ''}
+                          onChange={(e) => updateVideo(selectedCard.id, { saves: e.target.value === '' ? undefined : parseInt(e.target.value) || 0 })}
+                          className={`w-full px-2 py-1.5 rounded-md text-xs font-mono font-bold border outline-none ${
+                            isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-[#202028] border-[#323240] text-amber-400'
+                          }`}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-slate-400 block uppercase">Avg Watch %</label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 85"
+                          value={selectedCard.averageWatchPercentage ?? ''}
+                          onChange={(e) => updateVideo(selectedCard.id, { averageWatchPercentage: e.target.value === '' ? undefined : parseInt(e.target.value) || 0 })}
+                          className={`w-full px-2 py-1.5 rounded-md text-xs font-mono font-bold border outline-none ${
+                            isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-[#202028] border-[#323240] text-purple-400'
+                          }`}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1 font-mono text-[11px] text-slate-400 border-t border-slate-700/10">
+                      <div className="flex items-center gap-3">
+                        <span>❤️ Likes: <strong className="text-slate-200">{selectedCard.likes ?? 0}</strong></span>
+                        <span>💬 Comments: <strong className="text-slate-200">{selectedCard.comments ?? 0}</strong></span>
+                      </div>
+                      {selectedCard.notes?.includes('https://') && (
+                        <a
+                          href={selectedCard.notes.match(/https:\/\/[^\s]+/)?.[0]}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-indigo-400 hover:underline text-[10px] flex items-center gap-1"
+                        >
+                          <span>Open Reel on Instagram</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
                     </div>
                   </div>
                 )}

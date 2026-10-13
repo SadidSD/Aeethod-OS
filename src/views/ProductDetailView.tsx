@@ -42,18 +42,21 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
     ? ({
         ...fallbackProduct,
         ...rawProduct,
+        name: fallbackProduct?.name || rawProduct.name,
+        tagline: fallbackProduct?.tagline || rawProduct.tagline,
+        icon: fallbackProduct?.icon || rawProduct.icon,
         targetCustomerProblem:
-          rawProduct.targetCustomerProblem && rawProduct.targetCustomerProblem.length > 150
-            ? rawProduct.targetCustomerProblem
-            : fallbackProduct?.targetCustomerProblem || rawProduct.targetCustomerProblem || '',
+          fallbackProduct?.targetCustomerProblem && fallbackProduct.targetCustomerProblem.length > (rawProduct.targetCustomerProblem?.length || 0)
+            ? fallbackProduct.targetCustomerProblem
+            : rawProduct.targetCustomerProblem || fallbackProduct?.targetCustomerProblem || '',
         problemsToBuild:
-          rawProduct.problemsToBuild && rawProduct.problemsToBuild.trim() !== ''
-            ? rawProduct.problemsToBuild
-            : fallbackProduct?.problemsToBuild || '',
+          fallbackProduct?.problemsToBuild && fallbackProduct.problemsToBuild.length > (rawProduct.problemsToBuild?.length || 0)
+            ? fallbackProduct.problemsToBuild
+            : rawProduct.problemsToBuild || fallbackProduct?.problemsToBuild || '',
         competitorAnalysis:
-          rawProduct.competitorAnalysis && rawProduct.competitorAnalysis.trim() !== ''
-            ? rawProduct.competitorAnalysis
-            : fallbackProduct?.competitorAnalysis || '',
+          fallbackProduct?.competitorAnalysis && fallbackProduct.competitorAnalysis.length > (rawProduct.competitorAnalysis?.length || 0)
+            ? fallbackProduct.competitorAnalysis
+            : rawProduct.competitorAnalysis || fallbackProduct?.competitorAnalysis || '',
         targetAudience:
           rawProduct.targetAudience && rawProduct.targetAudience.trim() !== ''
             ? rawProduct.targetAudience
@@ -183,7 +186,10 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
       return <p className="text-xs text-slate-400 italic">No details defined yet.</p>;
     }
 
-    const items = text.split(/(?=\d+\.\s)/g).filter(Boolean);
+    const items = text
+      .split(/(?:^|\n+)(?=\d+\.\s)/)
+      .map((s) => s.trim())
+      .filter(Boolean);
 
     if (items.length <= 1) {
       return (

@@ -310,23 +310,34 @@ export const useStore = create<State>((set, get) => ({
       }
       // Ensure saas_products has all detailed pillars populated if empty or from legacy cache
       if (mergedDb.saas_products && Array.isArray(mergedDb.saas_products)) {
-        mergedDb.saas_products = mergedDb.saas_products.map((p: any) => {
-          const fallback = INITIAL_SAAS_PRODUCTS.find((init) => init.id === p.id);
-          if (!fallback) return p;
-          return {
-            ...fallback,
-            ...p,
-            targetCustomerProblem:
-              p.targetCustomerProblem && p.targetCustomerProblem.length > 150
-                ? p.targetCustomerProblem
-                : fallback.targetCustomerProblem,
-            problemsToBuild: p.problemsToBuild || fallback.problemsToBuild,
-            competitorAnalysis: p.competitorAnalysis || fallback.competitorAnalysis,
-            targetAudience: p.targetAudience || fallback.targetAudience,
-            pricingModel: p.pricingModel || fallback.pricingModel,
-            theAeethodSolution: p.theAeethodSolution ?? fallback.theAeethodSolution,
-          };
-        });
+        const existingIds = new Set(mergedDb.saas_products.map((p: any) => p.id));
+        const missingInitial = INITIAL_SAAS_PRODUCTS.filter((init) => !existingIds.has(init.id));
+        mergedDb.saas_products = [
+          ...mergedDb.saas_products.map((p: any) => {
+            const fallback = INITIAL_SAAS_PRODUCTS.find((init) => init.id === p.id);
+            if (!fallback) return p;
+            return {
+              ...fallback,
+              ...p,
+              targetCustomerProblem:
+                fallback.targetCustomerProblem && fallback.targetCustomerProblem.length > (p.targetCustomerProblem?.length || 0)
+                  ? fallback.targetCustomerProblem
+                  : p.targetCustomerProblem || fallback.targetCustomerProblem,
+              problemsToBuild:
+                fallback.problemsToBuild && fallback.problemsToBuild.length > (p.problemsToBuild?.length || 0)
+                  ? fallback.problemsToBuild
+                  : p.problemsToBuild || fallback.problemsToBuild,
+              competitorAnalysis:
+                fallback.competitorAnalysis && fallback.competitorAnalysis.length > (p.competitorAnalysis?.length || 0)
+                  ? fallback.competitorAnalysis
+                  : p.competitorAnalysis || fallback.competitorAnalysis,
+              targetAudience: p.targetAudience || fallback.targetAudience,
+              pricingModel: p.pricingModel || fallback.pricingModel,
+              theAeethodSolution: p.theAeethodSolution ?? fallback.theAeethodSolution,
+            };
+          }),
+          ...missingInitial,
+        ];
       }
       set({ db: mergedDb, loadError: null, source: 'supabase' });
       return;
@@ -337,6 +348,13 @@ export const useStore = create<State>((set, get) => ({
       const res = await fetch('/api/db');
       if (res.ok) {
         const serverDb = (await res.json()) as DB;
+        if (serverDb.saas_products && Array.isArray(serverDb.saas_products)) {
+          const existingIds = new Set(serverDb.saas_products.map((p: any) => p.id));
+          const missingInitial = INITIAL_SAAS_PRODUCTS.filter((init) => !existingIds.has(init.id));
+          if (missingInitial.length > 0) {
+            serverDb.saas_products = [...serverDb.saas_products, ...missingInitial];
+          }
+        }
         set({ db: serverDb, loadError: null, source: 'local_server' });
         return;
       }

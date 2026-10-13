@@ -1548,8 +1548,8 @@ export const INITIAL_DB: DB = {
     {
       "id": "ff112c61-dfc3-4735-951c-ae28165a995c",
       "topicId": "economics",
-      "title": "Profile 1 — Indie Single-Store LGS",
-      "description": "**Who:** neighbourhood hobby shop, 1–3 staff, 1 register.\n\n| Metric | Value |\n|---|---|\n| SAM | 7,500 stores (US, CA, UK, W. Europe, ANZ) |\n| Monthly singles GMV | $12k – $35k |\n| Singles SKUs | 10k – 35k |\n| Current stack | Shopify/Square POS + Synq ($29) / Kori ($15–$25) / spreadsheets |\n| Current software spend | $49 – $150/mo |\n\n**Elasticity:** elastic (ε ≈ −1.2) — very sensitive to fixed monthly overhead and avoids % commissions.\n\n**Savings vs incumbent:** vs BinderPOS at ~$25k GMV with ~20% online: $125 base + 2.5% × $5k ≈ $250/mo → ~$150/mo saved.\n\n**Killer features:** one-click market repricing, phone-camera trade-in intake, zero commission.",
+      "title": "Profile 1 — Indie Single-Store LGS (Brick-and-Mortar)",
+      "description": "**Who:** Neighbourhood physical hobby shop, 1–3 staff, 1 counter register (WPN / Play! Pokémon / Bandai TCG+).\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Physical Storefront (34.5% of SAM are physical stores) |\n| SAM Size | 7,500 stores (US, CA, UK, W. Europe, ANZ) |\n| Website Ownership | ~55% have basic Shopify/Square site · ~45% have NO singles/buylist site |\n| Monthly singles GMV | $12k – $35k |\n| Singles SKUs | 10k – 35k |\n| Current stack | Shopify/Square POS + TCGplayer + spreadsheets / manual counter calculator |\n| Current software spend | $49 – $150/mo |\n\n**Elasticity:** elastic (ε ≈ −1.2) — sensitive to fixed monthly overhead and avoids % commissions.\n\n**Savings vs incumbent:** vs SortSwift Core ($249/mo) or BinderPOS ($150 base + 2.5% commission ≈ $275/mo) → saves ~$150+/mo.\n\n**Killer features:** Instant hosted/embedded Buylist Portal, phone-camera foil/variant trade-in scanner, 0% commission.",
       "status": "todo",
       "priority": "normal",
       "assignee": "",
@@ -1573,13 +1573,13 @@ export const INITIAL_DB: DB = {
       "sprintId": null,
       "epicId": null,
       "createdAt": "2026-10-04T16:52:42.700Z",
-      "updatedAt": "2026-10-04T16:52:42.700Z"
+      "updatedAt": "2026-10-12T05:30:00.000Z"
     },
     {
       "id": "e6862dfd-b601-4327-8eb1-54f498160789",
       "topicId": "economics",
-      "title": "Profile 2 — High-Volume Premier LGS (WPN Premium)",
-      "description": "**Who:** destination store, 5–15 staff, 2–4 registers, dedicated trade-in counter.\n\n| Metric | Value |\n|---|---|\n| SAM | 2,400 stores |\n| Monthly singles GMV | $60k – $180k (≈45% online) |\n| Singles SKUs | 75k – 250k+ |\n| Current stack | BinderPOS / Crystal Commerce / Storepass |\n\n**BinderPOS cost (from competitor data: $100–$150/mo + 2.0–2.5% on online sales):**\n- $80k GMV → ~$36k online → $150 + $900 ≈ **$1,050/mo**\n- $150k GMV → ~$67.5k online → $150 + $1,688 ≈ **$1,840/mo**\n\nSavings at $299 flat: **~$750 – $1,540/mo**. BinderPOS signups have been paused since Feb 2025 — these stores need a successor.\n\n**Elasticity:** extremely inelastic (ε ≈ −0.3). **Phase 1 beachhead.**",
+      "title": "Profile 2 — High-Volume Premier LGS (Destination Storefront)",
+      "description": "**Who:** Large tournament/destination store, 5–15 staff, 2–4 registers, dedicated walk-in trade-in counter.\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Physical Storefront (Top ~23% of brick-and-mortar shops) |\n| SAM Size | 2,400 stores (US, CA, UK, W. Europe, ANZ) |\n| Website Ownership | ~95% have a dedicated webstore (Shopify / BinderPOS / Storepass) |\n| Monthly singles GMV | $60k – $180k (≈45% online) |\n| Singles SKUs | 75k – 250k+ |\n| Current stack | BinderPOS ($150–$350 + 2.5%) / SortSwift Core+ ($369) / Storepass ($99–$999) |\n\n**Incumbent cost:**\n- $80k GMV → ~$36k online → $150 + $900 ≈ **$1,050/mo**\n- $150k GMV → ~$67.5k online → $150 + $1,688 ≈ **$1,840/mo**\n\nSavings at $299 flat: **~$750 – $1,540/mo**. BinderPOS paused new signups in Feb 2025 & TCGplayer shut down Direct Buylist in July 2024.\n\n**Elasticity:** extremely inelastic (ε ≈ −0.3). **Phase 1 beachhead.**",
       "status": "todo",
       "priority": "high",
       "assignee": "",
@@ -1603,13 +1603,13 @@ export const INITIAL_DB: DB = {
       "sprintId": null,
       "epicId": null,
       "createdAt": "2026-10-04T16:52:42.700Z",
-      "updatedAt": "2026-10-04T16:52:42.700Z"
+      "updatedAt": "2026-10-12T05:30:00.000Z"
     },
     {
       "id": "400b5daf-d8a2-42c5-9f29-49433289b381",
       "topicId": "economics",
-      "title": "Profile 3 — Warehouse PowerSeller (TCGplayer / eBay / Cardmarket)",
-      "description": "**Who:** online-only operation, 3–8 warehouse staff, no walk-ins.\n\n| Metric | Value |\n|---|---|\n| SAM | 3,500 operations (> $500k/yr singles) |\n| Monthly singles GMV | $50k – $250k |\n| Listings | 50k – 500k+ |\n| Current stack | TCG Automate + SortSwift + generic repricers + TCG PowerTools (EU) + scripts |\n| Current software spend | $350 – $900/mo across 3–4 vendors |\n\n**Pain:** cross-channel desync → double-sales → marketplace defects. Intake labour bottleneck.\n\n**Elasticity:** inelastic (ε ≈ −0.5) — judged on labour saved. **Phase 1 beachhead.**",
+      "title": "Profile 3 — Online Warehouse & Home-Office PowerSeller (Vendor)",
+      "description": "**Who:** Commercial online-only vendors (5,500 large warehouse operations >$40k/mo + 4,000 full-time home-office power sellers $8k–$40k/mo on TCGplayer Level 4 / Direct, eBay Top-Rated, Cardmarket), ZERO walk-in storefront.\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Non-Storefront Commercial Vendor (23.6% of total 40,250 SAM) |\n| SAM Size | 9,500 operations (5,500 warehouses + 4,000 full-time home-office online sellers) |\n| Website Ownership | Only ~20% have a website · ~80% sell ONLY on TCGplayer/eBay/Cardmarket |\n| Monthly singles GMV | $8k – $250k |\n| Listings | 15k – 500k+ |\n| Current stack | SortSwift ($219–$499/mo + $249 Sync Box) + Card Dealer Pro ($99) + TCG PowerTools |\n| Current software spend | $150 – $750/mo across 2–4 disconnected tools |\n\n**Pain:** TCGplayer killed its central Direct Buylist (July 2024), leaving online vendors with no website unable to run a public buylist; cross-channel double-sales between TCGplayer & eBay.\n\n**Elasticity:** inelastic (ε ≈ −0.5) — judged on intake speed & Hosted Buylist Portal (`buylist.aeethod.com/vendor`). **Phase 1 beachhead.**",
       "status": "todo",
       "priority": "high",
       "assignee": "",
@@ -1623,7 +1623,7 @@ export const INITIAL_DB: DB = {
         "economics--wtp": 499,
         "economics--surplus": 250,
         "economics--savings": 375,
-        "economics--sam": 3500,
+        "economics--sam": 9500,
         "economics--elasticity": "inelastic",
         "economics--phase": "phase-1-beachhead"
       },
@@ -1633,13 +1633,13 @@ export const INITIAL_DB: DB = {
       "sprintId": null,
       "epicId": null,
       "createdAt": "2026-10-04T16:52:42.701Z",
-      "updatedAt": "2026-10-04T16:52:42.701Z"
+      "updatedAt": "2026-10-12T05:42:00.000Z"
     },
     {
       "id": "fb124dd7-a62e-4768-9857-39805e2c16ec",
       "topicId": "economics",
-      "title": "Profile 4 — Traveling Circuit / Show Dealer",
-      "description": "**Who:** convention & card-show vendors (Collect-A-Con, MagicCon, regionals), 1–3 staff.\n\n| Metric | Value |\n|---|---|\n| SAM | 4,600 active dealers |\n| Revenue per show weekend | $10k – $60k |\n| SKUs | 500 – 5,000 high-value (slabs, vintage) |\n| Current stack | Square / SnapSale ($39–$89) / DeckTradr ($49–$129) / Double Holo |\n\n**Pain:** no signal in convention halls; items sold at the booth stay live online.\n\n**Pricing:** $79/mo or $29 per-show pass. **Elasticity:** bifurcated — elastic off-season, inelastic during shows. Savings ≈ $0 on software; value is offline reliability + auto-delist.",
+      "title": "Profile 4 — Card-Show Booth Dealer & Live-Stream Vendor (Vendor)",
+      "description": "**Who:** Weekend convention/card-show table vendors (~8,500 across Collect-A-Con 900–1,300 booths/show, Pokémon Regionals, local hotel shows) & ~12,000 active Whatnot / TikTok Live / IG slab & singles dealers (1–3 staff, ZERO physical store).\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Non-Storefront Commercial Vendor (50.9% of total 40,250 SAM!) |\n| SAM Size | 20,500 active vendors (~8,500 circuit/local booth dealers + ~12,000 live-stream/IG vendors) |\n| Website Ownership | <8% have a website · 92%+ have ZERO website (rely on IG bio, Whatnot, eBay) |\n| Revenue | $3k – $60k/mo ($10k – $50k per major show weekend) |\n| SKUs | 500 – 15,000 high-velocity singles, holos & PSA/CGC slabs |\n| Current stack | Collectr / Shiny / Rare Candy calculator ($0–$15/mo) + manual eBay/TCGplayer delisting |\n\n**Pain:** 92% have no website to accept pre-show Event Drop-Off buylists; 25-minute manual calculator bottleneck at crowded show booths; selling a slab at a show leaves it live on eBay.\n\n**Pricing:** $79/mo (includes Instant Hosted Buylist Portal + QR Table Sign + Camera Trade-In Calculator + eBay/TCGplayer auto-delist). **Elasticity:** bifurcated.",
       "status": "todo",
       "priority": "normal",
       "assignee": "",
@@ -1650,10 +1650,10 @@ export const INITIAL_DB: DB = {
       "parentId": null,
       "fields": {
         "economics--price": 79,
-        "economics--wtp": 119,
-        "economics--surplus": 40,
-        "economics--savings": 0,
-        "economics--sam": 4600,
+        "economics--wtp": 149,
+        "economics--surplus": 70,
+        "economics--savings": 65,
+        "economics--sam": 20500,
         "economics--elasticity": "bifurcated",
         "economics--phase": "phase-2-scale"
       },
@@ -1663,13 +1663,13 @@ export const INITIAL_DB: DB = {
       "sprintId": null,
       "epicId": null,
       "createdAt": "2026-10-04T16:52:42.701Z",
-      "updatedAt": "2026-10-04T16:52:42.701Z"
+      "updatedAt": "2026-10-12T05:42:00.000Z"
     },
     {
       "id": "724948ae-5c88-46eb-9b65-a4c9b5da0366",
       "topicId": "economics",
-      "title": "Profile 5 — Multi-Location Enterprise Chain",
-      "description": "**Who:** 3–15 stores + central depot, 20–100 staff.\n\n| Metric | Value |\n|---|---|\n| SAM | ~350 accounts (≈500 globally) |\n| Monthly singles GMV | $150k – $800k+ |\n| SKUs | 500k – 2M+ |\n| Current stack | Storepass Enterprise ($1,500 – $4,999/mo), TCG Sync Enterprise, custom ERP |\n\n**Pain:** inventory siloed per store, no inter-store transfers, release-day load.\n\n**Elasticity:** completely inelastic (ε ≈ −0.1) — decided on uptime, RBAC, SLA. **Phase 3.**",
+      "title": "Profile 5 — Multi-Location Enterprise Chain (Brick-and-Mortar)",
+      "description": "**Who:** 3–15 physical stores + central fulfillment depot, 20–100 staff.\n\n| Metric | Value |\n|---|---|\n| Merchant Type | Physical Storefront Chain (~1,400 total rooftops across 350 parent organizations) |\n| SAM Size | 350 enterprise chains (~500 globally) |\n| Website Ownership | 100% have enterprise websites |\n| Monthly singles GMV | $150k – $800k+ |\n| SKUs | 500k – 2M+ |\n| Current stack | Storepass Enterprise ($1,500 – $4,999/mo), TCG Sync Enterprise ($2,499/mo), custom ERP |\n\n**Pain:** Inventory siloed per store, no automated inter-store transfers, high per-location software fees.\n\n**Elasticity:** completely inelastic (ε ≈ −0.1) — decided on uptime, RBAC, SLA. **Phase 3.**",
       "status": "todo",
       "priority": "normal",
       "assignee": "",
@@ -1693,7 +1693,7 @@ export const INITIAL_DB: DB = {
       "sprintId": null,
       "epicId": null,
       "createdAt": "2026-10-04T16:52:42.701Z",
-      "updatedAt": "2026-10-04T16:52:42.701Z"
+      "updatedAt": "2026-10-12T05:30:00.000Z"
     },
     {
       "id": "b69e3af0-0ca2-4e26-b450-225bb2166c8f",
@@ -2691,19 +2691,19 @@ export const INITIAL_DB: DB = {
       "id": "29bbf794-29e5-4324-a2ad-277db3798737",
       "topicId": "strategy",
       "title": "Aeethod Strategy One-Pager",
-      "content": "# Aeethod — Strategy One-Pager\n\n## Mission\nGive every trading-card business — from the corner hobby shop to the multi-store chain — one operating system for buying, pricing, scanning, selling and syncing cards, **without taxing their sales**.\n\n## The wedge\nIncumbents monetise with **GMV commissions** (BinderPOS 2.0–2.5% on online sales, Crystal Commerce 2.5%, TCG Sync 2%, Storepass 2% below $499/mo). BinderPOS — the largest — **paused new signups in Feb 2025**. Aeethod offers **flat pricing, 0% commission** and a free 24-hour migration.\n\n## Beachhead (Phase 1)\n1. **High-Volume Premier LGS** — 2,400 stores, saves ~$750–$1,540/mo vs BinderPOS.\n2. **Warehouse PowerSellers** — 3,500 operations, consolidates a $350–$900/mo tool stack.\n\n## Market size (from TCGMarketAnalysis)\n- TAM: 17,000 LGS + 28,000 online dealers + 25,000 prosumers.\n- SAM: 9,900 LGS + 8,100 high-volume dealers = **18,000 businesses**.\n- Year-1 target: ~100 stores. Year-3: ~600 stores.\n\n## Moat\nSCM + MIS + SaaS integration: a single inventory ledger across counter, buylist, scanner and every marketplace. Switching costs grow with every SKU and every integration.\n\n## Pricing\n| Tier | Segment | Price |\n|---|---|---|\n| Show | Circuit dealers | $79/mo or $29/show |\n| Starter | Indie LGS | $99/mo |\n| Warehouse | Online power sellers | $249/mo |\n| Pro Retail | Premier LGS | $299/mo |\n| Enterprise | Multi-location | $699/mo |\n",
+      "content": "# Aeethod — Strategy One-Pager\n\n## Mission\nGive every trading-card business — from the corner hobby shop to the online warehouse vendor and weekend card-show dealer — one operating system for buying, pricing, scanning, selling and syncing cards, **without taxing their sales or requiring a pre-existing website**.\n\n## The wedge\nIncumbents monetise with **GMV commissions** (BinderPOS 2.0–2.5% on online sales, Crystal Commerce 2.5%, TCG Sync 2% + $1k setup) or **nickel-and-dime paywalls** (SortSwift $219–$499/mo + $249 Sync Box + metered scan credits). Worse, TCGplayer **shut down its centralized Direct Buylist in July 2024**, leaving 19,000+ non-storefront vendors with no website stranded without a buylist. Aeethod offers **flat pricing, 0% commission, an Instant Hosted Buylist Portal (`buylist.aeethod.com/store`), and Optical Foil/Variant Scanning**.\n\n## Beachhead (Phase 1)\n1. **High-Volume Premier LGS** — 2,400 physical stores, saves ~$750–$1,540/mo vs BinderPOS.\n2. **Online Warehouse PowerSellers** — 5,500 non-storefront operations (75% lack a website), consolidates a $250–$750/mo tool stack + unlocks a Hosted Buylist.\n\n## Market Census: Physical Stores vs. Non-Storefront Vendors (US, CA, UK, W. Europe, ANZ)\n- **Total Active TCG Sellers (TAM):** **~86,750 sellers** (10,250 physical brick-and-mortar store accounts + 19,500 commercial non-storefront vendors + 57,000 casual side-hustle flippers).\n- **Serviceable Commercial Market (SAM):** **29,750 professional businesses**:\n  - **Physical Brick-and-Mortar Stores:** **10,250 accounts (34.5% of SAM)** — 7,500 Indie LGS + 2,400 Premier LGS + 350 Multi-Location Chains (~1,400 rooftops).\n  - **Commercial Non-Storefront Vendors:** **19,500 accounts (65.5% of SAM)** — 5,500 Online Warehouse PowerSellers + 14,000 Card-Show Circuit & Live-Stream Vendors.\n- **Website Ownership Gap:** **~19,100 of the 29,750 commercial sellers (64.2%) do NOT have a functional singles/buylist website**, proving why Aeethod's Instant Hosted Buylist Portal is essential.\n\n## Moat\nSCM + MIS + SaaS integration: a single inventory ledger across counter, hosted buylist, optical scanner and every marketplace. Switching costs grow with every SKU and every integration.\n\n## Pricing\n| Tier | Segment | Price |\n|---|---|---|\n| Show & Stream | Card-show & live-stream vendors | $79/mo |\n| Starter LGS | Indie single-store LGS | $99/mo |\n| Warehouse | Online warehouse power sellers | $249/mo |\n| Pro Retail | Premier destination LGS | $299/mo |\n| Enterprise | Multi-location chains | $699/mo |\n",
       "pinned": true,
       "createdAt": "2026-10-04T16:52:42.701Z",
-      "updatedAt": "2026-10-04T16:52:42.701Z"
+      "updatedAt": "2026-10-12T05:30:00.000Z"
     },
     {
       "id": "87824432-71f5-4efc-965a-0e63bea51d82",
       "topicId": "economics",
-      "title": "5-Tier Customer Segmentation",
-      "content": "# 5-Tier Customer Segmentation\n\nSource data: TCGMarketAnalysis (MarketCalculator + competitors). Each profile is a task in this topic with editable custom fields.\n\n| Profile | SAM | Price | WTP | Consumer surplus | Elasticity | Phase |\n|---|---|---|---|---|---|---|\n| Indie Single-Store LGS | 7,500 | $99 | $149 | $50 | Elastic (−1.2) | 2 |\n| Premier LGS | 2,400 | $299 | $599 | $300 | Extremely inelastic (−0.3) | **1** |\n| Warehouse PowerSeller | 3,500 | $249 | $499 | $250 | Inelastic (−0.5) | **1** |\n| Show Dealer | 4,600 | $79 | $119 | $40 | Bifurcated | 2 |\n| Enterprise Chain | 350 | $699 | $1,499 | $800 | Completely inelastic (−0.1) | 3 |\n\n**Definitions**\n- *Consumer surplus* = WTP − price (value the customer keeps).\n- *Savings vs incumbent* = what they pay today − Aeethod price (separate field — the sales argument).\n\n**Excluded from Phase 1:** ~25,000 prosumers / part-time flippers (low WTP, high churn).\n\n> Elasticity values and WTP are hypotheses — validate with the Van Westendorp survey task.\n",
+      "title": "5-Tier Customer Segmentation (Stores vs. Vendors Census)",
+      "content": "# 5-Tier Customer Segmentation (Stores vs. Vendors Census)\n\nVerified segmentation across US, Canada, UK, Western Europe & ANZ (**29,750 Commercial SAM** out of **86,750 Total Active Sellers**).\n\n| Profile | Merchant Type | SAM | % of SAM | Have Website? | Price | WTP | Surplus | Elasticity | Phase |\n|---|---|---|---|---|---|---|---|---|---|\n| 1. Indie Single-Store LGS | Physical Store | 7,500 | 25.2% | ~55% Yes / 45% No | $99 | $149 | +$50 | Elastic (−1.2) | 2 |\n| 2. Premier Destination LGS | Physical Store | 2,400 | 8.1% | ~95% Yes | $299 | $599 | +$300 | Extremely inelastic (−0.3) | **1** |\n| 3. Online Warehouse PowerSeller | Non-Store Vendor | 5,500 | 18.5% | ~25% Yes / 75% No | $249 | $499 | +$250 | Inelastic (−0.5) | **1** |\n| 4. Card-Show & Live-Stream Vendor | Non-Store Vendor | 14,000 | 47.1% | <8% Yes / 92%+ No | $79 | $149 | +$70 | Bifurcated | 2 |\n| 5. Multi-Location Chain | Physical Store Chain | 350 | 1.2% | 100% Yes | $699 | $1,499 | +$800 | Completely inelastic (−0.1) | 3 |\n\n**Structural Summary:**\n- **Physical Brick-and-Mortar Store Accounts:** **10,250 (34.5% of Commercial SAM)**\n- **Commercial Non-Storefront Vendors:** **19,500 (65.5% of Commercial SAM)**\n- **Excluded Casual / Binder Flippers (Non-SAM Fringe):** **~57,000+ accounts** (<$1,500/mo GMV, low WTP, high churn).\n",
       "pinned": true,
       "createdAt": "2026-10-04T16:52:42.701Z",
-      "updatedAt": "2026-10-04T16:52:42.701Z"
+      "updatedAt": "2026-10-12T05:30:00.000Z"
     },
     {
       "id": "f8cc6869-1ad7-4270-8e20-f905edb19da0",
@@ -3128,73 +3128,6 @@ export const INITIAL_DB: DB = {
       "complexity": "S"
     }
   ],
-  "ui_ux_items": [
-    {
-      "id": "ux-1",
-      "title": "High-Speed Counter Buylist Intake Kiosk",
-      "category": "Component Library",
-      "surface": "POS Counter Kiosk",
-      "status": "In Code / Prototyping",
-      "userProblem": "Card store counter clerks have greasy fingers, fast-moving customers, and bright retail lighting. Small buttons and nested dropdowns cause miss-clicks and slow lines.",
-      "uxDesignSolution": "Large touch target pads (minimum 48px), high-contrast ivory & dark-slate tokens, tactile audio-click feedback, 1-tap accept/reject toggle.",
-      "designChecklist": [
-        "Touch targets >= 48px for retail iPads",
-        "Instant keyboard numeric shortcuts (Numpad enter)",
-        "Clear split between Cash (Red/Rose) vs Store Credit (Emerald)",
-        "High-contrast readability under retail fluorescent lights"
-      ],
-      "figmaOrPreviewNotes": "Designed with Linear + Square Terminal aesthetic. Minimal visual clutter.",
-      "screensCount": 3
-    },
-    {
-      "id": "ux-2",
-      "title": "Adaptive Dual-Theme System (Clean Ivory White & Charcoal Obsidian)",
-      "category": "Design System & Tokens",
-      "surface": "Desktop App",
-      "status": "Polished & Done",
-      "userProblem": "Cluttered all-black dark mode makes dense tabular data look heavy, while uncalibrated bright white strains eyes during 8-hour inventory sorting sessions.",
-      "uxDesignSolution": "Neutral ivory/slate surfaces (#f8fafc / #191919), clean JetBrains Mono numbers, subtle 1px border hierarchy, and zero pitch-black OLED contrast fatigue.",
-      "designChecklist": [
-        "Tokenized CSS variables for background, card, and borders",
-        "JetBrains Mono for currency & numeric matrix data",
-        "Plus Jakarta Sans for readable UI headers",
-        "Smooth 150ms theme transition"
-      ],
-      "figmaOrPreviewNotes": "Implemented across all views with instant localStorage sync.",
-      "screensCount": 12
-    },
-    {
-      "id": "ux-3",
-      "title": "Holographic & Foil Card Tilt Micro-Interaction",
-      "category": "Micro-Interaction",
-      "surface": "Customer Storefront",
-      "status": "In Code / Prototyping",
-      "userProblem": "Online buyers cannot appreciate the beauty or authenticity of expensive Manga Rares or Special Illustration Rares from a flat static image.",
-      "uxDesignSolution": "Gyroscope (mobile) & cursor-responsive (desktop) CSS 3D card tilt with realistic dynamic holographic glare gradient.",
-      "designChecklist": [
-        "Subtle 3D perspective matrix transform on mousemove",
-        "Radial glare gradient mask that follows cursor angle",
-        "Hardware-accelerated CSS transforms (will-change: transform)",
-        "Graceful fallback on reduced-motion preference"
-      ],
-      "figmaOrPreviewNotes": "Creates the signature collector premium feel on product pages.",
-      "screensCount": 2
-    },
-    {
-      "id": "ux-4",
-      "title": "Singles Condition Selector & Grading State Pills",
-      "category": "Wireframe & Flow",
-      "surface": "Desktop App",
-      "status": "In Code / Prototyping",
-      "userProblem": "Selecting card condition (Near Mint, Lightly Played, Moderately Played, Heavily Played, Damaged) is tedious in generic e-commerce platforms.",
-      "uxDesignSolution": "Single-row segmented pill group with color-coded condition badges and instant market price delta indicators.",
-      "designChecklist": [
-        "5 distinct condition tiers with color-coded dots",
-        "Price percentage modifier preview (+0%, -15%, -30%)",
-        "1-tap condition swapping with keyboard hotkeys (1-5)"
-      ],
-      "screensCount": 4
-    }
-  ],
+  "ui_ux_items": [],
   "whiteboard_elements": []
 };
