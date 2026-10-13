@@ -44,12 +44,21 @@ export const DevArchitectureTrackerView: React.FC = () => {
       return {
         ...fallback,
         ...p,
+        name: fallback.name || p.name,
+        tagline: fallback.tagline || p.tagline,
+        icon: fallback.icon || p.icon,
         targetCustomerProblem:
           fallback.targetCustomerProblem && fallback.targetCustomerProblem.length > (p.targetCustomerProblem?.length || 0)
             ? fallback.targetCustomerProblem
             : p.targetCustomerProblem || fallback.targetCustomerProblem,
-        problemsToBuild: p.problemsToBuild || fallback.problemsToBuild,
-        competitorAnalysis: p.competitorAnalysis || fallback.competitorAnalysis,
+        problemsToBuild:
+          fallback.problemsToBuild && fallback.problemsToBuild.length > (p.problemsToBuild?.length || 0)
+            ? fallback.problemsToBuild
+            : p.problemsToBuild || fallback.problemsToBuild,
+        competitorAnalysis:
+          fallback.competitorAnalysis && fallback.competitorAnalysis.length > (p.competitorAnalysis?.length || 0)
+            ? fallback.competitorAnalysis
+            : p.competitorAnalysis || fallback.competitorAnalysis,
         targetAudience: p.targetAudience || fallback.targetAudience,
         pricingModel: p.pricingModel || fallback.pricingModel,
         theAeethodSolution: p.theAeethodSolution ?? fallback.theAeethodSolution,

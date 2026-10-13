@@ -42,18 +42,21 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
     ? ({
         ...fallbackProduct,
         ...rawProduct,
+        name: fallbackProduct?.name || rawProduct.name,
+        tagline: fallbackProduct?.tagline || rawProduct.tagline,
+        icon: fallbackProduct?.icon || rawProduct.icon,
         targetCustomerProblem:
           fallbackProduct?.targetCustomerProblem && fallbackProduct.targetCustomerProblem.length > (rawProduct.targetCustomerProblem?.length || 0)
             ? fallbackProduct.targetCustomerProblem
             : rawProduct.targetCustomerProblem || fallbackProduct?.targetCustomerProblem || '',
         problemsToBuild:
-          rawProduct.problemsToBuild && rawProduct.problemsToBuild.trim() !== ''
-            ? rawProduct.problemsToBuild
-            : fallbackProduct?.problemsToBuild || '',
+          fallbackProduct?.problemsToBuild && fallbackProduct.problemsToBuild.length > (rawProduct.problemsToBuild?.length || 0)
+            ? fallbackProduct.problemsToBuild
+            : rawProduct.problemsToBuild || fallbackProduct?.problemsToBuild || '',
         competitorAnalysis:
-          rawProduct.competitorAnalysis && rawProduct.competitorAnalysis.trim() !== ''
-            ? rawProduct.competitorAnalysis
-            : fallbackProduct?.competitorAnalysis || '',
+          fallbackProduct?.competitorAnalysis && fallbackProduct.competitorAnalysis.length > (rawProduct.competitorAnalysis?.length || 0)
+            ? fallbackProduct.competitorAnalysis
+            : rawProduct.competitorAnalysis || fallbackProduct?.competitorAnalysis || '',
         targetAudience:
           rawProduct.targetAudience && rawProduct.targetAudience.trim() !== ''
             ? rawProduct.targetAudience

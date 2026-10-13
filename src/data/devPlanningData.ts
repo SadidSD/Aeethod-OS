@@ -184,10 +184,10 @@ When the customer hands over the physical cards corresponding to their kiosk sub
   },
   {
     id: "prod-omnichannel-sync",
-    name: "Omnichannel Sync",
-    tagline: "Real-time multi-channel inventory sync across Shopify, eBay, TCGplayer & POS",
-    icon: "🔄",
-    targetAudience: "Omnichannel TCG sellers managing physical POS + multiple online marketplaces",
+    name: "Central Inventory & Omnichannel Sync",
+    tagline: "Master TCG inventory ledger, bin-level chaos warehousing & real-time multi-channel sync",
+    icon: "📦",
+    targetAudience: "Omnichannel TCG sellers, card-show booth vendors, and high-volume warehouse PowerSellers",
     pricingModel: "$99 - $299/mo ($0 commission)",
     status: "In Discovery",
     targetCustomerProblem: `1. The Nightmare of Double-Selling Unique Singles:
@@ -254,23 +254,49 @@ Every marketplace uses a completely incompatible data structure:
 • Normalizing these conflicting schemas into a single canonical data model—without stripping crucial metadata (e.g., foil etching, artist proof, serial numbers, Japanese language tags)—is an architectural minefield.
 
 4. Out-of-Order Webhooks & Eventual Consistency Split-Brain Risks:
-Webhooks from Shopify and eBay do not guarantee in-order delivery. If an update webhook arrives before a creation webhook, or if network latency delays a Shopify webhook during high Black Friday traffic, a naive sync engine will overwrite fresh inventory with stale data (split-brain condition). The architecture must implement monotonic version timestamps, event sourcing, or vector clocks to guarantee strict causality.`,
+Webhooks from Shopify and eBay do not guarantee in-order delivery. If an update webhook arrives before a creation webhook, or if network latency delays a Shopify webhook during high Black Friday traffic, a naive sync engine will overwrite fresh inventory with stale data (split-brain condition). The architecture must implement monotonic version timestamps, event sourcing, or vector clocks to guarantee strict causality.
 
-    competitorAnalysis: `1. BinderPOS:
-• Architecture & Implementation: Monolithic multi-tenant Ruby on Rails application using background Sidekiq queues syncing to Shopify and TCGplayer.
-• Fatal Flaws & Shortcomings: Notoriously plagued by sync queues backing up during major set releases (like Pokémon Scarlet & Violet or MTG Modern Horizons), causing 15 to 45 minute sync lags that result in massive waves of overselling; locks merchants into their proprietary, dated Shopify frontend theme with zero developer freedom; charges punitive commission transaction fees; lacks reliable, native eBay integration with automated item specific mapping.
+5. Bin-Level "Chaos Warehousing" Spatial Graph & Optimal Pick-Path Routing:
+In high-volume card operations, cards are stored in physical storage locations (Boxes, Rows, Drawers, Bins) without strict alphabetical or chronological ordering ('chaos warehousing'). The engine must maintain a real-time spatial graph linking digital SKUs to physical coordinate tags (e.g., Box B-12 -> Row 3 -> Slot 44). When batched daily orders are pulled, the system must calculate a Traveling Salesperson Problem (TSP) heuristic route, compiling orders into a single consolidated, bin-ordered picklist that minimizes fulfillment walking time by 75%.
 
-2. TCGplayer Pro / Crystal Commerce:
+6. Dual-Ledger Architecture: Fungible Raw Pools vs. Serialized 1-of-1 Graded Slabs:
+The inventory database must natively support two conflicting data models within a unified schema:
+• Pooled Fungible Ledger: Multi-quantity raw cards grouped by (Card ID + Condition + Finish) where quantity decrements from N -> N-1 upon sale.
+• Serialized Non-Fungible Ledger: High-end vintage and graded slabs tracked by unique UUIDs, individual PSA/BGS/CGC certification numbers, population data, and front/back high-res photo URLs where quantity is strictly 1.
+Handling simultaneous cross-listing of both pools without schema collisions or generic slab photo swaps requires a polymorphic inventory engine.
+
+7. FIFO Cost-Basis & Realized Profit-and-Loss Accounting Engine:
+Tracking inventory counts alone leaves store owners blind to actual profit. When a merchant acquires 4 copies of a card at $12 in an intake collection, and later acquires 2 copies at $18, the system must maintain a First-In-First-Out (FIFO) cost-basis ledger. When a copy sells on eBay for $30, the engine must deduct exact marketplace commissions (13.25%), payment processing fees, and the specific $12 cost basis to log an accurate realized net profit ($14.02) for real-time tax and margin analytics.
+
+8. Multi-Location Hierarchical Sub-Inventory & Offline Travel Routing:
+Merchants need to partition inventory into logical sub-locations (Store Showcase, Back-Room Archive, Dallas Card Show Pelican Case). The sync engine must enforce location-specific channel visibility rules (e.g., 'Do not list Pelican Case items on TCGplayer Direct; allocate them exclusively to Card Show Mobile POS'). Furthermore, sales made at convention centers with intermittent cellular signal must execute atomic optimistic decrements locally in IndexedDB, queuing guaranteed push updates once connectivity restores.`,
+
+    competitorAnalysis: `1. SortSwift (Technologies):
+• Architecture & Implementation: Standalone cloud inventory manager featuring 'Chaos Storage' batch remarks (tagging scans with batch IDs like 'Batch P0001'), automated picklists sorted by bin location, Autopricing V2 with modular conditional steps, and integrations to Shopify, eBay, CardTrader, ManaPool, and TCGplayer. Uses a physical proprietary $249 mini-PC appliance ('SortSwiftOS Sync Box') plugged into the retailer's local router to bypass Cloudflare and automate the TCGplayer Seller Portal.
+• Fatal Flaws & Gaps:
+  1. Heavy Hardware Lock-In & Cost Friction: Forces stores to purchase an expensive $249 physical Sync Box for live automated TCGplayer sync; full mechanical bin routing is married to their $4,299 to $24,999 Super Sorter hardware plus a $199/month device scan fee.
+  2. Aggressive 'Nickel-and-Dime' Pricing: Advertised as affordable, but stacks an extra $12.99/mo per 'Sync Slot' (connecting 3 channels = +$38.97/mo), charges $15.99 to $124.99/mo per game for Autopricing, and meters 99.9% high-accuracy scanning behind extra monthly credit tiers ($5 to $199/mo) or booster packs.
+  3. Weak Serialized Graded Slab Workflows: Designed heavily around fungible raw singles in bulk bins; lacks native PSA/BGS/CGC cert barcode lookup APIs, automated population tracking, and 1-of-1 front/back high-res photo binding for eBay slab collectors.
+  4. Zero FIFO Cost-Basis or Realized P&L Accounting: Tracks inventory counts and market prices, but cannot calculate true Cost of Goods Sold (COGS), acquisition batches, or fee-adjusted net profits for financial accounting and tax reporting.
+  5. No Multi-Location Travel Routing: Treats all inventory as one global pool; cannot isolate inventory traveling to a weekend card show in a Pelican case from in-store mail order stock.
+  6. No Native Consignment Tracking: Lacks split-commission payout tracking (e.g., 85/15 consignor agreements) and 1-click consignment return unlisting.
+  7. No Dead-Stock Aging & Capital Liquidity Alerts: Does not flag stagnant capital or trigger automated clearance markdown rules for singles sitting in bins >90 days.
+
+2. BinderPOS (TCGplayer / eBay / Collectors):
+• Architecture & Implementation: Monolithic multi-tenant Ruby on Rails application using background Sidekiq queues syncing between Shopify and TCGplayer.
+• Fatal Flaws & Shortcomings: Completely pauses new signups as of February 2025; forces stores into an expensive mandatory Shopify subscription ($39–$399/mo); charges a punitive 2.0%–2.5% GMV commission tax on all online sales; notorious for 15-to-45-minute sync queues during major set releases leading to mass overselling; bloats Shopify databases by creating hundreds of thousands of zero-quantity variants that slow store loading to a crawl.
+
+3. TCGplayer Pro / Crystal Commerce:
 • Architecture & Implementation: Built on 15-year-old legacy server architectures that rely on periodic batch polling (syncing inventory every 15 to 30 minutes via scheduled cron jobs) rather than real-time event-driven webhooks.
-• Fatal Flaws & Shortcomings: 15-minute polling windows leave a massive vulnerability gap where items are double-sold constantly; silent sync failures where API connections drop without notifying the merchant; archaic, slow admin interfaces that freeze during peak catalog imports.
+• Fatal Flaws & Shortcomings: 15-minute polling windows leave a massive vulnerability gap where items are double-sold constantly; silent sync failures where API connections drop without notifying the merchant; archaic, slow admin interfaces that freeze during peak catalog imports; completely lacks modern physical chaos bin locator coordinates or mobile picklists.
 
-3. Generic Multi-Channel Tools (Sellbrite, ChannelEngine, ChannelAdvisor):
+4. Generic Multi-Channel Tools (Sellbrite, ChannelEngine, ChannelAdvisor):
 • Architecture & Implementation: Designed for traditional standardized retail goods (apparel, consumer electronics) where products have uniform UPC barcodes and fixed specs.
 • Fatal Flaws & Shortcomings: Completely incapable of handling collectible card nuances (condition grading tiers, foil finishes, language editions, set symbols, or real-time TCG market price indexing); exorbitantly expensive (costing $500–$2,000/month plus implementation fees) without solving the fundamental TCG double-selling dilemma.
 
-4. Decktradr:
-• Architecture & Implementation: Early-stage cloud web application with basic inventory synchronization.
-• Fatal Flaws & Shortcomings: Lacks industrial-grade distributed queue infrastructure; cannot handle high-throughput physical POS register concurrency simultaneously with eBay and TCGplayer; lacks real-time algorithmic repricing rules and automated rate limit backoff.`,
+5. Decktradr / Storepass:
+• Architecture & Implementation: Modern Shopify-dependent retail tools built specifically for local game stores.
+• Fatal Flaws & Shortcomings: Requires mandatory Shopify hosting; built strictly for brick-and-mortar checkout counters while offering weak eBay graded slab workflows and zero offline convention center mode for card-show vendors; lacks comprehensive warehouse pick-path routing.`,
 
     theAeethodSolution: "",
     techStack: {
