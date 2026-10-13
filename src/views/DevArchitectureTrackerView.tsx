@@ -34,36 +34,36 @@ export const DevArchitectureTrackerView: React.FC = () => {
 
   // Products from store / Supabase with comprehensive pillar fallbacks
   const saasProducts: SaaSProductPillar[] = useMemo(() => {
-    const rawList: SaaSProductPillar[] = (db?.saas_products && db.saas_products.length > 0)
-      ? db.saas_products
-      : INITIAL_SAAS_PRODUCTS;
-
-    return rawList.map((p) => {
-      const fallback = INITIAL_SAAS_PRODUCTS.find((init) => init.id === p.id);
-      if (!fallback) return p;
+    const dbList = db?.saas_products || [];
+    const mergedList = INITIAL_SAAS_PRODUCTS.map((init) => {
+      const dbProd = dbList.find((p) => p.id === init.id);
+      if (!dbProd) return init;
       return {
-        ...fallback,
-        ...p,
-        name: fallback.name || p.name,
-        tagline: fallback.tagline || p.tagline,
-        icon: fallback.icon || p.icon,
+        ...init,
+        ...dbProd,
+        name: init.name || dbProd.name,
+        tagline: init.tagline || dbProd.tagline,
+        icon: init.icon || dbProd.icon,
         targetCustomerProblem:
-          fallback.targetCustomerProblem && fallback.targetCustomerProblem.length > (p.targetCustomerProblem?.length || 0)
-            ? fallback.targetCustomerProblem
-            : p.targetCustomerProblem || fallback.targetCustomerProblem,
+          init.targetCustomerProblem && init.targetCustomerProblem.length > (dbProd.targetCustomerProblem?.length || 0)
+            ? init.targetCustomerProblem
+            : dbProd.targetCustomerProblem || init.targetCustomerProblem,
         problemsToBuild:
-          fallback.problemsToBuild && fallback.problemsToBuild.length > (p.problemsToBuild?.length || 0)
-            ? fallback.problemsToBuild
-            : p.problemsToBuild || fallback.problemsToBuild,
+          init.problemsToBuild && init.problemsToBuild.length > (dbProd.problemsToBuild?.length || 0)
+            ? init.problemsToBuild
+            : dbProd.problemsToBuild || init.problemsToBuild,
         competitorAnalysis:
-          fallback.competitorAnalysis && fallback.competitorAnalysis.length > (p.competitorAnalysis?.length || 0)
-            ? fallback.competitorAnalysis
-            : p.competitorAnalysis || fallback.competitorAnalysis,
-        targetAudience: p.targetAudience || fallback.targetAudience,
-        pricingModel: p.pricingModel || fallback.pricingModel,
-        theAeethodSolution: p.theAeethodSolution ?? fallback.theAeethodSolution,
+          init.competitorAnalysis && init.competitorAnalysis.length > (dbProd.competitorAnalysis?.length || 0)
+            ? init.competitorAnalysis
+            : dbProd.competitorAnalysis || init.competitorAnalysis,
+        targetAudience: dbProd.targetAudience || init.targetAudience,
+        pricingModel: dbProd.pricingModel || init.pricingModel,
+        theAeethodSolution: dbProd.theAeethodSolution ?? init.theAeethodSolution,
       };
     });
+
+    const customProds = dbList.filter((p) => !INITIAL_SAAS_PRODUCTS.some((init) => init.id === p.id));
+    return [...mergedList, ...customProds];
   }, [db?.saas_products]);
 
   // Search & Filter state
@@ -453,7 +453,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
                     : 'bg-zinc-800 text-white shadow-xs font-semibold'
                   : 'text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200'
               }`}
-              title="View all 3 pillars side-by-side"
+              title="View analysis sections side-by-side in 3 columns"
             >
               <Columns className="w-3.5 h-3.5" />
               <span>3 Columns</span>
