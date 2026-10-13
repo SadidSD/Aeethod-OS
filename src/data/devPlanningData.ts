@@ -151,14 +151,14 @@ Once a card image is classified into a set and card number, the engine must imme
   },
 {
     id: "prod-buylist",
-    name: "Buylist",
-    tagline: "Automated self-service counter trade-in & valuation engine (0% GMV fee)",
+    name: "Automated Buylist & Trade-In Portal",
+    tagline: "Automated trade-in portal: standalone mail-in logistics, self-service counter kiosk & dynamic valuation (0% GMV fee)",
     icon: "📋",
-    targetAudience: "Brick-and-mortar game stores & high-volume trade-in merchants",
+    targetAudience: "Online warehouse power sellers (Profile 3 mail-in), card-show circuit vendors (Profile 4 table-tents), and brick-and-mortar LGSs",
     pricingModel: "$99 - $299/mo (0% GMV fee)",
     status: "In Development",
-    targetCustomerProblem: `1. [Critical P0] The Peak-Hours Counter Congestion & Abandoned Revenue Trap:
-Customer trade-ins represent 60–80% of a card store's gross profit margin (buying singles at 50–70% of market value to sell at 100%). However, customers bring in binders with 50 to 300 cards during peak store hours (evenings, Friday Night Magic, Saturday Pokémon leagues). A single clerk looking up each card on TCGplayer with a calculator locks up the checkout register for 25 to 50 minutes. Paying retail customers waiting in line to buy packs, sleeves, or drinks get frustrated and walk out, resulting in massive lost immediate revenue.
+    targetCustomerProblem: `1. [Critical P0] The Counter Congestion Trap & The Post-TCGplayer Mail-In Acquisition Crisis:
+Customer trade-ins represent 60–80% of a card merchant's gross profit margin (buying singles at 50–70% of market value to sell at 100%). However, following TCGplayer's shutdown of their Direct Buylist program in July 2024, online power sellers (Profile 3) lost their primary inventory acquisition pipeline and have no turnkey software to host a standalone mail-in buylist ('buylist.aeethod.com/vendor') with automated prepaid USPS shipping labels and packing slips without running a complex e-commerce storefront. Simultaneously, in physical stores, walk-in customers bring binders with 50 to 300 cards during peak hours; a clerk manually looking up cards locks the register for 25 to 50 minutes, driving paying customers away and forfeiting high-margin trade-in volume.
 
 2. [Critical P0] Discretionary Pricing Errors & Rampant Margin Bleed:
 Different clerks offer wildly different prices based on their personal mood, card knowledge, or memory. Junior clerks frequently pay Near Mint prices for Lightly Played cards, fail to spot recent reprint announcements, or miscalculate store credit bonuses. Without centralized, automated pricing guardrails, stores bleed hundreds of dollars in gross margin daily.
@@ -199,8 +199,8 @@ Public touchscreen iPads or kiosk PCs left unattended by customers risk personal
 14. [Medium P2] Fast Fuzzy Search & Misspelled Card Name Roadblocks:
 Casual customers misspell complex Pokémon and Magic card names ('Chairzard', 'Pikachu Vmax alt', 'Liliana'). Sluggish search (>500ms) or exact-match-only database queries frustrate customers at self-service kiosks, leading to abandoned submissions.
 
-15. [Medium P2] Mobile Phone SMS / QR Code Kiosk Handoff:
-Customers want to build their buylist at home on their smartphone, walk into the physical store, and scan a QR code at the in-store kiosk to hand over the physical batch to the clerk in under 10 seconds.
+15. [Medium P2] Turnkey Mail-In Logistics, Event Drop-Offs & QR Code Kiosk Handoff:
+Remote sellers and card-show attendees need seamless submission pipelines. For mail-in vendors (Profile 3), customers require automated prepaid USPS/UPS shipping labels, packing slips with tracking barcodes, and step-by-step submission status tracking without merchant intervention. For card-show circuit vendors (Profile 4) and LGSs, customers build submissions on their phone via table-tent QR codes and execute a 10-second physical batch handoff at the booth or counter.
 
 16. [Medium P2] Store Credit Policy Restrictions & Tournament Fee Exclusions:
 Customers often assume store credit can be used for cash tournament entry fees, drinks, or consignment items. Systems lack configurable store credit tender restrictions, leading to heated register arguments.
@@ -232,7 +232,10 @@ Issuing store credit directly into Shopify POS, Lightspeed, or Square customer a
 When the customer hands over the physical cards corresponding to their kiosk submission, the clerk needs a 10-second inspection interface:
 • 1-click condition adjustments (e.g., changing a card from NM to LP instantly updates payout and prints a breakdown receipt).
 • Customer signature capture for legal pawn/secondhand dealer compliance (many US states and municipalities require ID scanning, customer thumbprints, and photo recording for cash trade-ins).
-• Instant generation of thermal barcode labels (Zebra/Dymo) for each approved single so cards go directly from counter to display case in 60 seconds.`,
+• Instant generation of thermal barcode labels (Zebra/Dymo) for each approved single so cards go directly from counter to display case in 60 seconds.
+
+5. Turnkey Mail-In Shipping Manifests & Asynchronous Intake Protocol:
+Dedicated standalone white-label portal ('buylist.aeethod.com/vendor') for online power sellers lacking a Shopify storefront. Automated integration with EasyPost / Shippo generating prepaid USPS/UPS shipping labels and packing slip manifests with verification QR codes. Asynchronous grading queue matching received mail packages to submitted manifests, photographic condition discrepancy logs, and automated ACH / PayPal / store credit payout disbursement upon inspection sign-off.`,
 
     competitorAnalysis: `1. BinderPOS (TCGplayer / eBay):
 • Architecture & Implementation: Built a generic Shopify iframe widget connected to a monolithic Ruby on Rails backend that syncs pricing from TCGplayer's proprietary price feed.
@@ -406,13 +409,13 @@ Merchants need to partition inventory into logical sub-locations (Store Showcase
   {
     id: "prod-omnichannel-sync",
     name: "Real-Time Omnichannel Sync Engine",
-    tagline: "Sub-500ms multi-channel concurrency, anti-double-selling locks & automated marketplace repricing",
+    tagline: "Sub-500ms multi-channel concurrency, mobile convention POS, live-stream rapid delist & anti-overselling locks",
     icon: "⚡",
-    targetAudience: "Omnichannel TCG sellers managing physical POS + multiple online marketplaces (Shopify, eBay, TCGplayer, Cardmarket)",
+    targetAudience: "Omnichannel TCG merchants, convention circuit booth dealers (Whatnot / TikTok Live / Card Shows), and high-volume online power sellers",
     pricingModel: "$99 - $299/mo ($0 commission)",
     status: "In Discovery",
-    targetCustomerProblem: `1. [Critical P0] The Nightmare of Double-Selling Unique Singles (Concurrency Race Conditions):
-In the collectible card business, the vast majority of high-value inventory consists of unique, single-quantity items (quantity = 1 for a $150 serialized card, a $400 Charizard Base Set, or a $1,200 Black Lotus). Sellers list these cards across Shopify, eBay, TCGplayer Pro, Cardmarket, and their physical store POS simultaneously to maximize visibility. When a walk-in customer purchases that single card at the physical counter on a busy Saturday, incumbent sync systems take 5 to 20 minutes to notify external platforms. During that window, an online buyer purchases the identical card on eBay or TCGplayer, resulting in an immediate out-of-stock collision.
+    targetCustomerProblem: `1. [Critical P0] The Nightmare of Double-Selling Unique Singles (Concurrency Race Conditions & Live Stream Velocity):
+In the collectible card business, the vast majority of high-value inventory consists of unique, single-quantity items (quantity = 1 for a $150 serialized card, a $400 Charizard Base Set, or a $1,200 Black Lotus). Sellers list these cards across Shopify, eBay, TCGplayer Pro, Cardmarket, Whatnot, TikTok Live, and their physical/mobile booth registers simultaneously to maximize liquidity. During Whatnot 30-second sudden-death flash auctions or high-velocity TikTok streams, or when a walk-in customer buys a card at a busy card show, incumbent sync systems take 5 to 20 minutes to notify external channels. During that latency window, a buyer purchases the identical card on eBay or TCGplayer, triggering an immediate out-of-stock collision and disastrous seller defect.
 
 2. [Critical P0] Disastrous Marketplace Penalties, Defect Rates & Account Suspensions:
 When an overselling double-sale occurs, the merchant is forced to cancel the order on eBay or TCGplayer with the reason 'Item Out of Stock'. Marketplaces treat out-of-stock cancellations with zero tolerance:
@@ -426,8 +429,8 @@ TCGplayer lacks an open-write public REST API for standard sellers, heavily guar
 4. [Critical P0] Out-of-Order Webhooks & Eventual Consistency Split-Brain Overwrites:
 Webhooks from Shopify, eBay, and TCGplayer do not guarantee in-order delivery. If an update webhook arrives before a creation webhook, or if network latency delays a Shopify webhook during high traffic, a naive sync engine overwrites fresh inventory with stale data (split-brain condition), resurrecting sold items and triggering new double-selling spirals.
 
-5. [Critical P0] Counter & Card-Show "Held-in-Hand" Soft-Lock Collision:
-At convention booths and retail checkout counters, walk-in customers routinely request a 15-minute hold while walking to an ATM for cash, or leave a stack of 25 singles on the counter while browsing. POS systems lack an instant '15-Minute Soft-Lock Reservation' toggle to temporarily buffer or delist those cards online. An online buyer on eBay purchases the card while the physical customer is walking back with cash in hand, forcing a painful face-to-face deal cancellation.
+5. [Critical P0] Card-Show Booth Cash Register & Held-in-Hand 15-Minute Soft-Lock Collision:
+At convention booths (Profile 4) and retail checkout counters, dealers conduct fast-paced cash, Venmo, or Zelle transactions without traditional desktop registers. Lacking a 1-tap mobile convention cash register, dealers cannot instantly mark inventory as sold from their phone, leaving cards live on eBay/TCGplayer while they haggle. Furthermore, walk-in customers routinely request a 15-minute hold while walking to an ATM for cash. Without an instant mobile '15-Minute Soft-Lock Reservation' toggle to temporarily buffer and delist singles across online channels, an online buyer purchases the held card, forcing an embarrassing face-to-face deal cancellation.
 
 6. [Critical P0] Order Cancellation & Mail Return "Ghost Inventory" Creation:
 When a buyer cancels an online order within 30 minutes, or returns a single via mail a week later, existing sync systems only know how to decrement inventory (Qty - 1) and break on reverse replenishment (Qty + 1). Either the returned card remains at Qty: 0 indefinitely as forgotten 'ghost inventory' eating up working capital, or an employee manually re-enters it into POS while the sync engine belatedly processes the return webhook hours later, doubling inventory to Qty: 2 and triggering another catastrophic overselling cycle.
@@ -513,8 +516,8 @@ Real-time algorithmic repricing rules that automatically adjust channel listing 
 6. Cloud-Native Headless Automation & Residential Session Management:
 Bypasses the requirement for fragile $249 local hardware sync boxes by leveraging cloud-native headless browser automation with intelligent residential IP rotation, maintaining persistent authenticated seller sessions while neutralizing Cloudflare bot defense blocks.
 
-7. Multi-Location Hierarchical Sub-Inventory & Offline Travel Routing:
-Merchants need to partition inventory into logical sub-locations (Store Showcase, Back-Room Archive, Dallas Card Show Pelican Case). The sync engine must enforce location-specific channel visibility rules (e.g., 'Do not list Pelican Case items on TCGplayer Direct; allocate them exclusively to Card Show Mobile POS'). Furthermore, sales made at convention centers with intermittent cellular signal execute atomic optimistic decrements locally in IndexedDB, queuing guaranteed push updates once connectivity restores.`,
+7. Multi-Location Hierarchical Sub-Inventory, Mobile Convention POS & Live-Stream Delisting:
+Merchants need to partition inventory into logical sub-locations (Store Showcase, Back-Room Archive, Dallas Card Show Pelican Case). The sync engine enforces location-specific channel visibility rules (e.g., 'Do not list Pelican Case items on TCGplayer Direct; allocate them exclusively to Card Show Mobile POS'). Features a lightning-fast 1-tap mobile register for convention dealers (Profile 4) and live streamers (Whatnot / TikTok Live) that instantly records cash/Venmo sales and broadcasts sub-500ms API delist payloads across eBay, TCGplayer, and Shopify. For convention halls with intermittent cellular reception, the engine executes atomic optimistic decrements locally in IndexedDB, queueing guaranteed push updates once connectivity restores.`,
 
     competitorAnalysis: `1. SortSwift (Technologies):
 • Architecture & Implementation: Uses a physical proprietary $249 mini-PC appliance ('SortSwiftOS Sync Box') plugged into the retailer's local router to automate the TCGplayer Seller Portal and bypass Cloudflare.
