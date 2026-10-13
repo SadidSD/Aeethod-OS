@@ -190,7 +190,7 @@ When the customer hands over the physical cards corresponding to their kiosk sub
     targetAudience: "Omnichannel TCG sellers, card-show booth vendors, and high-volume warehouse PowerSellers",
     pricingModel: "$99 - $299/mo ($0 commission)",
     status: "In Discovery",
-    targetCustomerProblem: `1. The Nightmare of Double-Selling Unique Singles:
+        targetCustomerProblem: `1. The Nightmare of Double-Selling Unique Singles (Concurrency Race Conditions):
 In the collectible card business, the vast majority of high-value inventory consists of unique, single-quantity items (quantity = 1 for a $150 serialized card, a $400 Charizard Base Set, or a $1,200 Black Lotus). Sellers list these cards across Shopify, eBay, TCGplayer Pro, Cardmarket, and their physical store POS simultaneously to maximize visibility. When a walk-in customer purchases that single card at the physical counter on a busy Saturday, incumbent sync systems take 5 to 20 minutes to notify external platforms. During that window, an online buyer purchases the identical card on eBay or TCGplayer, resulting in an immediate out-of-stock collision.
 
 2. Disastrous Marketplace Penalties, Defect Rates & Account Suspensions:
@@ -199,41 +199,47 @@ When an overselling double-sale occurs, the merchant is forced to cancel the ord
 • On TCGplayer, out-of-stock cancellation spikes result in instant tier demotions, loss of the TCGplayer Direct program (which drives 40–60% of top-tier store volume), and eventual permanent account bans.
 • Loss of buyer trust, negative 1-star feedback, and chargeback disputes.
 
-3. Severe Administrative Fatigue & Multi-Portal Fragmentation:
-Store managers spend 2 to 4 hours every single day manually logging into three disparate portals (Shopify Admin, eBay Seller Hub, and TCGplayer Pro Admin) to cross-check inventory counts, adjust prices, edit descriptions, and manually delist cards that sold in other channels. This manual busywork robs owners of time needed to run tournaments, acquire collections, or engage with their community.
+3. The "Pick-and-Pack Blind Hunt" (Physical Bin/Slot Locator Desynchronization):
+Card shops managing 50,000 to 200,000 raw singles organize cards physically in 5,000-count cardboard monster boxes and multi-row binders. When 100 online orders flood in on a Monday morning across eBay, TCGplayer, and Shopify, sync tools that only track digital quantities without physical storage coordinates (Box #14 -> Row 2 -> Surging Sparks -> Slot 88) force staff to spend 3 to 5 hours each morning on a frantic manual search, causing packaging bottlenecks and shipping SLA misses.
 
-4. High-Volatility Release-Day Price Lag & Profit Bleed:
-During set prereleases or tournament metagame shifts (e.g., a card winning a Pro Tour on Sunday), secondary market prices fluctuate wildly by 50–200% within hours. Without automated real-time cross-channel repricing, stores sell underpriced singles online to opportunistic arbitrage bots before staff can manually update prices, losing hundreds of dollars in realized gains.
+4. "Chaos Storage" vs. Alphabetical Storage Collapse (Manual Sorting Friction):
+When a shop buys a collection of 2,500 singles, forcing clerks to alphabetize them into existing master sets takes 15–20 hours of manual labor. If they use modern e-commerce "chaos storage" (assigning newly received cards to whichever bin or batch has physical space, like SortSwift remarks), traditional sync and POS tools have zero native understanding of dynamic bin coordinates. If cards are moved, shifted, or consolidated, the picklists break and clerks can no longer find inventory.
 
-5. Listing Creation Inefficiency Across Disparate Taxonomies:
-Creating a single card listing on Shopify requires a title, price, images, tags, and metafields. Listing that same card on eBay requires categorizing it under 'CCG Individual Cards', setting specific condition item specifics ('Graded: No', 'Card Name: Charizard', 'Attribute: Fire', 'Finish: Foil'), and on TCGplayer requires selecting the exact Product ID, SKU, and condition enum. Listing 500 cards across all three platforms manually takes days.
+5. Graded Slab Cert ID & Photo Desynchronization (Fungible vs. Serialized 1-of-1):
+A dealer holding three PSA 10 copies of the same vintage card holds three unique, non-fungible assets with distinct certification numbers, centering grades, and foil print-line nuances. When an eBay collector purchases Cert #81920111 after examining high-res photos, generic sync tools that pool graded slabs under a shared multi-quantity SKU cause fulfillment staff to mail Cert #99401284 instead. The buyer immediately files an 'Item Not As Described / Fraud' dispute, freezing store payouts.
 
-6. The "Returns, Cancellations & Reverse-Sync" Ghost Inventory Trap:
+6. FIFO Cost-Basis & Realized Profit/Tax Blindness (Inventory Accounting & COGS):
+TCG singles are acquired over months across different buylist payouts (e.g. buying 5 copies of a card over 6 months at $40, $55, $70). Incumbent sync tools only track current market sale prices, completely lacking First-In, First-Out (FIFO) cost-basis tracking. Store owners have no visibility into true Cost of Goods Sold (COGS), actual realized margin per channel, or tax liability calculations required for CPA and IRS reporting.
+
+7. Dead-Stock Capital Freezing & Inventory Aging (Stagnant Working Capital):
+TCG market hype moves fast. High-value singles that sit in showcases or warehouse binders for over 60–90 days without selling represent frozen working capital that loses value as meta shifts. Existing sync tools lack inventory age tracking and automated aging alerts. Without proactive markdown workflows, bulk repatriation, or liquidation triggers, store owners sit on tens of thousands of dollars in stagnant, depreciating paper.
+
+8. The "Returns, Cancellations & Reverse-Sync" Ghost Inventory Trap:
 When a buyer cancels an online order within 30 minutes, or returns a single via mail a week later, existing sync systems only know how to decrement inventory (Qty - 1) and break on reverse replenishment (Qty + 1). Either the returned card remains at Qty: 0 indefinitely as forgotten 'ghost inventory' eating up working capital, or an employee manually re-enters it into POS while the sync engine belatedly processes the return webhook hours later, doubling inventory to Qty: 2 and triggering another catastrophic overselling cycle.
 
-7. Multi-Location & "Pelican-Case Travel" Desynchronization:
+9. Multi-Location & "Pelican-Case Travel" Desynchronization:
 Commercial dealers do not store inventory in a single location: cards are split across retail glass display showcases, back-office storage boxes, and locked mobile Pelican cases traveling to weekend conventions (e.g., Collect-A-Con). Incumbent software lacks location-aware channel routing. When an online eBay order arrives on Friday for a $300 slab physically packed in a convention travel case 500 miles away, fulfillment clerks cannot locate it within the 24-hour SLA handling window, triggering late shipment defects and seller penalties.
-
-8. Channel Commission Disparity & Flat-Pricing Margin Bleed:
-Marketplaces charge radically different take-rates: TCGplayer takes 10.25%–12.75%, eBay takes 13.25%, Cardmarket/Manapool take 5.00%, direct Shopify webstores take ~2.9% (Stripe processing only), and in-person convention cash takes 0%. Incumbent sync tools force one rigid, identical price across all channels. Listing an Umbreon ex at a flat $200 yields $194.20 on a store's own site, but only $173.50 on eBay—bleeding over $20 in net margin per sale without intelligent channel-specific markup rules.
-
-9. Graded Slab Cert ID & Photo Desynchronization (Fungible vs. Serialized Items):
-A dealer holding three PSA 10 copies of the same vintage card holds three unique, non-fungible assets with distinct certification numbers, centering grades, and foil print-line nuances. When an eBay collector purchases Cert #81920111 after examining high-res photos, generic sync tools that pool graded slabs under a shared multi-quantity SKU cause fulfillment staff to mail Cert #99401284 instead. The buyer immediately files an 'Item Not As Described / Fraud' dispute, freezing store payouts.
 
 10. Physical Counter & Card-Show "Held-in-Hand" Soft-Lock Collision:
 At convention booths and retail counters, walk-in customers routinely request a 10-minute hold while walking to an ATM for cash, or leave a stack of 25 singles on the counter while browsing. POS systems lack an instant '15-Minute Soft-Lock Reservation' toggle to temporarily buffer or delist those cards online. An online buyer on eBay purchases the card while the physical customer is walking back with cash in hand, forcing a painful face-to-face deal cancellation.
 
-11. Cross-Border Condition Grading Standard Clashes (US 5-Tier vs. EU 7-Tier):
-US marketplaces (TCGplayer, eBay) operate on a 5-tier condition taxonomy (NM, LP, MP, HP, DMG), whereas European marketplaces (Cardmarket) enforce a strict 7-tier scale (Mint, Near Mint, Excellent, Good, Light Played, Played, Poor). A card graded Near Mint in the US with a single corner white speck is strictly rejected as 'Excellent (EX)' by European buyers. Naive 1:1 sync mapping causes endless European condition disputes and return chargebacks, while overly conservative down-grading slashes realized card revenue by 15% to 25%.
+11. Severe Administrative Fatigue & Multi-Portal Fragmentation:
+Store managers spend 2 to 4 hours every single day manually logging into three disparate portals (Shopify Admin, eBay Seller Hub, and TCGplayer Pro Admin) to cross-check inventory counts, adjust prices, edit descriptions, and manually delist cards that sold in other channels. This manual busywork robs owners of time needed to run tournaments, acquire collections, or engage with their community.
 
-12. Consignment Tracking & Dynamic Commission Payout Desynchronization:
+12. High-Volatility Release-Day Price Lag & Profit Bleed:
+During set prereleases or tournament metagame shifts (e.g., a card winning a Pro Tour on Sunday), secondary market prices fluctuate wildly by 50–200% within hours. Without automated real-time cross-channel repricing, stores sell underpriced singles online to opportunistic arbitrage bots before staff can manually update prices, losing hundreds of dollars in realized gains.
+
+13. Channel Commission Disparity & Flat-Pricing Margin Bleed:
+Marketplaces charge radically different take-rates: TCGplayer takes 10.25%–12.75%, eBay takes 13.25%, Cardmarket/Manapool take 5.00%, direct Shopify webstores take ~2.9% (Stripe processing only), and in-person convention cash takes 0%. Incumbent sync tools force one rigid, identical price across all channels. Listing an Umbreon ex at a flat $200 yields $194.20 on a store's own site, but only $173.50 on eBay—bleeding over $20 in net margin per sale without intelligent channel-specific markup rules.
+
+14. Listing Creation Inefficiency Across Disparate Taxonomies:
+Creating a single card listing on Shopify requires a title, price, images, tags, and metafields. Listing that same card on eBay requires categorizing it under 'CCG Individual Cards', setting specific condition item specifics ('Graded: No', 'Card Name: Charizard', 'Attribute: Fire', 'Finish: Foil'), and on TCGplayer requires selecting the exact Product ID, SKU, and condition enum. Listing 500 cards across all three platforms manually takes days.
+
+15. Consignment Tracking & Dynamic Commission Payout Desynchronization:
 Over 30% of high-end card shop showcases consist of customer consignment inventory sold on an 80/20 or 85/15 net split. When a consigned slab sells across disparate platforms with varying fee structures, tracking the consignor's true net payout manually across portals is an accounting nightmare. Furthermore, when a consignor requests their unsold items back on short notice, store managers waste hours searching through three online portals to manually unlist items before they can be returned.
 
-13. The "Pick-and-Pack Blind Hunt" (Physical Bin/Slot Locator Desynchronization):
-Card shops managing 50,000 to 200,000 raw singles organize cards physically in 5,000-count cardboard monster boxes and multi-row binders. When 100 online orders flood in on a Monday morning across eBay, TCGplayer, and Shopify, sync tools that only track digital quantities without physical storage coordinates (Box #14 -> Row 2 -> Surging Sparks -> Slot 88) force staff to spend 3 to 5 hours each morning on a frantic manual search, causing packaging bottlenecks and shipping SLA misses.
-
-14. Street-Date Embargo & Official Distributor Compliance Violations:
-Publishers (The Pokémon Company International, Wizards of the Coast) enforce strict street-date embargoes for upcoming sets. Stores receive inventory 3–5 days early for prerelease events, but are legally forbidden from listing regular singles on eBay/TCGplayer before the worldwide Friday launch. Auto-sync tools lacking automated street-date embargo schedules accidentally push newly scanned prerelease singles live early, leading to publisher investigations, loss of official WPN/Play! Pokémon store status, and revoked distributor allocations.`,
+16. Cross-Border Condition Grading Clashes & Street-Date Embargoes:
+US marketplaces (TCGplayer, eBay) operate on a 5-tier condition taxonomy (NM, LP, MP, HP, DMG), whereas European marketplaces (Cardmarket) enforce a strict 7-tier scale (Mint, Near Mint, Excellent, Good, Light Played, Played, Poor). Naive 1:1 sync mapping causes endless European condition disputes and return chargebacks. Simultaneously, publishers (The Pokémon Company International, Wizards of the Coast) enforce strict street-date embargoes for upcoming sets. Auto-sync tools lacking automated street-date embargo schedules push prerelease singles live early, risking publisher investigations, revoked distributor allocations, and loss of official WPN/Play! Pokémon store status.`,
 
     problemsToBuild: `1. Distributed Concurrency, Race Conditions & Sub-500ms Locking:
 To prevent double-sales, the system must process real-time inventory delisting in under 500 milliseconds. When an in-store POS barcode scan triggers a sale event:

@@ -186,7 +186,10 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
       return <p className="text-xs text-slate-400 italic">No details defined yet.</p>;
     }
 
-    const items = text.split(/(?=\d+\.\s)/g).filter(Boolean);
+    const items = text
+      .split(/(?:^|\n+)(?=\d+\.\s)/)
+      .map((s) => s.trim())
+      .filter(Boolean);
 
     if (items.length <= 1) {
       return (
