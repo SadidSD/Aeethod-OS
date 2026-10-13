@@ -23,7 +23,8 @@ import {
   Building2,
   Maximize2,
   LayoutGrid,
-  Columns
+  Columns,
+  Target
 } from 'lucide-react';
 import { useStore } from '../store';
 import { SaaSProductPillar, INITIAL_SAAS_PRODUCTS } from '../data/devPlanningData';
@@ -69,6 +70,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'In Development' | 'In Discovery' | 'Live'>('All');
+  const [profileFilter, setProfileFilter] = useState<'All' | 'Target' | 'P3' | 'P4' | 'Later'>('All');
 
   // Card view mode: 'tabs' (focused per card) or 'all' (all 3 pillars side-by-side)
   const [viewMode, setViewMode] = useState<'tabs' | 'all'>('tabs');
@@ -206,16 +208,49 @@ export const DevArchitectureTrackerView: React.FC = () => {
       return <p className="text-xs text-slate-400 italic">No details defined yet.</p>;
     }
 
-    const items = text
+    const rawItems = text
       .split(/(?:^|\n+)(?=\d+\.\s)/)
       .map((s) => s.trim())
       .filter(Boolean);
 
-    if (items.length <= 1) {
+    if (rawItems.length <= 1) {
       return (
         <p className={`text-xs leading-relaxed whitespace-pre-line ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
           {text}
         </p>
+      );
+    }
+
+    // Apply profile filtering if profileFilter is active
+    const items = rawItems.filter((item) => {
+      if (profileFilter === 'All') return true;
+      const profileMatch = item.match(/\[(Profile[^\]]+)\]/i);
+      if (!profileMatch) return true; // keep non-customer problem items (build/competitors)
+      const pStr = profileMatch[1];
+      const isP3 = pStr.includes('Profile 3') || pStr.includes('P3');
+      const isP4 = pStr.includes('Profile 4') || pStr.includes('P4');
+      if (profileFilter === 'Target') return isP3 || isP4;
+      if (profileFilter === 'P3') return isP3;
+      if (profileFilter === 'P4') return isP4;
+      if (profileFilter === 'Later') return !isP3 && !isP4;
+      return true;
+    });
+
+    if (items.length === 0) {
+      return (
+        <div className={`p-5 rounded-xl border border-dashed text-center space-y-1.5 ${
+          isLight ? 'bg-slate-50 border-slate-200' : 'bg-zinc-900/40 border-zinc-800'
+        }`}>
+          <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400">
+            No problems match the "{profileFilter === 'Target' ? 'Core Target (P3 & P4)' : profileFilter === 'Later' ? 'Later Production (P1/P2/P5)' : profileFilter}" filter in this section.
+          </p>
+          <button
+            onClick={() => setProfileFilter('All')}
+            className="text-[11px] font-bold text-indigo-500 hover:underline"
+          >
+            Reset filter to show all ({rawItems.length}) problems
+          </button>
+        </div>
       );
     }
 
@@ -228,54 +263,156 @@ export const DevArchitectureTrackerView: React.FC = () => {
 
           const priorityMatch = rawHeader.match(/\[(Critical P0|High P1|Medium P2|Low P3)\]/i);
           const priority = priorityMatch ? priorityMatch[1] : null;
-          const cleanHeader = priorityMatch ? rawHeader.replace(/\[(Critical P0|High P1|Medium P2|Low P3)\]\s*/i, '') : rawHeader;
+
+          const profileMatch = rawHeader.match(/\[(Profile[^\]]+)\]/i);
+          const profileStr = profileMatch ? profileMatch[1] : null;
+
+          const cleanHeader = rawHeader
+            .replace(/\[(Critical P0|High P1|Medium P2|Low P3)\]\s*/gi, '')
+            .replace(/\[(Profile[^\]]+)\]\s*/gi, '')
+            .trim();
+
+          const hasProfileTag = Boolean(profileStr);
+          const isTargetP3orP4 = profileStr
+            ? profileStr.includes('Profile 3') || profileStr.includes('Profile 4') || profileStr.includes('P3') || profileStr.includes('P4')
+            : true;
+
+          // 1. GRAYED OUT CARD FOR LATER PRODUCTION (P1, P2, P5 Storefronts)
+          if (hasProfileTag && !isTargetP3orP4) {
+            return (
+              <div
+                key={idx}
+                className={`p-3.5 rounded-xl border text-xs transition-all duration-200 ${
+                  isLight
+                    ? 'bg-slate-100/60 border-slate-200/90 text-slate-500 opacity-60 hover:opacity-100'
+                    : 'bg-zinc-900/40 border-zinc-800/80 text-zinc-500 opacity-55 hover:opacity-100'
+                }`}
+              >
+                <div className="font-semibold mb-1.5 flex items-center justify-between gap-2 flex-wrap text-slate-600 dark:text-zinc-400">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span>{cleanHeader}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-md border bg-zinc-500/10 text-zinc-500 dark:text-zinc-400 border-zinc-500/20">
+                      🏢 {profileStr} (Storefront)
+                    </span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md border bg-zinc-500/10 text-zinc-500 dark:text-zinc-400 border-zinc-500/20">
+                      ⏳ Later Production
+                    </span>
+                    {priority && (
+                      <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md font-semibold border bg-zinc-500/10 text-zinc-500 dark:text-zinc-400 border-zinc-500/20">
+                        {priority}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {body && (
+                  <p className={`text-xs leading-relaxed whitespace-pre-line font-normal ${
+                    isLight ? 'text-slate-400' : 'text-zinc-500'
+                  }`}>
+                    {body}
+                  </p>
+                )}
+              </div>
+            );
+          }
+
+          // 2. GLORIFIED CARD (Profile 3 & Profile 4 Core Target Market)
+          const isGlorifiedProblem = hasProfileTag && isTargetP3orP4;
 
           return (
             <div
               key={idx}
-              className={`p-3.5 rounded-xl border text-xs transition-colors ${
-                accent === 'rose'
+              className={`rounded-xl border text-xs transition-all duration-200 relative overflow-hidden ${
+                isGlorifiedProblem
                   ? isLight
-                    ? 'bg-rose-50/40 border-rose-200/60 text-slate-800'
-                    : 'bg-rose-950/15 border-rose-500/25 text-zinc-200'
+                    ? 'p-4 bg-white border-indigo-200/90 shadow-xs ring-1 ring-indigo-500/15 hover:border-indigo-400 text-slate-900'
+                    : 'p-4 bg-gradient-to-br from-[#1d1d26] via-[#181820] to-[#131318] border-indigo-500/35 shadow-lg ring-1 ring-indigo-500/25 hover:border-indigo-400/60 text-zinc-100'
+                  : accent === 'rose'
+                  ? isLight
+                    ? 'p-3.5 bg-rose-50/40 border-rose-200/60 text-slate-800'
+                    : 'p-3.5 bg-rose-950/15 border-rose-500/25 text-zinc-200'
                   : accent === 'amber'
                   ? isLight
-                    ? 'bg-amber-50/40 border-amber-200/60 text-slate-800'
-                    : 'bg-amber-950/15 border-amber-500/25 text-zinc-200'
+                    ? 'p-3.5 bg-amber-50/40 border-amber-200/60 text-slate-800'
+                    : 'p-3.5 bg-amber-950/15 border-amber-500/25 text-zinc-200'
                   : isLight
-                  ? 'bg-sky-50/40 border-sky-200/60 text-slate-800'
-                  : 'bg-sky-950/15 border-sky-500/25 text-zinc-200'
+                  ? 'p-3.5 bg-sky-50/40 border-sky-200/60 text-slate-800'
+                  : 'p-3.5 bg-sky-950/15 border-sky-500/25 text-zinc-200'
               }`}
             >
+              {isGlorifiedProblem && (
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 via-indigo-500 to-teal-400" />
+              )}
               <div
                 className={`font-bold mb-1.5 flex items-center justify-between gap-2 flex-wrap ${
-                  accent === 'rose'
+                  isGlorifiedProblem
+                    ? isLight
+                      ? 'text-slate-900'
+                      : 'text-white'
+                    : accent === 'rose'
                     ? 'text-rose-600 dark:text-rose-400'
                     : accent === 'amber'
                     ? 'text-amber-600 dark:text-amber-400'
                     : 'text-sky-600 dark:text-sky-400'
                 }`}
               >
-                <span>{cleanHeader}</span>
-                {priority && (
-                  <span
-                    className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md font-semibold border ${
-                      priority.includes('P0')
-                        ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30'
-                        : priority.includes('P1')
-                        ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30'
-                        : priority.includes('P2')
-                        ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/30'
-                        : 'bg-slate-500/15 text-slate-500 dark:text-slate-400 border-slate-500/30'
-                    }`}
-                  >
-                    {priority}
-                  </span>
-                )}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span>{cleanHeader}</span>
+                  {isGlorifiedProblem && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-md font-extrabold uppercase tracking-wide bg-gradient-to-r from-amber-500/20 to-rose-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1 shadow-2xs">
+                      ⭐ Target Launch
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {profileStr && (
+                    <>
+                      {profileStr.includes('3') && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-md font-bold bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 flex items-center gap-1 shadow-2xs">
+                          🟣 Profile 3 (Online Warehouse)
+                        </span>
+                      )}
+                      {profileStr.includes('4') && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-md font-bold bg-teal-500/15 text-teal-700 dark:text-teal-300 border border-teal-500/30 flex items-center gap-1 shadow-2xs">
+                          🟢 Profile 4 (Card Show / Live)
+                        </span>
+                      )}
+                      {(profileStr.includes('1') || profileStr.includes('2')) && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded font-medium bg-slate-500/10 text-slate-500 dark:text-slate-400 border border-slate-500/20">
+                          Also P1/P2
+                        </span>
+                      )}
+                    </>
+                  )}
+
+                  {priority && (
+                    <span
+                      className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md font-bold border ${
+                        priority.includes('P0')
+                          ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30'
+                          : priority.includes('P1')
+                          ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30'
+                          : priority.includes('P2')
+                          ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/30'
+                          : 'bg-slate-500/15 text-slate-500 dark:text-slate-400 border-slate-500/30'
+                      }`}
+                    >
+                      {priority}
+                    </span>
+                  )}
+                </div>
               </div>
               {body && (
-                <p className={`text-xs leading-relaxed whitespace-pre-line font-normal ${
-                  isLight ? 'text-slate-600' : 'text-zinc-300'
+                <p className={`text-xs leading-relaxed whitespace-pre-line ${
+                  isGlorifiedProblem
+                    ? isLight
+                      ? 'text-slate-700 font-normal'
+                      : 'text-zinc-200 font-normal'
+                    : isLight
+                    ? 'text-slate-600 font-normal'
+                    : 'text-zinc-300 font-normal'
                 }`}>
                   {body}
                 </p>
@@ -502,6 +639,81 @@ export const DevArchitectureTrackerView: React.FC = () => {
               </button>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Profile Target Filter Banner */}
+      <div
+        className={`p-3.5 rounded-2xl border flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3.5 transition-all ${
+          isLight
+            ? 'bg-gradient-to-r from-purple-50/70 via-indigo-50/50 to-teal-50/70 border-indigo-200/80 shadow-2xs'
+            : 'bg-gradient-to-r from-purple-950/25 via-indigo-950/20 to-teal-950/25 border-indigo-500/25 shadow-md'
+        }`}
+      >
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+            <Target className="w-4 h-4" />
+          </div>
+          <div>
+            <div className={`text-xs font-extrabold flex items-center gap-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+              <span>Profile Problem Targeting Matrix</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                Core Focus: Profile 3 & Profile 4
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-zinc-400">
+              Glorified cards represent urgent friction for Profile 3 (Online Power Sellers) & Profile 4 (Card Show / Live Streamers); grayed cards represent later storefront production (P1, P2, P5).
+            </p>
+          </div>
+        </div>
+
+        {/* Filter Buttons */}
+        <div className="flex flex-wrap items-center gap-1.5 w-full lg:w-auto">
+          {[
+            { id: 'All', label: 'All Problems', count: 90 },
+            { id: 'Target', label: '⭐ Core Target (P3 & P4)', count: 73 },
+            { id: 'P3', label: '🟣 Profile 3 Only', count: 68 },
+            { id: 'P4', label: '🟢 Profile 4 Only', count: 35 },
+            { id: 'Later', label: '⏳ Later Production (P1/P2/P5)', count: 17 }
+          ].map((tab) => {
+            const isActive = profileFilter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setProfileFilter(tab.id as any)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 flex items-center gap-1.5 ${
+                  isActive
+                    ? tab.id === 'Target'
+                      ? 'bg-gradient-to-r from-amber-500 to-rose-500 text-white shadow-xs font-bold'
+                      : tab.id === 'P3'
+                      ? 'bg-purple-600 text-white shadow-xs font-bold'
+                      : tab.id === 'P4'
+                      ? 'bg-teal-600 text-white shadow-xs font-bold'
+                      : tab.id === 'Later'
+                      ? 'bg-zinc-700 text-white shadow-xs font-bold'
+                      : isLight
+                      ? 'bg-slate-900 text-white shadow-xs font-bold'
+                      : 'bg-zinc-100 text-slate-900 shadow-xs font-bold'
+                    : isLight
+                    ? 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 shadow-2xs'
+                    : 'bg-zinc-800/80 hover:bg-zinc-800 text-zinc-300 border border-zinc-700/60'
+                }`}
+              >
+                <span>{tab.label}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                    isActive
+                      ? 'bg-black/25 text-white'
+                      : isLight
+                      ? 'bg-slate-100 text-slate-600'
+                      : 'bg-zinc-900 text-zinc-400'
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
