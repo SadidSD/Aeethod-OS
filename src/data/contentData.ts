@@ -1,9 +1,21 @@
+export type ContentSpaceId = 'space_01' | 'space_02' | 'space_03' | 'space_04' | 'space_05';
+
 export type ContentTopic =
+  | 'Pokémon Discoveries, Culture & Nostalgia'
+  | 'TCG Economics & Market Psychology'
+  | 'TCG Scams, Fakes & Market Traps'
+  | 'TCG Store Business Breakdown'
+  | 'Building Aeethod in Public + Store UX';
+
+// Legacy topic names for backwards compatibility
+export type LegacyTopic =
   | 'Shop Problem'
   | 'Education for Resellers and Shop Owners'
   | 'Controversy and Opinion'
   | 'Release Content'
   | 'Price Analysis and Prediction';
+
+export type AnyTopic = ContentTopic | LegacyTopic;
 
 export type ReelFormat =
   | 'Price Breakdown and Analysis'
@@ -14,16 +26,32 @@ export type ReelFormat =
 
 export type VideoStatus = 'Scripting' | 'Recording' | 'Editing' | 'Scheduled' | 'Uploaded';
 
-export interface TopicDefinition {
-  id: ContentTopic;
+export interface ContentCategory {
+  id: string; // '01', '02', etc.
+  code: string; // 'S01-01', 'S02-03', etc.
   title: string;
-  badgeColor: string;
-  targetAudience: string;
-  coreObjective: string;
   description: string;
+}
+
+export interface ContentSpaceDefinition {
+  id: ContentTopic;
+  spaceNum: '01' | '02' | '03' | '04' | '05';
+  title: string;
+  shortTitle: string;
+  stage: 'TOF • REACH' | 'MOF • TRUST' | 'TOF + MOF' | 'MOF + BOF' | 'BOF • CONVERSION';
+  funnelTier: 'TOF' | 'MOF' | 'BOF' | 'TOF + MOF' | 'MOF + BOF';
+  goal: string;
+  badgeColor: string;
+  badgeStyle: { dot: string; text: string; bg: string; border: string };
+  testMixReels: number; // Mix count in the first 10 reels (4, 2, 2, 1, 1)
+  targetAudience: string;
+  description: string;
+  categories: ContentCategory[];
   angleExamples: string[];
   recommendedHookKeywords: string[];
 }
+
+export type TopicDefinition = ContentSpaceDefinition;
 
 export interface FormatDefinition {
   id: ReelFormat;
@@ -41,6 +69,7 @@ export interface VideoRecord {
   title: string;
   creator: 'Sadid' | 'Anika';
   topic: ContentTopic;
+  category?: string; // One of the 38 categories (e.g. '01 Hidden Product Details')
   format: ReelFormat;
   status: VideoStatus;
   hook: string;
@@ -51,82 +80,517 @@ export interface VideoRecord {
   comments?: number;
   shares?: number;
   saves?: number;
-  averageWatchPercentage?: number; // e.g. 125% means looped/re-watched
+  averageWatchPercentage?: number;
   notes?: string;
 }
 
-export const TOPIC_DEFINITIONS: Record<ContentTopic, TopicDefinition> = {
-  'Shop Problem': {
-    id: 'Shop Problem',
-    title: 'Shop Problem',
-    badgeColor: 'bg-rose-500/20 text-rose-400 border border-rose-500/30',
-    targetAudience: 'Local Game Store (LGS) Owners, Retail Managers, Trade Counter Staff',
-    coreObjective: 'Expose the daily operational bottlenecks, retail chaos, customer friction, and clerk burnout that drain profits.',
-    description: 'Focuses on the ground-level reality of running a brick-and-mortar trading card shop. Uncovers high-friction scenarios such as tournament night trade-in lines, manual barcode chaos, inventory double-sales, and cashflow crunches during high-traffic weekends.',
-    angleExamples: [
-      'Saturday 8:30 PM: 35 players hit the trade-in counter with 1,500 unsorted cards',
-      'The double-sale disaster: selling the same $400 slab in-store and on eBay at the exact same minute',
-      'Why 60% of card shops fail within 2 years despite weekend sellouts'
+// -----------------------------------------------------------------------------
+// AEETHOD INSTAGRAM CONTENT STRATEGY ARCHITECTURE (FROM CONTENT MAP)
+// 5 Spaces • 38 Categories • One Connected Strategy
+// -----------------------------------------------------------------------------
+
+export const STRATEGY_BIG_PICTURE = {
+  title: 'Instagram Content Map',
+  subtitle: '5 spaces • 38 categories • one connected strategy',
+  stages: [
+    {
+      id: 'TOF',
+      label: 'TOF — GET DISCOVERED',
+      badgeColor: 'bg-purple-500/10 text-purple-400 border border-purple-500/25',
+      summary: 'Pokémon discoveries + selected scam/fake stories',
+      role: 'Earn top-of-funnel reach & attention'
+    },
+    {
+      id: 'MOF',
+      label: 'MOF — EARN TRUST',
+      badgeColor: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25',
+      summary: 'Market psychology + collector education + store insights',
+      role: 'Build credibility & evidence-based buyer education'
+    },
+    {
+      id: 'BOF',
+      label: 'BOF — CONNECT TO AEETHOD',
+      badgeColor: 'bg-sky-500/10 text-sky-400 border border-sky-500/25',
+      summary: 'Store workflows + real product-building updates',
+      role: 'Connect store problems to Aeethod product solutions'
+    }
+  ],
+  flowSteps: [
+    {
+      step: '01 · Discover',
+      text: 'Pokémon stories earn attention.',
+      spaceRef: 'Space 01',
+      color: 'border-purple-500/30 bg-purple-500/5 text-purple-400'
+    },
+    {
+      step: '02 + 03 · Educate',
+      text: 'Market insights and buyer protection build trust.',
+      spaceRef: 'Space 02 & 03',
+      color: 'border-pink-500/30 bg-pink-500/5 text-pink-400'
+    },
+    {
+      step: '04 + 05 · Build',
+      text: 'Store problems connect relevant viewers to Aeethod.',
+      spaceRef: 'Space 04 & 05',
+      color: 'border-sky-500/30 bg-sky-500/5 text-sky-400'
+    }
+  ],
+  first10Mix: [
+    {
+      spaceId: 'Pokémon Discoveries, Culture & Nostalgia' as ContentTopic,
+      label: 'Pokémon discoveries',
+      count: 4,
+      spaceNum: '01',
+      badge: 'bg-purple-500/15 text-purple-400 border-purple-500/30'
+    },
+    {
+      spaceId: 'TCG Scams, Fakes & Market Traps' as ContentTopic,
+      label: 'Scams & fakes',
+      count: 2,
+      spaceNum: '03',
+      badge: 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+    },
+    {
+      spaceId: 'TCG Economics & Market Psychology' as ContentTopic,
+      label: 'TCG economics',
+      count: 2,
+      spaceNum: '02',
+      badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+    },
+    {
+      spaceId: 'TCG Store Business Breakdown' as ContentTopic,
+      label: 'Store business',
+      count: 1,
+      spaceNum: '04',
+      badge: 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+    },
+    {
+      spaceId: 'Building Aeethod in Public + Store UX' as ContentTopic,
+      label: 'Aeethod build',
+      count: 1,
+      spaceNum: '05',
+      badge: 'bg-sky-500/15 text-sky-400 border-sky-500/30'
+    }
+  ],
+  trackedMetrics: [
+    'Reach',
+    'Average Watch Time',
+    'Sends / DM Shares',
+    'Saves / Bookmarks',
+    'Profile Visits',
+    'Follows',
+    'Relevant Store-Owner Conversations'
+  ],
+  editorialGuideline:
+    'This is a starting experiment, not a guaranteed algorithm formula. Keep factual claims sourced and label rumors clearly.'
+};
+
+// -----------------------------------------------------------------------------
+// THE 5 CORE SPACES & 38 CATEGORIES DEFINITIONS
+// -----------------------------------------------------------------------------
+
+export const CONTENT_SPACES: Record<ContentTopic, ContentSpaceDefinition> = {
+  'Pokémon Discoveries, Culture & Nostalgia': {
+    id: 'Pokémon Discoveries, Culture & Nostalgia',
+    spaceNum: '01',
+    title: 'Pokémon Discoveries, Culture & Nostalgia',
+    shortTitle: 'Pokémon Discoveries',
+    stage: 'TOF • REACH',
+    funnelTier: 'TOF',
+    goal: 'Attract new viewers through surprising, visual stories.',
+    badgeColor: 'bg-purple-500/20 text-purple-400 border border-purple-500/30',
+    badgeStyle: {
+      dot: 'bg-purple-500',
+      text: 'text-purple-600 dark:text-purple-400',
+      bg: 'bg-purple-50 dark:bg-purple-500/10',
+      border: 'border-purple-200 dark:border-purple-500/20'
+    },
+    testMixReels: 4,
+    targetAudience: 'Broad Pokémon Fans, Vintage Enthusiasts, Nostalgia Collectors, New TCG Players',
+    description: 'Top-of-funnel reach engine. Attracts massive casual and nostalgic viewers through overlooked details, historical mysteries, and visual reveals before introducing TCG economics.',
+    categories: [
+      {
+        id: '01',
+        code: 'S01-01',
+        title: 'Hidden Product Details',
+        description: 'Overlooked details, connected artwork, unusual packaging.'
+      },
+      {
+        id: '02',
+        code: 'S01-02',
+        title: 'Unusual Releases & Promos',
+        description: 'Exclusive cards, special distribution, unusual products.'
+      },
+      {
+        id: '03',
+        code: 'S01-03',
+        title: 'Forgotten Pokémon History',
+        description: 'Old promotions, discontinued products, nostalgic stories.'
+      },
+      {
+        id: '04',
+        code: 'S01-04',
+        title: 'First-Time-Ever Moments',
+        description: 'Genuinely unusual milestones in Pokémon TCG.'
+      },
+      {
+        id: '05',
+        code: 'S01-05',
+        title: 'Set & Artwork Mysteries',
+        description: 'Visual clues, illustration connections, design choices.'
+      },
+      {
+        id: '06',
+        code: 'S01-06',
+        title: 'News, Leaks & Future Releases',
+        description: 'Official announcements and clearly labeled rumors.'
+      },
+      {
+        id: '07',
+        code: 'S01-07',
+        title: 'Unexpected Pokémon Stories',
+        description: 'Surprising facts with a strong visual reveal.'
+      }
     ],
-    recommendedHookKeywords: ['Trade-in rush', 'Counter line', 'Double sold', 'Clerk panic', 'Allocation cut']
-  },
-  'Education for Resellers and Shop Owners': {
-    id: 'Education for Resellers and Shop Owners',
-    title: 'Education for Resellers and Shop Owners',
-    badgeColor: 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30',
-    targetAudience: 'TCG Power Sellers, eBay/TCGplayer Sellers, Flippers transitioning to full-time retail',
-    coreObjective: 'Deliver actionable business systems, unit economic breakdowns, intake workflows, and inventory velocity playbooks.',
-    description: 'High-utility masterclasses designed to generate saves and bookmarks. Teaches sellers how to stop running card businesses on emotion and spreadsheets, transitioning to margin-driven operations, automated repricing, condition-aware grading, and multi-channel synchronization.',
     angleExamples: [
-      'The 70% buylist formula: how to calculate cash vs store credit margins without losing money',
-      'How to organize 50,000 common cards in 2 hours instead of spending all weekend sorting',
-      'The Singles vs Sealed liquidity ratio: why high-revenue shops still run out of payroll cash'
+      'The connected illustrator easter egg hidden across 3 different 2004 expansions',
+      'The rarest Pokémon promo given only to Tokyo train commuters in 2002',
+      'Why Nintendo discontinued this specific booster pack tear-strip in 2007'
     ],
-    recommendedHookKeywords: ['Buylist formula', 'Unit economics', 'Gross margin', 'Inventory turnover', 'True profit']
+    recommendedHookKeywords: ['Hidden detail', 'Never noticed', 'Discontinued promo', 'Unusual release', 'First time ever']
   },
-  'Controversy and Opinion': {
-    id: 'Controversy and Opinion',
-    title: 'Controversy and Opinion',
-    badgeColor: 'bg-amber-500/20 text-amber-400 border border-amber-500/30',
-    targetAudience: 'Collectors, Competitive Players, Store Owners, TCG Investors',
-    coreObjective: 'Spark high comment velocity and algorithmic engagement by dismantling sacred cows and sharing contrarian takes.',
-    description: 'Exploits the tension between collectors, retail stores, distributors, and mega-marketplaces. Focuses on hot-button debates like platform fee hikes, artificial scarcity, distributor favoritism, grading company backlogs, and scalper policies.',
-    angleExamples: [
-      'Unpopular opinion: Selling raw cards on TCGplayer Direct under $2.50 is working for free',
-      'Distributor allocations are rigged against mom-and-pop stores: here is the proof',
-      'Why card grading companies want you to crack and re-grade your 9.5 slabs'
-    ],
-    recommendedHookKeywords: ['Unpopular truth', 'Marketplace tax', 'Rigged allocation', 'Stop grading', 'The scam']
-  },
-  'Release Content': {
-    id: 'Release Content',
-    title: 'Release Content',
+
+  'TCG Economics & Market Psychology': {
+    id: 'TCG Economics & Market Psychology',
+    spaceNum: '02',
+    title: 'TCG Economics & Market Psychology',
+    shortTitle: 'TCG Economics',
+    stage: 'MOF • TRUST',
+    funnelTier: 'MOF',
+    goal: 'Build credibility by explaining prices, supply, and collector decisions.',
     badgeColor: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
-    targetAudience: 'Casual Collectors, Competitive Deck Builders, Store Owners preparing stock',
-    coreObjective: 'Capture high-velocity search traffic and non-follower reach during set launch windows and prerelease events.',
-    description: 'Timed around major set calendars (e.g. Pokémon 30th Celebration, Delta Reign, Lorcana Hyperia City, One Piece EB-05). Covers product allocations, unboxing chase pulls, singles supply shock, tournament staples, and release weekend retailer survival.',
-    angleExamples: [
-      'Delta Reign prerelease guide: which 3 cards will spike on day one',
-      'We opened 100 packs of 30th Celebration so your store doesn’t have to',
-      'What happens inside a card shop 12 hours before midnight release'
+    badgeStyle: {
+      dot: 'bg-emerald-500',
+      text: 'text-emerald-600 dark:text-emerald-400',
+      bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+      border: 'border-emerald-200 dark:border-emerald-500/20'
+    },
+    testMixReels: 2,
+    targetAudience: 'TCG Investors, Singles Speculators, Resellers, Competitive Players, Serious Collectors',
+    description: 'Middle-of-funnel trust builder. Establishes deep analytical authority by explaining price crash mechanics, reprint schedules, expected value odds, and collector herd behavior.',
+    categories: [
+      {
+        id: '01',
+        code: 'S02-01',
+        title: 'Price Crash Anatomy',
+        description: 'Why a specific card or set lost value.'
+      },
+      {
+        id: '02',
+        code: 'S02-02',
+        title: 'Reprint & Supply Analysis',
+        description: 'How new supply and reprint expectations affect the market.'
+      },
+      {
+        id: '03',
+        code: 'S02-03',
+        title: 'FOMO & Collector Psychology',
+        description: 'Hype, panic buying, and herd behavior.'
+      },
+      {
+        id: '04',
+        code: 'S02-04',
+        title: 'Pull-Rate Math & Expected Value',
+        description: 'Odds, probabilities, and the cost of chasing a card.'
+      },
+      {
+        id: '05',
+        code: 'S02-05',
+        title: 'Real Profit & Cost Breakdown',
+        description: 'Fees, shipping, grading costs, break-even prices.'
+      },
+      {
+        id: '06',
+        code: 'S02-06',
+        title: 'Scalper Economics',
+        description: 'Margins, availability, and resale incentives.'
+      },
+      {
+        id: '07',
+        code: 'S02-07',
+        title: 'Buyer vs. Seller Decisions',
+        description: 'How market participants react to the same event.'
+      }
     ],
-    recommendedHookKeywords: ['Prerelease night', 'Chase card pull', 'Set launch', 'Day 1 EV', 'Midnight release']
+    angleExamples: [
+      'Anatomy of a $600 card crash: why this chase single dropped 70% in 90 days',
+      'The mathematical Expected Value of opening a modern booster box vs buying singles',
+      'Why reprint rumors cause sellers to panic dump before official distributor confirmation'
+    ],
+    recommendedHookKeywords: ['Price crash', 'Reprint dump', 'Expected value', 'Pull rate math', 'True profit']
   },
-  'Price Analysis and Prediction': {
-    id: 'Price Analysis and Prediction',
-    title: 'Price Analysis and Prediction',
-    badgeColor: 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30',
-    targetAudience: 'TCG Investors, Singles Speculators, Resellers, Store Owners pricing display cases',
-    coreObjective: 'Provide data-driven market tracking, print run evaluations, and price trajectory models that drive DM sends.',
-    description: 'Analyzes why specific singles or sealed boxes are pumping or dumping. Connects secondary market spikes to tournament meta shifts, print run reprints, buyouts, and economic supply/demand curves.',
-    angleExamples: [
-      'Why modern sealed booster boxes are dropping 20% while vintage continues to climb',
-      'Dragapult ex tournament dominance: tracking the 48-hour price spike across all variants',
-      'Is the 30th Anniversary Mew ex a hold or an immediate sell?'
+
+  'TCG Scams, Fakes & Market Traps': {
+    id: 'TCG Scams, Fakes & Market Traps',
+    spaceNum: '03',
+    title: 'TCG Scams, Fakes & Market Traps',
+    shortTitle: 'Scams & Fakes',
+    stage: 'TOF + MOF',
+    funnelTier: 'TOF + MOF',
+    goal: 'Earn shares and saves with evidence-based buyer education.',
+    badgeColor: 'bg-rose-500/20 text-rose-400 border border-rose-500/30',
+    badgeStyle: {
+      dot: 'bg-rose-500',
+      text: 'text-rose-600 dark:text-rose-400',
+      bg: 'bg-rose-50 dark:bg-rose-500/10',
+      border: 'border-rose-200 dark:border-rose-500/20'
+    },
+    testMixReels: 2,
+    targetAudience: 'Every Card Buyer, Marketplace Shoppers, Parents, Novice Collectors, Shop Clerks',
+    description: 'High-utility viral share magnet. Generates massive bookmarks and DM shares by equipping buyers with forensic inspection techniques, reseal spot-checks, and dispute playbooks.',
+    categories: [
+      {
+        id: '01',
+        code: 'S03-01',
+        title: 'Fake Card Spot Checks',
+        description: 'Visible differences backed by reliable evidence.'
+      },
+      {
+        id: '02',
+        code: 'S03-02',
+        title: 'Resealed Product Investigations',
+        description: 'Warning signs and what they do—or do not—prove.'
+      },
+      {
+        id: '03',
+        code: 'S03-03',
+        title: 'Misleading Listing Decodes',
+        description: 'Confusing titles, photos, conditions, and versions.'
+      },
+      {
+        id: '04',
+        code: 'S03-04',
+        title: 'Marketplace Scam Cases',
+        description: 'Documented incidents and lessons buyers can learn.'
+      },
+      {
+        id: '05',
+        code: 'S03-05',
+        title: 'Preorder & Hype Traps',
+        description: 'Risks of paying inflated prices before release.'
+      },
+      {
+        id: '06',
+        code: 'S03-06',
+        title: 'Buyer Protection Playbook',
+        description: 'Documentation, dispute steps, refund options.'
+      },
+      {
+        id: '07',
+        code: 'S03-07',
+        title: 'Authenticity & Grading Mistakes',
+        description: 'Common identification errors and how to avoid them.'
+      }
     ],
-    recommendedHookKeywords: ['Price crash', 'Market pump', 'Reprint dump', 'EV calculation', 'Hold or sell']
+    angleExamples: [
+      'Can you spot the counterfeit holo foil pattern under 10x magnification?',
+      'The 3 warning signs of a resealed Japanese booster box that eBay authenticators missed',
+      'The step-by-step documentation you need to win a chargeback against fake singles'
+    ],
+    recommendedHookKeywords: ['Super fake', 'Resealed box', 'Listing trap', 'Buyer protection', 'Grading error']
+  },
+
+  'TCG Store Business Breakdown': {
+    id: 'TCG Store Business Breakdown',
+    spaceNum: '04',
+    title: 'TCG Store Business Breakdown',
+    shortTitle: 'Store Business',
+    stage: 'MOF + BOF',
+    funnelTier: 'MOF + BOF',
+    goal: 'Connect collector interest to real card-shop operations.',
+    badgeColor: 'bg-amber-500/20 text-amber-400 border border-amber-500/30',
+    badgeStyle: {
+      dot: 'bg-amber-500',
+      text: 'text-amber-600 dark:text-amber-400',
+      bg: 'bg-amber-50 dark:bg-amber-500/10',
+      border: 'border-amber-200 dark:border-amber-500/20'
+    },
+    testMixReels: 1,
+    targetAudience: 'Local Game Store (LGS) Owners, Retail Managers, Trade Counter Clerks, Shopify Merchants',
+    description: 'Retail operational reality bridge. Explores multi-channel sync bugs, inventory variant fatigue, overhead breakdown, and distribution allocation realities.',
+    categories: [
+      {
+        id: '01',
+        code: 'S04-01',
+        title: 'Inventory & Variant Complexity',
+        description: 'Printings, conditions, languages, and versions.'
+      },
+      {
+        id: '02',
+        code: 'S04-02',
+        title: 'Marketplace Sync Problems',
+        description: 'Overselling, outdated stock, and manual updates.'
+      },
+      {
+        id: '03',
+        code: 'S03-03',
+        title: 'Store Margin Breakdown',
+        description: 'Fees, labor, fulfillment, and actual profit.'
+      },
+      {
+        id: '04',
+        code: 'S04-04',
+        title: 'Shopify TCG Store Challenges',
+        description: 'Product organization, catalog complexity, usability.'
+      },
+      {
+        id: '05',
+        code: 'S04-05',
+        title: 'Inventory Management Workflows',
+        description: 'Scanning, identification, pricing, and listing.'
+      },
+      {
+        id: '06',
+        code: 'S04-06',
+        title: 'Distribution & Stock Availability',
+        description: 'How sourcing and allocation affect shops.'
+      },
+      {
+        id: '07',
+        code: 'S04-07',
+        title: 'The Real Cost of Running a Card Shop',
+        description: 'Time, software, operational mistakes, overhead.'
+      }
+    ],
+    angleExamples: [
+      'The double-sale disaster: selling the same $400 slab in-store and on eBay at the exact same minute',
+      'Why managing 50,000 card variants on standard Shopify breaks your checkout',
+      'The real cashflow cost of trade-in weekends: gross revenue vs true cash profit'
+    ],
+    recommendedHookKeywords: ['Double sold', 'Sync latency', 'Trade counter', 'Clerk burnout', 'Store margin']
+  },
+
+  'Building Aeethod in Public + Store UX': {
+    id: 'Building Aeethod in Public + Store UX',
+    spaceNum: '05',
+    title: 'Building Aeethod in Public + Store UX',
+    shortTitle: 'Aeethod Build & UX',
+    stage: 'BOF • CONVERSION',
+    funnelTier: 'BOF',
+    goal: 'Show real product-building work and earn founder/developer credibility.',
+    badgeColor: 'bg-sky-500/20 text-sky-400 border border-sky-500/30',
+    badgeStyle: {
+      dot: 'bg-sky-500',
+      text: 'text-sky-600 dark:text-sky-400',
+      bg: 'bg-sky-50 dark:bg-sky-500/10',
+      border: 'border-sky-200 dark:border-sky-500/20'
+    },
+    testMixReels: 1,
+    targetAudience: 'Store Owners looking for solutions, B2B SaaS Founders, Developers, Early Adopters',
+    description: 'Bottom-of-funnel conversion powerhouse. Showcases actual software engineering, UI fixes, seller critiques, and product progression, driving qualified inbound trial requests.',
+    categories: [
+      {
+        id: '01',
+        code: 'S05-01',
+        title: 'UI Fix in 60 Seconds',
+        description: 'Demonstrate a real usability improvement.'
+      },
+      {
+        id: '02',
+        code: 'S05-02',
+        title: 'Store Roast & Rebuild',
+        description: 'Critique a storefront constructively and show a redesign.'
+      },
+      {
+        id: '03',
+        code: 'S05-03',
+        title: 'Problem to Prototype',
+        description: 'Connect a real seller problem to your design process.'
+      },
+      {
+        id: '04',
+        code: 'S05-04',
+        title: 'Frontend & Product Decisions',
+        description: 'Explain why a workflow was designed a certain way.'
+      },
+      {
+        id: '05',
+        code: 'S05-05',
+        title: 'Building Inventory Workflows',
+        description: 'Document actual scanning, variant, or inventory implementation.'
+      },
+      {
+        id: '06',
+        code: 'S05-06',
+        title: 'Failed Builds & Lessons',
+        description: 'Share genuine mistakes, debugging, and what changed.'
+      },
+      {
+        id: '07',
+        code: 'S05-07',
+        title: 'Feature Prioritization',
+        description: 'Explain what you are building first and why.'
+      },
+      {
+        id: '08',
+        code: 'S05-08',
+        title: 'User Feedback & Validation',
+        description: 'Show how real conversations influence the product.'
+      },
+      {
+        id: '09',
+        code: 'S05-09',
+        title: 'Before-and-After UX',
+        description: 'Compare a starting point with a working improvement.'
+      },
+      {
+        id: '10',
+        code: 'S05-10',
+        title: 'Aeethod Progress Diary',
+        description: 'Share milestones, prototypes, challenges, honest updates.'
+      }
+    ],
+    angleExamples: [
+      'Refactoring a card trade-in modal from 7 clicks down to 1 keyboard shortcut',
+      'Roasting a card shop’s Shopify mobile UX: here is how to double mobile conversions',
+      'Why we rewrote our inventory sync engine in Rust for 180ms multi-channel updates'
+    ],
+    recommendedHookKeywords: ['UI Fix', 'Store roast', 'Prototype demo', 'Before and after', 'Progress diary']
   }
 };
+
+// Backwards-compatible map
+export const TOPIC_DEFINITIONS: Record<string, ContentSpaceDefinition> = {
+  ...CONTENT_SPACES,
+  // Mapping legacy topics to their modern spaces
+  'Shop Problem': CONTENT_SPACES['TCG Store Business Breakdown'],
+  'Education for Resellers and Shop Owners': CONTENT_SPACES['TCG Economics & Market Psychology'],
+  'Controversy and Opinion': CONTENT_SPACES['TCG Scams, Fakes & Market Traps'],
+  'Release Content': CONTENT_SPACES['Pokémon Discoveries, Culture & Nostalgia'],
+  'Price Analysis and Prediction': CONTENT_SPACES['TCG Economics & Market Psychology']
+};
+
+export const SPACES_LIST: ContentTopic[] = [
+  'Pokémon Discoveries, Culture & Nostalgia',
+  'TCG Economics & Market Psychology',
+  'TCG Scams, Fakes & Market Traps',
+  'TCG Store Business Breakdown',
+  'Building Aeethod in Public + Store UX'
+];
+
+export function normalizeTopic(topic: string): ContentTopic {
+  if (topic === 'Shop Problem') return 'TCG Store Business Breakdown';
+  if (topic === 'Education for Resellers and Shop Owners') return 'TCG Economics & Market Psychology';
+  if (topic === 'Controversy and Opinion') return 'TCG Scams, Fakes & Market Traps';
+  if (topic === 'Release Content') return 'Pokémon Discoveries, Culture & Nostalgia';
+  if (topic === 'Price Analysis and Prediction') return 'TCG Economics & Market Psychology';
+  if (SPACES_LIST.includes(topic as ContentTopic)) return topic as ContentTopic;
+  return 'Pokémon Discoveries, Culture & Nostalgia';
+}
+
+// -----------------------------------------------------------------------------
+// REEL FORMATS DEFINITIONS
+// -----------------------------------------------------------------------------
 
 export const FORMAT_DEFINITIONS: Record<ReelFormat, FormatDefinition> = {
   'Price Breakdown and Analysis': {
@@ -206,13 +670,18 @@ export const FORMAT_DEFINITIONS: Record<ReelFormat, FormatDefinition> = {
   }
 };
 
+// -----------------------------------------------------------------------------
+// INITIAL REEL RECORDS ORGANIZED BY SPACE & CATEGORY
+// -----------------------------------------------------------------------------
+
 export const INITIAL_VIDEO_RECORDS: VideoRecord[] = [
   // Sadid Videos
   {
     id: 'sadid-1',
     creator: 'Sadid',
     title: 'Where your $100 card sale actually goes (The 10.75% marketplace trap)',
-    topic: 'Education for Resellers and Shop Owners',
+    topic: 'TCG Economics & Market Psychology',
+    category: '05 Real Profit & Cost Breakdown',
     format: 'Price Breakdown and Analysis',
     status: 'Uploaded',
     hook: 'Selling a $100 card on a marketplace does NOT give you $100 in the bank.',
@@ -248,28 +717,11 @@ So stop celebrating $10,000 revenue months until you calculate your real take-ho
     notes: 'Massive DM share rate among store partners and power sellers.'
   },
   {
-    id: 'sadid-6',
-    creator: 'Sadid',
-    title: 'Why our card store values customer community over profit margins',
-    topic: 'Shop Problem',
-    format: 'Myth Blast',
-    status: 'Uploaded',
-    hook: 'Today I want to talk about why community matters more than money in our card shop.',
-    script: `Today I want to talk about why community matters more than money in our card shop. When we started, we thought about numbers, but now we care about people. Make sure you stop by our store this weekend for open play.`,
-    publishDate: '2026-09-15',
-    views: 1650,
-    likes: 95,
-    comments: 8,
-    shares: 12,
-    saves: 14,
-    averageWatchPercentage: 34,
-    notes: 'Stalled: Generic slow opening without tension. 68% drop-off before second 3. Low share & save utility.'
-  },
-  {
     id: 'sadid-2',
     creator: 'Sadid',
     title: 'Why every card shop still tolerates 45-second inventory lag',
-    topic: 'Shop Problem',
+    topic: 'Building Aeethod in Public + Store UX',
+    category: '05 Building Inventory Workflows',
     format: 'Teardown and Challenge',
     status: 'Scheduled',
     hook: 'Selling the same $300 card in-store and online at the exact same minute is a solvable bug.',
@@ -294,13 +746,19 @@ By running an in-memory lock on the physical inventory ID the microsecond a cler
 [00:50 - 00:60] THE LOOP
 Fix your sync latency before you lose your top-rated seller badge... because double-selling a $300 card is a 100% solvable bug.`,
     publishDate: '2026-10-08',
+    views: 12500,
+    likes: 980,
+    comments: 140,
+    shares: 380,
+    saves: 420,
     notes: 'Direct demonstration of zero-latency sync engine.'
   },
   {
     id: 'sadid-3',
     creator: 'Sadid',
     title: 'Why modern sealed Pokémon is dipping while vintage keeps climbing',
-    topic: 'Price Analysis and Prediction',
+    topic: 'TCG Economics & Market Psychology',
+    category: '02 Reprint & Supply Analysis',
     format: 'Myth Blast',
     status: 'Recording',
     hook: 'Stop treating every modern booster box like a guaranteed retirement fund.',
@@ -310,7 +768,8 @@ Fix your sync latency before you lose your top-rated seller badge... because dou
     id: 'sadid-4',
     creator: 'Sadid',
     title: 'TCGplayer Direct 50% micro-card fee: Are sellers working for free?',
-    topic: 'Controversy and Opinion',
+    topic: 'TCG Economics & Market Psychology',
+    category: '05 Real Profit & Cost Breakdown',
     format: 'Price Breakdown and Analysis',
     status: 'Editing',
     hook: 'If you sell singles under $2.49, you are subsidizing the marketplace.',
@@ -320,17 +779,38 @@ Fix your sync latency before you lose your top-rated seller badge... because dou
     id: 'sadid-5',
     creator: 'Sadid',
     title: '3 inventory calculations every card shop must run before holiday restocks',
-    topic: 'Education for Resellers and Shop Owners',
+    topic: 'TCG Store Business Breakdown',
+    category: '01 Inventory & Variant Complexity',
     format: 'Prevention',
     status: 'Scripting',
     hook: 'Do NOT order your Q4 sealed inventory until you run these 3 numbers.',
     notes: 'Focus on inventory turnover vs tied-up working capital.'
   },
   {
+    id: 'sadid-6',
+    creator: 'Sadid',
+    title: 'Why our card store values customer community over profit margins',
+    topic: 'TCG Store Business Breakdown',
+    category: '03 Store Margin Breakdown',
+    format: 'Myth Blast',
+    status: 'Uploaded',
+    hook: 'Today I want to talk about why community matters more than money in our card shop.',
+    script: `Today I want to talk about why community matters more than money in our card shop. When we started, we thought about numbers, but now we care about people. Make sure you stop by our store this weekend for open play.`,
+    publishDate: '2026-09-15',
+    views: 1650,
+    likes: 95,
+    comments: 8,
+    shares: 12,
+    saves: 14,
+    averageWatchPercentage: 34,
+    notes: 'Stalled: Generic slow opening without tension. 68% drop-off before second 3. Low share & save utility.'
+  },
+  {
     id: 'sadid-7',
     creator: 'Sadid',
     title: 'I audited an $18,000 card shop cash-out: Here is what they actually netted',
-    topic: 'Education for Resellers and Shop Owners',
+    topic: 'TCG Store Business Breakdown',
+    category: '03 Store Margin Breakdown',
     format: 'Price Breakdown and Analysis',
     status: 'Uploaded',
     hook: 'A store owner boasted about an $18,000 cash-out day. When we audited the receipts, the truth was brutal.',
@@ -370,7 +850,8 @@ Track your net retention every single evening... because an $18,000 cash-out day
     id: 'anika-1',
     creator: 'Anika',
     title: 'Customer brought in a $500 vintage Charizard... but look at the back corner',
-    topic: 'Shop Problem',
+    topic: 'TCG Scams, Fakes & Market Traps',
+    category: '07 Authenticity & Grading Mistakes',
     format: 'Looping',
     status: 'Uploaded',
     hook: 'A customer brought in this vintage Charizard asking for cash, but one micro-flaw changed the offer.',
@@ -405,7 +886,8 @@ Always inspect the back before you hand over cash... which is why when a custome
     id: 'anika-2',
     creator: 'Anika',
     title: 'Can you spot the Super Fake 30th Celebration Mew ex in 5 seconds?',
-    topic: 'Education for Resellers and Shop Owners',
+    topic: 'TCG Scams, Fakes & Market Traps',
+    category: '01 Fake Card Spot Checks',
     format: 'Looping',
     status: 'Uploaded',
     hook: 'One of these is worth $800. The other came from an overseas counterfeit factory.',
@@ -422,7 +904,8 @@ Always inspect the back before you hand over cash... which is why when a custome
     id: 'anika-3',
     creator: 'Anika',
     title: 'Delta Reign prerelease night: 3 cards every shop needs in stock',
-    topic: 'Release Content',
+    topic: 'Pokémon Discoveries, Culture & Nostalgia',
+    category: '06 News, Leaks & Future Releases',
     format: 'Prevention',
     status: 'Editing',
     hook: 'Do not head into Delta Reign prerelease weekend without checking these 3 staple singles.',
@@ -433,7 +916,8 @@ Always inspect the back before you hand over cash... which is why when a custome
     id: 'anika-4',
     creator: 'Anika',
     title: 'Saturday night 8:30 PM: 30 tournament players rush the trade-in counter',
-    topic: 'Shop Problem',
+    topic: 'TCG Store Business Breakdown',
+    category: '05 Inventory Management Workflows',
     format: 'Myth Blast',
     status: 'Recording',
     hook: 'People think working at a card shop is opening packs all day. Here is what Saturday night actually looks like.',
@@ -462,7 +946,8 @@ The line is gone, the register balances out, and we actually get to go home on t
     id: 'anika-5',
     creator: 'Anika',
     title: 'Distributor allocation cuts: what owners do when promised 50 boxes and given 12',
-    topic: 'Controversy and Opinion',
+    topic: 'TCG Store Business Breakdown',
+    category: '06 Distribution & Stock Availability',
     format: 'Teardown and Challenge',
     status: 'Scripting',
     hook: 'Your local card shop did not hoard the new set. Their distributor just cut their allocation by 75%.',
@@ -472,7 +957,8 @@ The line is gone, the register balances out, and we actually get to go home on t
     id: 'anika-6',
     creator: 'Anika',
     title: 'Dragapult ex tournament spike: why singles jumped 35% in 48 hours',
-    topic: 'Price Analysis and Prediction',
+    topic: 'TCG Economics & Market Psychology',
+    category: '01 Price Crash Anatomy',
     format: 'Price Breakdown and Analysis',
     status: 'Scripting',
     hook: 'If you sold your Dragapult ex singles on Friday, you left $40 on the table.',
@@ -482,7 +968,8 @@ The line is gone, the register balances out, and we actually get to go home on t
     id: 'anika-7',
     creator: 'Anika',
     title: 'Just casually organizing random cards behind the counter today',
-    topic: 'Shop Problem',
+    topic: 'TCG Store Business Breakdown',
+    category: '07 The Real Cost of Running a Card Shop',
     format: 'Myth Blast',
     status: 'Uploaded',
     hook: 'Hey guys, just doing some basic organizing behind the register today.',
@@ -495,5 +982,39 @@ The line is gone, the register balances out, and we actually get to go home on t
     saves: 22,
     averageWatchPercentage: 38,
     notes: 'Stalled: Zero tension, no hook conflict or inspection element. 64% swipe-away in first 3s.'
+  },
+  // Additional Space 01 & Space 05 Discovery & Build Videos to round out the 10-mix test
+  {
+    id: 'poke-disc-1',
+    creator: 'Anika',
+    title: 'The connected illustrator easter egg hidden across 3 different 2004 expansions',
+    topic: 'Pokémon Discoveries, Culture & Nostalgia',
+    category: '01 Hidden Product Details',
+    format: 'Looping',
+    status: 'Scripting',
+    hook: 'Nobody realized that these 3 cards from 2004 tell one continuous story.',
+    notes: 'Space 01 Category 01 · Overlooked details, connected artwork.'
+  },
+  {
+    id: 'poke-disc-2',
+    creator: 'Sadid',
+    title: 'The rarest Pokémon card given only to Tokyo train commuters in 2002',
+    topic: 'Pokémon Discoveries, Culture & Nostalgia',
+    category: '02 Unusual Releases & Promos',
+    format: 'Myth Blast',
+    status: 'Recording',
+    hook: 'This card was never sold in stores or booster packs. You had to ride a Tokyo train in 2002 to get it.',
+    notes: 'Space 01 Category 02 · Exclusive cards, special distribution.'
+  },
+  {
+    id: 'aeethod-ux-1',
+    creator: 'Sadid',
+    title: 'Refactoring card shop trade-in intake from 7 clicks to 1 keystroke',
+    topic: 'Building Aeethod in Public + Store UX',
+    category: '01 UI Fix in 60 Seconds',
+    format: 'Teardown and Challenge',
+    status: 'Editing',
+    hook: 'Here is how we saved retail card shop clerks 45 minutes of sorting per shift with one UI fix.',
+    notes: 'Space 05 Category 01 · UI Fix in 60 Seconds.'
   }
 ];

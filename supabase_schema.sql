@@ -119,10 +119,14 @@ CREATE TABLE IF NOT EXISTS public.content_videos (
   likes NUMERIC DEFAULT 0,
   shares NUMERIC DEFAULT 0,
   saves NUMERIC DEFAULT 0,
+  category TEXT DEFAULT '',
   notes TEXT DEFAULT '',
   "createdAt" TIMESTAMPTZ DEFAULT NOW(),
   "updatedAt" TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration for existing deployments
+ALTER TABLE IF EXISTS public.content_videos ADD COLUMN IF NOT EXISTS category TEXT DEFAULT '';
 
 -- 9. Settings Table
 CREATE TABLE IF NOT EXISTS public.settings (

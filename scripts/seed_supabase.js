@@ -21,13 +21,19 @@ async function seed() {
 
   const db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
 
-  const tables = ['topics', 'fields', 'tasks', 'docs', 'metrics', 'sprints', 'epics'];
+  const tables = ['topics', 'fields', 'tasks', 'docs', 'metrics', 'sprints', 'epics', 'content_videos'];
   for (const table of tables) {
-    const records = db[table];
-    if (!Array.isArray(records) || records.length === 0) continue;
+    const rawRecords = db[table];
+    if (!Array.isArray(rawRecords) || rawRecords.length === 0) continue;
 
-    console.log(`Syncing ${table} (${records.length} records)...`);
-    const { data, error } = await supabase.from(table).upsert(records);
+    console.log(`Syncing ${table} (${rawRecords.length} records)...`);
+    // Attempt upsert; if category column missing in remote postgres, retry without category
+    let { data, error } = await supabase.from(table).upsert(rawRecords);
+    if (error && error.message.includes("Could not find the 'category' column")) {
+      const sanitized = rawRecords.map(({ category, ...rest }) => rest);
+      const retry = await supabase.from(table).upsert(sanitized);
+      error = retry.error;
+    }
     if (error) {
       console.error(`  Failed to sync ${table}:`, error.message);
     } else {

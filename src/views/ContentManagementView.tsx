@@ -4,9 +4,15 @@ import {
   ContentTopic,
   ReelFormat,
   VideoStatus,
+  ContentCategory,
+  ContentSpaceDefinition,
+  CONTENT_SPACES,
   TOPIC_DEFINITIONS,
+  SPACES_LIST,
+  STRATEGY_BIG_PICTURE,
   FORMAT_DEFINITIONS,
-  INITIAL_VIDEO_RECORDS
+  INITIAL_VIDEO_RECORDS,
+  normalizeTopic
 } from '../data/contentData';
 import { useStore } from '../store';
 import {
@@ -17,6 +23,8 @@ import {
   List,
   ChevronRight,
   ChevronDown,
+  ArrowRight,
+  Info,
   Trash2,
   BookOpen,
   PieChart,
@@ -66,13 +74,7 @@ import {
   AudienceCohort
 } from '../data/contentStrategyData';
 
-const TOPIC_LIST: ContentTopic[] = [
-  'Shop Problem',
-  'Education for Resellers and Shop Owners',
-  'Controversy and Opinion',
-  'Release Content',
-  'Price Analysis and Prediction'
-];
+const TOPIC_LIST: ContentTopic[] = SPACES_LIST;
 
 const FORMAT_LIST: ReelFormat[] = [
   'Price Breakdown and Analysis',
@@ -90,42 +92,88 @@ const STATUS_LIST: VideoStatus[] = [
   'Uploaded'
 ];
 
-// Topic Config
-const TOPIC_CONFIG: Record<ContentTopic, { label: string; dot: string; text: string; bg: string; border: string }> = {
-  'Shop Problem': {
-    label: 'Shop Problem',
-    dot: 'bg-rose-500',
-    text: 'text-rose-600 dark:text-rose-400',
-    bg: 'bg-rose-50 dark:bg-rose-500/10',
-    border: 'border-rose-200 dark:border-rose-500/20'
+// Topic Config mapped to the 5 Spaces with legacy fallbacks
+const TOPIC_CONFIG: Record<string, { label: string; spaceNum: string; dot: string; text: string; bg: string; border: string }> = {
+  'Pokémon Discoveries, Culture & Nostalgia': {
+    label: 'Pokémon Discoveries',
+    spaceNum: '01',
+    dot: 'bg-purple-500',
+    text: 'text-purple-600 dark:text-purple-400',
+    bg: 'bg-purple-50 dark:bg-purple-500/10',
+    border: 'border-purple-200 dark:border-purple-500/20'
   },
-  'Education for Resellers and Shop Owners': {
-    label: 'Education',
-    dot: 'bg-sky-500',
-    text: 'text-sky-600 dark:text-sky-400',
-    bg: 'bg-sky-50 dark:bg-sky-500/10',
-    border: 'border-sky-200 dark:border-sky-500/20'
-  },
-  'Controversy and Opinion': {
-    label: 'Controversy',
-    dot: 'bg-amber-500',
-    text: 'text-amber-600 dark:text-amber-400',
-    bg: 'bg-amber-50 dark:bg-amber-500/10',
-    border: 'border-amber-200 dark:border-amber-500/20'
-  },
-  'Release Content': {
-    label: 'Release Drop',
+  'TCG Economics & Market Psychology': {
+    label: 'TCG Economics',
+    spaceNum: '02',
     dot: 'bg-emerald-500',
     text: 'text-emerald-600 dark:text-emerald-400',
     bg: 'bg-emerald-50 dark:bg-emerald-500/10',
     border: 'border-emerald-200 dark:border-emerald-500/20'
   },
+  'TCG Scams, Fakes & Market Traps': {
+    label: 'Scams & Fakes',
+    spaceNum: '03',
+    dot: 'bg-rose-500',
+    text: 'text-rose-600 dark:text-rose-400',
+    bg: 'bg-rose-50 dark:bg-rose-500/10',
+    border: 'border-rose-200 dark:border-rose-500/20'
+  },
+  'TCG Store Business Breakdown': {
+    label: 'Store Business',
+    spaceNum: '04',
+    dot: 'bg-amber-500',
+    text: 'text-amber-600 dark:text-amber-400',
+    bg: 'bg-amber-50 dark:bg-amber-500/10',
+    border: 'border-amber-200 dark:border-amber-500/20'
+  },
+  'Building Aeethod in Public + Store UX': {
+    label: 'Aeethod Build & UX',
+    spaceNum: '05',
+    dot: 'bg-sky-500',
+    text: 'text-sky-600 dark:text-sky-400',
+    bg: 'bg-sky-50 dark:bg-sky-500/10',
+    border: 'border-sky-200 dark:border-sky-500/20'
+  },
+  // Legacy aliases for backward safety
+  'Shop Problem': {
+    label: 'Store Business',
+    spaceNum: '04',
+    dot: 'bg-amber-500',
+    text: 'text-amber-600 dark:text-amber-400',
+    bg: 'bg-amber-50 dark:bg-amber-500/10',
+    border: 'border-amber-200 dark:border-amber-500/20'
+  },
+  'Education for Resellers and Shop Owners': {
+    label: 'TCG Economics',
+    spaceNum: '02',
+    dot: 'bg-emerald-500',
+    text: 'text-emerald-600 dark:text-emerald-400',
+    bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+    border: 'border-emerald-200 dark:border-emerald-500/20'
+  },
+  'Controversy and Opinion': {
+    label: 'Scams & Fakes',
+    spaceNum: '03',
+    dot: 'bg-rose-500',
+    text: 'text-rose-600 dark:text-rose-400',
+    bg: 'bg-rose-50 dark:bg-rose-500/10',
+    border: 'border-rose-200 dark:border-rose-500/20'
+  },
+  'Release Content': {
+    label: 'Pokémon Discoveries',
+    spaceNum: '01',
+    dot: 'bg-purple-500',
+    text: 'text-purple-600 dark:text-purple-400',
+    bg: 'bg-purple-50 dark:bg-purple-500/10',
+    border: 'border-purple-200 dark:border-purple-500/20'
+  },
   'Price Analysis and Prediction': {
-    label: 'Price Analysis',
-    dot: 'bg-indigo-500',
-    text: 'text-indigo-600 dark:text-indigo-400',
-    bg: 'bg-indigo-50 dark:bg-indigo-500/10',
-    border: 'border-indigo-200 dark:border-indigo-500/20'
+    label: 'TCG Economics',
+    spaceNum: '02',
+    dot: 'bg-emerald-500',
+    text: 'text-emerald-600 dark:text-emerald-400',
+    bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+    border: 'border-emerald-200 dark:border-emerald-500/20'
   }
 };
 
@@ -239,17 +287,41 @@ export const ContentManagementView: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Category & Space exploration state
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [activeSpaceFilter, setActiveSpaceFilter] = useState<'all' | ContentTopic>('all');
+  const [categorySearchQuery, setCategorySearchQuery] = useState('');
+  const [expandedSpace, setExpandedSpace] = useState<string | null>(null);
+
   // Add modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newVideoCreator, setNewVideoCreator] = useState<'Sadid' | 'Anika'>('Sadid');
   const [newVideoTitle, setNewVideoTitle] = useState('');
-  const [newVideoTopic, setNewVideoTopic] = useState<ContentTopic>('Shop Problem');
+  const [newVideoTopic, setNewVideoTopic] = useState<ContentTopic>('Pokémon Discoveries, Culture & Nostalgia');
+  const [newVideoCategory, setNewVideoCategory] = useState<string>('01 Hidden Product Details');
   const [newVideoFormat, setNewVideoFormat] = useState<ReelFormat>('Price Breakdown and Analysis');
   const [newVideoStatus, setNewVideoStatus] = useState<VideoStatus>('Scripting');
   const [newVideoHook, setNewVideoHook] = useState('');
   const [newVideoScript, setNewVideoScript] = useState('');
   const [newVideoDate, setNewVideoDate] = useState('');
   const [newVideoNotes, setNewVideoNotes] = useState('');
+
+  // Helper to open Add Modal pre-filled with specific Space & Category
+  const openAddModalWithSpaceAndCategory = (space: ContentTopic, categoryTitle?: string) => {
+    setNewVideoTopic(space);
+    if (categoryTitle) {
+      setNewVideoCategory(categoryTitle);
+    } else {
+      const spaceDef = CONTENT_SPACES[space];
+      if (spaceDef && spaceDef.categories.length > 0) {
+        setNewVideoCategory(`${spaceDef.categories[0].id} ${spaceDef.categories[0].title}`);
+      }
+    }
+    setNewVideoTitle('');
+    setNewVideoHook('');
+    setNewVideoScript('');
+    setIsAddModalOpen(true);
+  };
 
   // Script Studio Modal state
   const [activeScriptVideoId, setActiveScriptVideoId] = useState<string | null>(null);
@@ -309,6 +381,7 @@ export const ContentManagementView: React.FC = () => {
       creator: newVideoCreator,
       title: newVideoTitle.trim(),
       topic: newVideoTopic,
+      category: newVideoCategory,
       format: newVideoFormat,
       status: newVideoStatus,
       hook: newVideoHook.trim() || 'Attention-grabbing hook...',
@@ -325,7 +398,6 @@ export const ContentManagementView: React.FC = () => {
     setNewVideoNotes('');
   };
 
-
   // Matrix Analytics
   const analytics = useMemo(() => {
     const total = videos.length;
@@ -333,11 +405,11 @@ export const ContentManagementView: React.FC = () => {
     const anikaTotal = videos.filter((v) => v.creator === 'Anika').length;
 
     const topicCounts: Record<ContentTopic, { total: number; sadid: number; anika: number }> = {
-      'Shop Problem': { total: 0, sadid: 0, anika: 0 },
-      'Education for Resellers and Shop Owners': { total: 0, sadid: 0, anika: 0 },
-      'Controversy and Opinion': { total: 0, sadid: 0, anika: 0 },
-      'Release Content': { total: 0, sadid: 0, anika: 0 },
-      'Price Analysis and Prediction': { total: 0, sadid: 0, anika: 0 }
+      'Pokémon Discoveries, Culture & Nostalgia': { total: 0, sadid: 0, anika: 0 },
+      'TCG Economics & Market Psychology': { total: 0, sadid: 0, anika: 0 },
+      'TCG Scams, Fakes & Market Traps': { total: 0, sadid: 0, anika: 0 },
+      'TCG Store Business Breakdown': { total: 0, sadid: 0, anika: 0 },
+      'Building Aeethod in Public + Store UX': { total: 0, sadid: 0, anika: 0 }
     };
 
     const formatCounts: Record<ReelFormat, { total: number; sadid: number; anika: number }> = {
@@ -349,11 +421,11 @@ export const ContentManagementView: React.FC = () => {
     };
 
     const combinedMatrix: Record<ContentTopic, Record<ReelFormat, number>> = {
-      'Shop Problem': { 'Price Breakdown and Analysis': 0, Looping: 0, 'Myth Blast': 0, Prevention: 0, 'Teardown and Challenge': 0 },
-      'Education for Resellers and Shop Owners': { 'Price Breakdown and Analysis': 0, Looping: 0, 'Myth Blast': 0, Prevention: 0, 'Teardown and Challenge': 0 },
-      'Controversy and Opinion': { 'Price Breakdown and Analysis': 0, Looping: 0, 'Myth Blast': 0, Prevention: 0, 'Teardown and Challenge': 0 },
-      'Release Content': { 'Price Breakdown and Analysis': 0, Looping: 0, 'Myth Blast': 0, Prevention: 0, 'Teardown and Challenge': 0 },
-      'Price Analysis and Prediction': { 'Price Breakdown and Analysis': 0, Looping: 0, 'Myth Blast': 0, Prevention: 0, 'Teardown and Challenge': 0 }
+      'Pokémon Discoveries, Culture & Nostalgia': { 'Price Breakdown and Analysis': 0, Looping: 0, 'Myth Blast': 0, Prevention: 0, 'Teardown and Challenge': 0 },
+      'TCG Economics & Market Psychology': { 'Price Breakdown and Analysis': 0, Looping: 0, 'Myth Blast': 0, Prevention: 0, 'Teardown and Challenge': 0 },
+      'TCG Scams, Fakes & Market Traps': { 'Price Breakdown and Analysis': 0, Looping: 0, 'Myth Blast': 0, Prevention: 0, 'Teardown and Challenge': 0 },
+      'TCG Store Business Breakdown': { 'Price Breakdown and Analysis': 0, Looping: 0, 'Myth Blast': 0, Prevention: 0, 'Teardown and Challenge': 0 },
+      'Building Aeethod in Public + Store UX': { 'Price Breakdown and Analysis': 0, Looping: 0, 'Myth Blast': 0, Prevention: 0, 'Teardown and Challenge': 0 }
     };
 
     const statusCounts: Record<VideoStatus, number> = {
@@ -365,18 +437,19 @@ export const ContentManagementView: React.FC = () => {
     };
 
     videos.forEach((v) => {
-      if (topicCounts[v.topic]) {
-        topicCounts[v.topic].total += 1;
-        if (v.creator === 'Sadid') topicCounts[v.topic].sadid += 1;
-        if (v.creator === 'Anika') topicCounts[v.topic].anika += 1;
+      const normTopic = normalizeTopic(v.topic);
+      if (topicCounts[normTopic]) {
+        topicCounts[normTopic].total += 1;
+        if (v.creator === 'Sadid') topicCounts[normTopic].sadid += 1;
+        if (v.creator === 'Anika') topicCounts[normTopic].anika += 1;
       }
       if (formatCounts[v.format]) {
         formatCounts[v.format].total += 1;
         if (v.creator === 'Sadid') formatCounts[v.format].sadid += 1;
         if (v.creator === 'Anika') formatCounts[v.format].anika += 1;
       }
-      if (combinedMatrix[v.topic] && combinedMatrix[v.topic][v.format] !== undefined) {
-        combinedMatrix[v.topic][v.format] += 1;
+      if (combinedMatrix[normTopic] && combinedMatrix[normTopic][v.format] !== undefined) {
+        combinedMatrix[normTopic][v.format] += 1;
       }
       if (statusCounts[v.status] !== undefined) {
         statusCounts[v.status] += 1;
@@ -528,7 +601,8 @@ export const ContentManagementView: React.FC = () => {
 
     const creatorVideos = videos.filter((v) => {
       if (v.creator !== creator) return false;
-      if (topicFilter !== 'all' && v.topic !== topicFilter) return false;
+      if (topicFilter !== 'all' && normalizeTopic(v.topic) !== topicFilter) return false;
+      if (categoryFilter !== 'all' && v.category !== categoryFilter) return false;
       if (formatFilter !== 'all' && v.format !== formatFilter) return false;
       if (statusFilter !== 'all' && v.status !== statusFilter) return false;
       if (searchQuery.trim()) {
@@ -536,6 +610,7 @@ export const ContentManagementView: React.FC = () => {
         return (
           v.title.toLowerCase().includes(q) ||
           v.hook.toLowerCase().includes(q) ||
+          (v.category && v.category.toLowerCase().includes(q)) ||
           (v.notes && v.notes.toLowerCase().includes(q))
         );
       }
@@ -661,20 +736,42 @@ export const ContentManagementView: React.FC = () => {
 
             <select
               value={topicFilter}
-              onChange={(e) => setTopicFilter(e.target.value)}
+              onChange={(e) => {
+                setTopicFilter(e.target.value);
+                setCategoryFilter('all');
+              }}
               className={`border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none ${
                 isLight
                   ? 'bg-white border-[#e3e2de] text-slate-800'
                   : 'bg-[#202020] border-[#2a2a2a] text-slate-300'
               }`}
             >
-              <option value="all">All Topics ({TOPIC_LIST.length})</option>
+              <option value="all">All Spaces (5 Spaces)</option>
               {TOPIC_LIST.map((t) => (
                 <option key={t} value={t}>
-                  {TOPIC_CONFIG[t].label}
+                  {TOPIC_CONFIG[t]?.spaceNum ? `S${TOPIC_CONFIG[t].spaceNum} · ` : ''}{TOPIC_CONFIG[t]?.label || t}
                 </option>
               ))}
             </select>
+
+            {topicFilter !== 'all' && CONTENT_SPACES[topicFilter as ContentTopic] && (
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className={`border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none ${
+                  isLight
+                    ? 'bg-white border-purple-200 text-purple-800'
+                    : 'bg-[#202020] border-purple-500/30 text-purple-300'
+                }`}
+              >
+                <option value="all">All Categories ({CONTENT_SPACES[topicFilter as ContentTopic].categories.length})</option>
+                {CONTENT_SPACES[topicFilter as ContentTopic].categories.map((c) => (
+                  <option key={c.id} value={`${c.id} ${c.title}`}>
+                    {c.id} {c.title}
+                  </option>
+                ))}
+              </select>
+            )}
 
             <select
               value={formatFilter}
@@ -818,6 +915,13 @@ export const ContentManagementView: React.FC = () => {
                               <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 text-indigo-400 transition" />
                             </div>
                           </div>
+
+                          {vid.category && (
+                            <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-400">
+                              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400/60" />
+                              <span className="truncate font-medium" title={vid.category}>{vid.category}</span>
+                            </div>
+                          )}
 
                           {/* Title */}
                           <div className={`text-xs font-semibold leading-snug group-hover:text-indigo-400 transition ${isLight ? 'text-slate-900' : 'text-slate-100'}`}>
@@ -989,9 +1093,16 @@ export const ContentManagementView: React.FC = () => {
                           </button>
                         </td>
                         <td className="py-2.5 px-3 whitespace-nowrap">
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${topicMeta.bg} ${topicMeta.text}`}>
-                            {topicMeta.label}
-                          </span>
+                          <div className="space-y-0.5">
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${topicMeta?.bg || 'bg-slate-100'} ${topicMeta?.text || 'text-slate-600'}`}>
+                              {topicMeta?.label || vid.topic}
+                            </span>
+                            {vid.category && (
+                              <div className="text-[10px] text-slate-400 font-mono truncate max-w-[150px]" title={vid.category}>
+                                {vid.category}
+                              </div>
+                            )}
+                          </div>
                         </td>
                         <td className={`py-2.5 px-3 whitespace-nowrap font-mono text-[11px] ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
                           {vid.format}
@@ -1374,7 +1485,7 @@ export const ContentManagementView: React.FC = () => {
               <span>Content Management & Video Pipeline</span>
             </h1>
             <p className={`text-xs mt-1 max-w-2xl leading-relaxed ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-              5 core industry topics &amp; 5 algorithmic retention formulas. Track production pipelines from script to upload.
+              5 spaces • 38 categories • one connected strategy. Track production pipelines from script to upload.
             </p>
           </div>
 
@@ -1422,7 +1533,7 @@ export const ContentManagementView: React.FC = () => {
             }`}
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Topics &amp; Formats Framework</span>
+            <span>Instagram Content Map (5 Spaces • 38 Categories)</span>
           </button>
 
           <button
@@ -2277,63 +2388,467 @@ export const ContentManagementView: React.FC = () => {
       {/* ========================================================================= */}
       {activeTab === 'strategy' && (
         <div className="space-y-8 animate-fade-in">
-          {/* 5 Content Topics */}
-          <div className="space-y-4">
-            <div>
-              <h2 className={`text-sm font-semibold tracking-tight flex items-center gap-2 ${isLight ? 'text-[#1a1a1a]' : 'text-white'}`}>
-                <Target className="w-4 h-4 text-indigo-500" />
-                <span>The 5 Core TCG Content Topics</span>
-              </h2>
-              <p className={`text-xs mt-0.5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                Strategic topics that attract collectors while directly engaging store owners and resellers.
-              </p>
+          {/* ================================================================= */}
+          {/* AEETHOD INSTAGRAM CONTENT MAP: 5 SPACES • 38 CATEGORIES           */}
+          {/* ================================================================= */}
+          <div className="space-y-8">
+            {/* Top Strategy Header & KPI Strip */}
+            <div className={`p-6 rounded-2xl border ${
+              isLight
+                ? 'bg-gradient-to-br from-purple-50/70 via-indigo-50/40 to-slate-50 border-purple-200/80 shadow-xs'
+                : 'bg-gradient-to-br from-[#1b1726] via-[#1a1c29] to-[#17171d] border-purple-500/25'
+            }`}>
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                <div className="space-y-1.5 max-w-2xl">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase bg-purple-500/10 text-purple-400 border border-purple-500/30 flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3 text-purple-400" />
+                      AEETHOD • INSTAGRAM CONTENT STRATEGY
+                    </span>
+                    <span className="text-xs text-slate-400 font-mono">
+                      Page 1–6 Complete Playbook
+                    </span>
+                  </div>
+                  <h2 className={`text-xl font-bold tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                    Instagram Content Map
+                  </h2>
+                  <p className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                    <strong>5 spaces • 38 categories • one connected strategy.</strong> Engineered to capture non-follower reach, earn collector credibility, and funnel qualified store owners to Aeethod OS.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2.5 font-mono text-xs">
+                  <div className={`px-3 py-2 rounded-xl border text-center ${
+                    isLight ? 'bg-white border-purple-100 shadow-2xs' : 'bg-black/30 border-purple-500/20'
+                  }`}>
+                    <div className="text-[10px] text-purple-400 uppercase font-bold">5 Spaces</div>
+                    <div className={`text-sm font-bold mt-0.5 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                      TOF → MOF → BOF
+                    </div>
+                  </div>
+                  <div className={`px-3 py-2 rounded-xl border text-center ${
+                    isLight ? 'bg-white border-purple-100 shadow-2xs' : 'bg-black/30 border-purple-500/20'
+                  }`}>
+                    <div className="text-[10px] text-emerald-400 uppercase font-bold">38 Categories</div>
+                    <div className={`text-sm font-bold mt-0.5 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                      Forensic Hooks
+                    </div>
+                  </div>
+                  <div className={`px-3 py-2 rounded-xl border text-center ${
+                    isLight ? 'bg-white border-purple-100 shadow-2xs' : 'bg-black/30 border-purple-500/20'
+                  }`}>
+                    <div className="text-[10px] text-sky-400 uppercase font-bold">First 10 Test</div>
+                    <div className={`text-sm font-bold mt-0.5 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                      4 • 2 • 2 • 1 • 1
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-              {TOPIC_LIST.map((topicKey) => {
-                const topic = TOPIC_DEFINITIONS[topicKey];
-                const conf = TOPIC_CONFIG[topicKey];
+            {/* SECTION 1: THE BIG PICTURE & CONNECTED FUNNEL */}
+            <div className="space-y-4">
+              <div>
+                <h3 className={`text-sm font-bold tracking-tight uppercase font-mono flex items-center gap-2 ${
+                  isLight ? 'text-slate-900' : 'text-slate-100'
+                }`}>
+                  <Compass className="w-4 h-4 text-purple-500" />
+                  <span>The Big Picture — 3 Funnel Stages</span>
+                </h3>
+                <p className={`text-xs mt-0.5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                  How content moves viewers from cold discovery to trusted B2B software prospects.
+                </p>
+              </div>
 
-                return (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {STRATEGY_BIG_PICTURE.stages.map((stage) => (
                   <div
-                    key={topicKey}
-                    className={`rounded-xl border p-4 flex flex-col justify-between space-y-3 transition ${
-                      isLight
-                        ? 'bg-[#faf9f6] border-[#e9e9e7] hover:border-[#dcdbd7]'
-                        : 'bg-[#1f1f1f] border-[#282828] hover:border-[#383838]'
+                    key={stage.id}
+                    className={`p-4 rounded-xl border flex flex-col justify-between space-y-3 transition ${
+                      stage.id === 'TOF'
+                        ? isLight
+                          ? 'bg-purple-50/40 border-purple-200'
+                          : 'bg-purple-950/20 border-purple-500/30'
+                        : stage.id === 'MOF'
+                        ? isLight
+                          ? 'bg-emerald-50/40 border-emerald-200'
+                          : 'bg-emerald-950/20 border-emerald-500/30'
+                        : isLight
+                        ? 'bg-sky-50/40 border-sky-200'
+                        : 'bg-sky-950/20 border-sky-500/30'
                     }`}
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${conf.bg} ${conf.text} border ${conf.border}`}>
-                          {topic.title}
+                        <span className={`text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-full border ${stage.badgeColor}`}>
+                          {stage.label}
                         </span>
-                        <span className={`text-[11px] font-mono ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                          {analytics.topicCounts[topicKey].total} in pipeline
+                        <span className="text-[10px] font-mono text-slate-400 uppercase">
+                          {stage.id}
                         </span>
                       </div>
-                      <p className={`text-xs leading-relaxed font-sans ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>{topic.description}</p>
+                      <div className={`text-xs font-semibold leading-snug ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                        {stage.summary}
+                      </div>
                     </div>
-
-                    <div className={`pt-2.5 border-t space-y-2 text-[11px] ${isLight ? 'border-[#e9e9e7]' : 'border-[#282828]'}`}>
-                      <div>
-                        <span className={`font-mono text-[10px] uppercase ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Audience:</span>
-                        <p className={`font-medium ${isLight ? 'text-slate-800' : 'text-slate-300'}`}>{topic.targetAudience}</p>
-                      </div>
-                      <div>
-                        <span className={`font-mono text-[10px] uppercase ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Example Angles:</span>
-                        <ul className={`space-y-1 mt-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                          {topic.angleExamples.map((ex, i) => (
-                            <li key={i} className="line-clamp-1 italic text-[11px]">
-                              • "{ex}"
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                    <div className={`pt-2 border-t text-[11px] font-mono ${isLight ? 'border-black/5 text-slate-500' : 'border-white/10 text-slate-400'}`}>
+                      {stage.role}
                     </div>
                   </div>
-                );
-              })}
+                ))}
+              </div>
+
+              {/* HOW THE SPACES CONNECT FLOW */}
+              <div className={`p-4 rounded-xl border ${
+                isLight ? 'bg-[#faf9f6] border-[#e9e9e7]' : 'bg-[#1e1e24] border-[#2c2c38]'
+              }`}>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[11px] font-bold uppercase font-mono text-slate-400">
+                    How The Spaces Connect (Pipeline Flow):
+                  </span>
+                  <span className="text-[10px] font-mono text-indigo-400">Continuous Conversion Loop</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {STRATEGY_BIG_PICTURE.flowSteps.map((flow, idx) => (
+                    <div
+                      key={flow.step}
+                      className={`p-3 rounded-lg border flex items-start gap-2.5 ${flow.color}`}
+                    >
+                      <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold shrink-0 font-mono">
+                        {idx + 1}
+                      </div>
+                      <div className="space-y-0.5">
+                        <div className="text-xs font-bold font-mono flex items-center gap-1.5">
+                          <span>{flow.step}</span>
+                          <span className="text-[10px] font-normal opacity-75">({flow.spaceRef})</span>
+                        </div>
+                        <p className="text-[11px] leading-relaxed opacity-90">{flow.text}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* STARTING MIX TO TEST — FIRST 10 REELS */}
+              <div className={`p-4 rounded-xl border space-y-3.5 ${
+                isLight ? 'bg-white border-[#e9e9e7] shadow-2xs' : 'bg-[#1b1b22] border-[#292934]'
+              }`}>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <span className={`text-xs font-bold font-mono uppercase flex items-center gap-1.5 ${
+                      isLight ? 'text-slate-900' : 'text-slate-100'
+                    }`}>
+                      <Target className="w-3.5 h-3.5 text-indigo-500" />
+                      Starting Mix to Test — First 10 Reels Target
+                    </span>
+                    <p className={`text-[11px] mt-0.5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                      Recommended distribution for launch testing. Keep factual claims sourced and label rumors clearly.
+                    </p>
+                  </div>
+                  <div className="text-[11px] font-mono text-slate-400">
+                    Target Mix: <strong>10 Reels Total</strong>
+                  </div>
+                </div>
+
+                {/* Visual Progress Meter for First 10 Mix */}
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 font-mono">
+                  {STRATEGY_BIG_PICTURE.first10Mix.map((mix) => {
+                    const currentCount = analytics.topicCounts[mix.spaceId]?.total || 0;
+                    return (
+                      <div
+                        key={mix.spaceId}
+                        className={`p-2.5 rounded-lg border flex flex-col justify-between ${mix.badge}`}
+                      >
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-bold">Space {mix.spaceNum}</span>
+                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-black/20 font-bold">
+                            Target: {mix.count}
+                          </span>
+                        </div>
+                        <div className="mt-2 text-xs font-semibold truncate" title={mix.label}>
+                          {mix.label}
+                        </div>
+                        <div className="mt-1 text-[10px] flex items-center justify-between text-slate-400">
+                          <span>In Pipeline:</span>
+                          <strong className={currentCount >= mix.count ? 'text-emerald-400' : 'text-slate-200'}>
+                            {currentCount} / {mix.count}
+                          </strong>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Tracked Metrics Pills & Editorial Standard */}
+                <div className={`pt-3 border-t flex flex-wrap items-center justify-between gap-3 text-[11px] font-mono ${
+                  isLight ? 'border-slate-200 text-slate-600' : 'border-slate-800 text-slate-400'
+                }`}>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="font-bold uppercase text-[10px] text-slate-400 mr-1">Track:</span>
+                    {STRATEGY_BIG_PICTURE.trackedMetrics.map((m) => (
+                      <span
+                        key={m}
+                        className={`px-2 py-0.5 rounded-md border text-[10px] ${
+                          isLight ? 'bg-slate-100 border-slate-200 text-slate-700' : 'bg-black/30 border-slate-700 text-slate-300'
+                        }`}
+                      >
+                        {m}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="text-[10px] italic text-amber-500/90 flex items-center gap-1">
+                    <Info className="w-3 h-3 text-amber-400 shrink-0" />
+                    <span>Label rumors clearly • Source factual claims</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION 2: THE 5 SPACES & 38 CATEGORIES EXPLORER */}
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className={`text-sm font-bold tracking-tight uppercase font-mono flex items-center gap-2 ${
+                    isLight ? 'text-slate-900' : 'text-slate-100'
+                  }`}>
+                    <Layers className="w-4 h-4 text-indigo-500" />
+                    <span>The 5 Core Spaces &amp; 38 Categories Explorer</span>
+                  </h3>
+                  <p className={`text-xs mt-0.5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                    Click any category to instantly draft a reel script with that specific hook formula.
+                  </p>
+                </div>
+
+                {/* Search across all 38 categories */}
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={categorySearchQuery}
+                    onChange={(e) => setCategorySearchQuery(e.target.value)}
+                    placeholder="Search 38 categories (e.g. reprint, fakes, UI fix)..."
+                    className={`pl-8 pr-3 py-1.5 rounded-lg text-xs border outline-none w-64 ${
+                      isLight
+                        ? 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-500'
+                        : 'bg-[#181820] border-[#2d2d3a] text-white placeholder:text-slate-500 focus:border-indigo-500'
+                    }`}
+                  />
+                  {categorySearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setCategorySearchQuery('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Space Filter Tabs */}
+              <div className="flex flex-wrap items-center gap-1.5 pb-1">
+                <button
+                  type="button"
+                  onClick={() => setActiveSpaceFilter('all')}
+                  className={`px-3 py-1 rounded-lg text-xs font-mono font-semibold transition ${
+                    activeSpaceFilter === 'all'
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : isLight
+                      ? 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      : 'bg-[#22222a] text-slate-400 hover:bg-[#2c2c36]'
+                  }`}
+                >
+                  All 5 Spaces (38 Categories)
+                </button>
+                {SPACES_LIST.map((spKey) => {
+                  const spDef = CONTENT_SPACES[spKey];
+                  const isSelected = activeSpaceFilter === spKey;
+                  return (
+                    <button
+                      key={spKey}
+                      type="button"
+                      onClick={() => setActiveSpaceFilter(isSelected ? 'all' : spKey)}
+                      className={`px-3 py-1 rounded-lg text-xs font-mono font-semibold transition flex items-center gap-1.5 ${
+                        isSelected
+                          ? 'bg-purple-600 text-white shadow-xs'
+                          : isLight
+                          ? 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          : 'bg-[#22222a] text-slate-400 hover:bg-[#2c2c36]'
+                      }`}
+                    >
+                      <span>Space {spDef.spaceNum}</span>
+                      <span className="text-[10px] opacity-70">({spDef.categories.length})</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Render The 5 Spaces */}
+              <div className="space-y-6">
+                {SPACES_LIST.filter(
+                  (spKey) => activeSpaceFilter === 'all' || activeSpaceFilter === spKey
+                ).map((spKey) => {
+                  const sp = CONTENT_SPACES[spKey];
+                  const conf = TOPIC_CONFIG[spKey];
+                  const inPipelineCount = analytics.topicCounts[spKey]?.total || 0;
+
+                  // Filter categories by search query if any
+                  const filteredCats = sp.categories.filter((cat) => {
+                    if (!categorySearchQuery.trim()) return true;
+                    const q = categorySearchQuery.toLowerCase();
+                    return (
+                      cat.title.toLowerCase().includes(q) ||
+                      cat.description.toLowerCase().includes(q) ||
+                      cat.id.includes(q)
+                    );
+                  });
+
+                  if (filteredCats.length === 0 && categorySearchQuery.trim()) {
+                    return null;
+                  }
+
+                  return (
+                    <div
+                      key={spKey}
+                      className={`rounded-2xl border p-5 space-y-4 transition ${
+                        isLight
+                          ? 'bg-white border-[#e6e5e0] hover:border-slate-300 shadow-xs'
+                          : 'bg-[#1b1b22] border-[#292934] hover:border-[#383848]'
+                      }`}
+                    >
+                      {/* Space Header */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-700/20">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                              SPACE {sp.spaceNum}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border ${sp.badgeColor}`}>
+                              {sp.stage}
+                            </span>
+                            <span className="text-[11px] font-mono text-slate-400">
+                              {sp.categories.length} Categories
+                            </span>
+                          </div>
+                          <h4 className={`text-base font-bold tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                            {sp.title}
+                          </h4>
+                          <p className={`text-xs italic ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                            "{sp.goal}"
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className={`text-xs font-mono px-2.5 py-1 rounded-lg border ${
+                            inPipelineCount > 0
+                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                              : isLight ? 'bg-slate-100 border-slate-200 text-slate-500' : 'bg-black/20 border-slate-800 text-slate-400'
+                          }`}>
+                            <strong>{inPipelineCount}</strong> in pipeline
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => openAddModalWithSpaceAndCategory(spKey)}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs flex items-center gap-1.5 transition"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Plan Reel</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Categories Subgrid (All 7 or 10 Categories) */}
+                      <div>
+                        <div className="text-[11px] font-mono uppercase font-bold text-slate-400 mb-2.5 flex items-center justify-between">
+                          <span>Categories &amp; Hook Playbooks ({filteredCats.length})</span>
+                          <span className="text-[10px] font-normal lowercase opacity-75">click to draft script</span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
+                          {filteredCats.map((cat) => {
+                            const catFullTitle = `${cat.id} ${cat.title}`;
+                            const reelsInCat = videos.filter(
+                              (v) => normalizeTopic(v.topic) === spKey && v.category === catFullTitle
+                            );
+
+                            return (
+                              <div
+                                key={cat.id}
+                                onClick={() => openAddModalWithSpaceAndCategory(spKey, catFullTitle)}
+                                className={`p-3 rounded-xl border flex flex-col justify-between space-y-2 cursor-pointer transition select-none group ${
+                                  reelsInCat.length > 0
+                                    ? isLight
+                                      ? 'bg-purple-50/50 border-purple-200 hover:border-purple-300'
+                                      : 'bg-purple-950/20 border-purple-500/30 hover:border-purple-400/50'
+                                    : isLight
+                                    ? 'bg-[#faf9f6] border-[#e9e9e7] hover:border-indigo-400 hover:bg-white'
+                                    : 'bg-[#15151c] border-[#252530] hover:border-indigo-500/50 hover:bg-[#1c1c24]'
+                                }`}
+                              >
+                                <div className="space-y-1">
+                                  <div className="flex items-center justify-between gap-1 text-[11px] font-mono">
+                                    <span className="px-1.5 py-0.2 rounded font-bold bg-black/20 text-indigo-400 border border-indigo-500/20">
+                                      {cat.id}
+                                    </span>
+                                    {reelsInCat.length > 0 && (
+                                      <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 font-bold">
+                                        {reelsInCat.length} planned
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className={`text-xs font-bold leading-tight group-hover:text-indigo-400 transition ${
+                                    isLight ? 'text-slate-900' : 'text-slate-100'
+                                  }`}>
+                                    {cat.title}
+                                  </div>
+                                  <p className={`text-[11px] leading-relaxed line-clamp-2 ${
+                                    isLight ? 'text-slate-600' : 'text-slate-400'
+                                  }`}>
+                                    {cat.description}
+                                  </p>
+                                </div>
+
+                                <div className="pt-1.5 border-t border-slate-700/10 flex items-center justify-between text-[10px] font-mono text-slate-400 opacity-60 group-hover:opacity-100 transition">
+                                  <span>Formula Hook</span>
+                                  <span className="text-indigo-400 flex items-center gap-0.5">
+                                    + Draft <ArrowRight className="w-2.5 h-2.5" />
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Space Audience & Angles Footer */}
+                      <div className={`pt-3 border-t grid grid-cols-1 md:grid-cols-2 gap-3 text-xs ${
+                        isLight ? 'border-[#e9e9e7]' : 'border-[#292934]'
+                      }`}>
+                        <div>
+                          <span className="text-[10px] uppercase font-mono font-bold text-slate-400 block mb-0.5">
+                            Target Audience:
+                          </span>
+                          <p className={`text-[11px] leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                            {sp.targetAudience}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase font-mono font-bold text-slate-400 block mb-0.5">
+                            Tested Angles &amp; Scenarios:
+                          </span>
+                          <ul className={`space-y-0.5 text-[11px] ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                            {sp.angleExamples.map((ex, i) => (
+                              <li key={i} className="line-clamp-1 italic">
+                                • "{ex}"
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
@@ -3229,40 +3744,64 @@ export const ContentManagementView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className={`block text-[11px] font-mono uppercase mb-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Topic Pillar</label>
+                  <label className={`block text-[11px] font-mono uppercase mb-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Content Space</label>
                   <select
                     value={newVideoTopic}
-                    onChange={(e) => setNewVideoTopic(e.target.value as ContentTopic)}
+                    onChange={(e) => {
+                      const sp = e.target.value as ContentTopic;
+                      setNewVideoTopic(sp);
+                      const def = CONTENT_SPACES[sp];
+                      if (def && def.categories.length > 0) {
+                        setNewVideoCategory(`${def.categories[0].id} ${def.categories[0].title}`);
+                      }
+                    }}
                     className={`w-full rounded-lg px-2.5 py-1.5 text-xs font-mono border ${
                       isLight ? 'bg-white border-[#e3e2de] text-slate-900' : 'bg-[#181818] border-[#2e2e2e] text-slate-300'
                     }`}
                   >
                     {TOPIC_LIST.map((t) => (
                       <option key={t} value={t}>
-                        {t}
+                        {TOPIC_CONFIG[t]?.spaceNum ? `Space ${TOPIC_CONFIG[t].spaceNum} — ` : ''}{TOPIC_CONFIG[t]?.label || t}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className={`block text-[11px] font-mono uppercase mb-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Reel Format</label>
+                  <label className={`block text-[11px] font-mono uppercase mb-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Category Hook (38 Total)</label>
                   <select
-                    value={newVideoFormat}
-                    onChange={(e) => setNewVideoFormat(e.target.value as ReelFormat)}
+                    value={newVideoCategory}
+                    onChange={(e) => setNewVideoCategory(e.target.value)}
                     className={`w-full rounded-lg px-2.5 py-1.5 text-xs font-mono border ${
                       isLight ? 'bg-white border-[#e3e2de] text-slate-900' : 'bg-[#181818] border-[#2e2e2e] text-slate-300'
                     }`}
                   >
-                    {FORMAT_LIST.map((f) => (
-                      <option key={f} value={f}>
-                        {f}
+                    {(CONTENT_SPACES[newVideoTopic]?.categories || []).map((cat) => (
+                      <option key={cat.id} value={`${cat.id} ${cat.title}`}>
+                        {cat.id} {cat.title}
                       </option>
                     ))}
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className={`block text-[11px] font-mono uppercase mb-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Reel Format</label>
+                <select
+                  value={newVideoFormat}
+                  onChange={(e) => setNewVideoFormat(e.target.value as ReelFormat)}
+                  className={`w-full rounded-lg px-2.5 py-1.5 text-xs font-mono border ${
+                    isLight ? 'bg-white border-[#e3e2de] text-slate-900' : 'bg-[#181818] border-[#2e2e2e] text-slate-300'
+                  }`}
+                >
+                  {FORMAT_LIST.map((f) => (
+                    <option key={f} value={f}>
+                      {f}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -3924,23 +4463,51 @@ export const ContentManagementView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Topic Pillar Property */}
+                {/* Content Space Property */}
                 <div className="grid grid-cols-3 sm:grid-cols-4 items-center">
                   <span className="text-slate-400 font-medium flex items-center gap-1.5">
                     <Tag className="w-3.5 h-3.5" />
-                    Topic Pillar
+                    Content Space
                   </span>
                   <div className="col-span-2 sm:col-span-3">
                     <select
-                      value={selectedCard.topic}
-                      onChange={(e) => updateVideo(selectedCard.id, { topic: e.target.value as ContentTopic })}
+                      value={normalizeTopic(selectedCard.topic)}
+                      onChange={(e) => {
+                        const newSpace = e.target.value as ContentTopic;
+                        const def = CONTENT_SPACES[newSpace];
+                        const newCat = def && def.categories.length > 0 ? `${def.categories[0].id} ${def.categories[0].title}` : '';
+                        updateVideo(selectedCard.id, { topic: newSpace, category: newCat });
+                      }}
                       className={`px-2.5 py-1 rounded-md text-xs font-medium border outline-none cursor-pointer ${
                         isLight ? 'bg-white border-[#e3e2de] text-slate-800' : 'bg-[#202028] border-[#323240] text-slate-200'
                       }`}
                     >
                       {TOPIC_LIST.map((t) => (
                         <option key={t} value={t}>
-                          {t}
+                          {TOPIC_CONFIG[t]?.spaceNum ? `Space ${TOPIC_CONFIG[t].spaceNum} — ` : ''}{TOPIC_CONFIG[t]?.label || t}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Category Hook Property */}
+                <div className="grid grid-cols-3 sm:grid-cols-4 items-center">
+                  <span className="text-slate-400 font-medium flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5" />
+                    Category (38)
+                  </span>
+                  <div className="col-span-2 sm:col-span-3">
+                    <select
+                      value={selectedCard.category || ''}
+                      onChange={(e) => updateVideo(selectedCard.id, { category: e.target.value })}
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium border outline-none cursor-pointer ${
+                        isLight ? 'bg-white border-[#e3e2de] text-slate-800' : 'bg-[#202028] border-[#323240] text-slate-200'
+                      }`}
+                    >
+                      {(CONTENT_SPACES[normalizeTopic(selectedCard.topic)]?.categories || []).map((cat) => (
+                        <option key={cat.id} value={`${cat.id} ${cat.title}`}>
+                          {cat.id} {cat.title}
                         </option>
                       ))}
                     </select>
