@@ -223,8 +223,12 @@ export const DevArchitectureTrackerView: React.FC = () => {
       <div className="space-y-3">
         {items.map((item, idx) => {
           const lines = item.trim().split('\n');
-          const header = lines[0];
+          const rawHeader = lines[0];
           const body = lines.slice(1).join('\n');
+
+          const priorityMatch = rawHeader.match(/\[(Critical P0|High P1|Medium P2|Low P3)\]/i);
+          const priority = priorityMatch ? priorityMatch[1] : null;
+          const cleanHeader = priorityMatch ? rawHeader.replace(/\[(Critical P0|High P1|Medium P2|Low P3)\]\s*/i, '') : rawHeader;
 
           return (
             <div
@@ -244,7 +248,7 @@ export const DevArchitectureTrackerView: React.FC = () => {
               }`}
             >
               <div
-                className={`font-bold mb-1 flex items-start gap-1.5 ${
+                className={`font-bold mb-1.5 flex items-center justify-between gap-2 flex-wrap ${
                   accent === 'rose'
                     ? 'text-rose-600 dark:text-rose-400'
                     : accent === 'amber'
@@ -252,7 +256,22 @@ export const DevArchitectureTrackerView: React.FC = () => {
                     : 'text-sky-600 dark:text-sky-400'
                 }`}
               >
-                <span>{header}</span>
+                <span>{cleanHeader}</span>
+                {priority && (
+                  <span
+                    className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md font-semibold border ${
+                      priority.includes('P0')
+                        ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30'
+                        : priority.includes('P1')
+                        ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30'
+                        : priority.includes('P2')
+                        ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/30'
+                        : 'bg-slate-500/15 text-slate-500 dark:text-slate-400 border-slate-500/30'
+                    }`}
+                  >
+                    {priority}
+                  </span>
+                )}
               </div>
               {body && (
                 <p className={`text-xs leading-relaxed whitespace-pre-line font-normal ${
