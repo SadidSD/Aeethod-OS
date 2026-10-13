@@ -190,46 +190,100 @@ When the customer hands over the physical cards corresponding to their kiosk sub
     targetAudience: "Commercial TCG warehouses, high-volume singles merchants, and card-show traveling dealers",
     pricingModel: "$99 - $299/mo ($0 commission)",
     status: "In Discovery",
-    targetCustomerProblem: `1. The Alphabetical Re-Sorting Collapse vs. "Chaos Storage" Warehousing:
-Forcing staff to manually alphabetize 2,500 newly bought singles into master set monster boxes takes 15–20 hours of manual labor per intake batch. If they attempt modern "chaos storage" (placing cards in whichever bin has physical room), traditional retail POS and inventory software lack dynamic bin/batch remark routing. If cards are moved, shifted, or consolidated, picklists break and clerks cannot find inventory.
+    targetCustomerProblem: `1. [Critical P0] "Black Hole" Misfile Displacement & Extinct Stock:
+When a busy clerk accidentally drops a $50 card one inch to the left into Bin B-11 instead of Bin B-12, that card becomes digitally extinct. The software asserts it is in B-12; when an order comes in, the picker cannot locate it, assumes it was stolen or double-sold, cancels the order, absorbs an eBay/TCGplayer transaction defect penalty, and refunds the buyer—only to stumble across the card months later during an annual store cleanout.
 
-2. The "Swiss-Cheese" Warehouse Fragmentation & Bin Consolidation Friction:
-Over 60–90 days as singles sell out of Bins A-1 through A-50, bins become 80% empty ("swiss-cheese warehouse"), wasting valuable warehouse footprint. Consolidating bins without 1-scan bulk re-routing breaks picklists and requires manually editing hundreds of individual SKUs. Warehouses need 1-scan batch consolidation that atomically shifts entire bin populations in under 50ms.
+2. [Critical P0] Missing 3D Row/Slot Coordinates & Blind Hunt:
+Most card shops store 100,000+ cards in 5,000-count cardboard monster boxes (5 rows per box, ~1,000 cards per row) without slot coordinates. Picklists only print "Box 12". Staff must manually flip through 800 cards per row to find a single $3 single, ballooning fulfillment times from 1 minute to 8–10 minutes per card and causing shipping SLA misses.
 
-3. The "Pick-and-Pack Blind Hunt" (Missing 3D Warehouse Locator Coordinates):
-Card shops managing 50,000 to 200,000 raw singles organize cards physically in 5,000-count cardboard monster boxes and multi-row binders. When 100 online orders flood in on a Monday morning, lack of precise physical coordinates (Box #14 -> Row 2 -> Surging Sparks -> Slot 88) forces staff to spend 3 to 5 hours each morning on a frantic manual search, causing packaging bottlenecks and shipping SLA misses.
+3. [Critical P0] Serialized Graded Slabs (1-of-1 Cert Number) vs. Fungible Raw Singles:
+Raw cards are fungible counts (Qty: 5), while graded slabs are serialized 1-of-1 assets with unique PSA/BGS/CGC certification numbers, population statistics, and distinct photos. Generic WMS software that pools them under a shared multi-quantity SKU causes fulfillment staff to mail Cert #99401284 instead of Cert #81920111, triggering immediate buyer fraud claims, PayPal/eBay payout freezes, and chargeback disputes.
 
-4. Bill of Materials (BOM) Transformation: Sealed Booster Box Cracking vs. Sealed Asset Holding:
-When a store cracks a $100 sealed booster box into 36 packs, and those into 360 singles + bulk, standard retail inventory systems (Shopify, Lightspeed) have zero concept of disassembly BOMs. Assigning COGS across a $70 Alt Art, an $8 regular ex, and 350 bulk cards breaks down, causing distorted profit margins or negative bulk COGS.
+4. [Critical P0] Multi-Location & Convention "Pelican-Case" Travel Desynchronization:
+Commercial dealers split high-value inventory between retail showcases, back-office vaults, and mobile Pelican cases traveling to weekend conventions (e.g. Collect-A-Con). Systems lack location-aware channel routing. When an online order arrives on Friday for a $300 card physically located in a convention travel case 500 miles away, warehouse clerks cannot ship it within 24 hours, triggering late-shipment strikes.
 
-5. The Unsorted "Bulk" Dark Inventory Void (C/U/R Weight, Bricks & Instant Collections):
-Stores sit on 100,000 to 1,000,000+ unsorted commons, uncommons, and basic rares ("bulk"). Listing a $0.05 card individually clogs databases and sync limits. Bulk is stored in 5,000-count boxes or shrink-wrapped bricks sold by weight, remaining completely untracked "dark inventory" on the store ledger.
+5. [Critical P0] Order Cancellation & Mail Return "Ghost Inventory" Trap:
+When a buyer cancels an online order within 30 minutes, or returns a single via mail a week later, existing sync systems only know how to decrement inventory (Qty - 1) and break on reverse replenishment. Either the returned card remains at Qty: 0 indefinitely as forgotten 'ghost inventory' eating up working capital, or an employee manually re-enters it into POS while the sync engine belatedly processes the return webhook hours later, doubling inventory to Qty: 2 and triggering another catastrophic overselling cycle.
 
-6. Physical Storage Quality Decay, Foil Humidity Curling ("Pringling") & Regrade Audits:
+6. [Critical P0] Counter & Card-Show "Held-in-Hand" Soft-Lock Collision:
+At convention booths and retail checkout counters, walk-in customers routinely request a 15-minute hold while walking to an ATM for cash, or leave a stack of 25 singles on the counter while browsing. POS systems lack an instant '15-Minute Soft-Lock Reservation' toggle to temporarily buffer or delist those cards online. An online buyer on eBay purchases the card while the physical customer is walking back with cash in hand, forcing a painful face-to-face deal cancellation.
+
+7. [High P1] The Alphabetical Merging Collapse (The "Analog Hard Drive" Friction):
+When a shop acquires 2,500 singles from a collection, alphabetizing them into existing master monster boxes requires staff to physically pull cards and shift thousands of cards down rows to make room for new titles starting with "A", "B", or "C". Reddit sellers call this the "analog hard drive defrag nightmare"—merging burns 15–20 hours of manual labor per intake batch, and a single misplaced card breaks the alphabetical chain downstream.
+
+8. [High P1] Non-Linear TSP Picking Walking Fatigue:
+In naive chaos storage, an order for 15 singles is often scattered across 15 different boxes in different aisles. Fulfillment pickers spend 80% of their shift walking back and forth across warehouse aisles rather than picking. Without heuristic Traveling Salesperson Problem (TSP) route optimization compiling orders into a single consolidated, bin-ordered picklist, pulling 50 orders takes an entire 8-hour shift.
+
+9. [High P1] Variant, "The List" & Regional Promo Misidentification:
+Cards share 99% identical artwork and only differ by a microscopic planeswalker symbol (The List), copyright year line ('1995' vs '1999-2000'), Pokéball vs Masterball mirror reverse, or regional promo stamp. When a clerk files The List version under the original set SKU, the buyer immediately files a dispute because The List version is worth 40% less.
+
+10. [High P1] FIFO Cost-Basis Blindness & Inability to Calculate Realized COGS:
+TCG singles are acquired over months across varying buylist payouts (e.g. buying 5 copies of a card over 6 months at $40, $55, $70). Incumbent sync tools only track current market sale prices, completely lacking First-In, First-Out (FIFO) cost-basis tracking. Store owners have no visibility into true Cost of Goods Sold (COGS), actual realized margin per channel, or tax liability calculations required for CPA and IRS reporting.
+
+11. [High P1] Return Quarantine & Counterfeit Swap Fraud Traps:
+Disreputable buyers return a counterfeit card, an inkjet proxy, or a damaged copy in place of the Near Mint card sent. Current software auto-increments returned items straight back into active sellable stock without forcing a mandatory "Quarantine Inspection" step, resulting in counterfeit or damaged cards being mailed out to the next unsuspecting customer.
+
+12. [High P1] The Store-Shutdown Physical Audit Nightmare:
+Auditing 150,000 singles to fix inventory drift requires shutting down the retail store for 3 days to recount everything, forfeiting thousands of dollars in daily sales. If staff attempt an audit while the store is open, live sales corrupt the count. Systems lack continuous, barcode-driven rolling cycle counting by specific drawer or monster box without taking listings offline.
+
+13. [High P1] Playset (4x) Virtual Bundles vs. Single-Card Stock Depletion:
+Competitive TCG players (Magic, Pokémon, Yu-Gi-Oh!, One Piece) buy singles in playsets of 4. Sellers want to offer bundle discounts. Traditional tools treat playsets as static pre-packaged SKUs. If 2 singles sell, the playset listing remains live and oversells; if someone buys a playset, single counts don't decrement. Without dynamic virtual parent-child SKU bundling, inventory desyncs or loose singles are needlessly locked up.
+
+14. [High P1] Distributor Pre-Order Allocation Cuts & Speculative Deficits:
+Distributors (Alliance, ACD, Southern Hobby) routinely cut store allocations by 40–60% on high-demand sets. Traditional POS systems do not distinguish between "Confirmed Allocated Inventory" and "Speculative Distributor POs", causing stores to oversell pre-orders and suffer catastrophic customer cancellations, negative reviews, and chargebacks on release day.
+
+15. [Medium P2] "Swiss-Cheese" Bin Fragmentation & Empty Space Bloat:
+In chaos storage, as cards sell out over 60–90 days, older bins become 80–90% empty while new bins keep getting added. Warehouses run out of physical shelf space despite bins being mostly empty air. Consolidating bins without 1-scan bulk re-routing breaks digital picklists and requires manually editing hundreds of individual SKUs one by one.
+
+16. [Medium P2] Dead-Stock Capital Freezing & Inventory Aging Curves (>60/90 Days):
+High-value singles that sit in showcases or warehouse binders for over 60–90 days without selling represent frozen working capital that loses value as the meta shifts. Existing systems lack aging analytics, velocity metrics, and automated liquidation or dynamic clearance markdown workflows, leaving store owners with $50,000+ in stagnant, depreciating paper.
+
+17. [Medium P2] Bill of Materials (BOM) Transformation: Sealed Booster Box Cracking vs. Holding Sealed:
+When market singles Expected Value (EV) spikes, a store cracks a $100 sealed booster box into 36 packs, and those into 360 singles + bulk. Standard retail POS systems have zero concept of disassembly BOMs. Assigning the $100 cost basis across a $70 chase rare, an $8 ultra rare, and 350 bulk cards breaks down, causing distorted profit margins or negative bulk COGS.
+
+18. [Medium P2] Customer Consignment Reconciliation & Multi-Fee Net Payout Nightmare:
+Over 30% of high-end card shop showcases consist of customer consignment inventory sold on an 80/20 or 85/15 net split. When a consigned slab sells across disparate platforms with varying fee structures, tracking the consignor's true net payout manually across portals is an accounting nightmare. Furthermore, when a consignor requests their unsold items back on short notice, store managers waste hours searching through three online portals to manually unlist items before they can be returned.
+
+19. [Medium P2] The Unsorted "Bulk" Dark Inventory Void (C/U/R Weight & Bricks):
+High-volume stores accumulate 100,000 to 1,000,000+ commons and uncommons ("bulk"). Listing a 5-cent card individually clogs databases and sync limits. Bulk is stored in 5,000-count cardboard monster boxes or 1,000-count shrink-wrapped bricks sold by weight, remaining completely untracked "dark inventory" on the store ledger until boxes collapse under their own weight.
+
+20. [Medium P2] Physical Storage Quality Decay, Foil Humidity Curling ("Pringling") & Regrade Audits:
 Modern holographic foils curl severely due to ambient humidity differences ("pringling"). Raw cards stored in high-density boxes or handled display cases suffer surface scuffs and edge whitening over time. Systems assume a card graded Near Mint in January remains Near Mint in July, causing buyer dispute spikes when aged inventory is shipped without environmental tracking or regrading inspection schedules.
 
-7. Playset (4x) Virtual Bundles vs. Single-Card Stock Depletion:
-Competitive TCG players buy singles in playsets of 4. Sellers want to sell playsets at a bundle discount or premium. Traditional tools treat playsets as static pre-packaged SKUs. If 2 singles sell, the playset listing remains live and oversells; if someone buys a playset, single counts don't decrement. Without dynamic virtual bundling, inventory desyncs.
+21. [Medium P2] Condition Subjectivity & Picker Downgrade Clashes:
+The intake clerk marked a card as Near Mint. When the order picker pulls it 3 months later, they notice edge wear or a binder dent. The picker has no digital workflow to flag a "Fulfillment Condition Downgrade" and offer the buyer an instant automated discount or replacement before shipping, forcing a manual hold or shipping a flawed card.
 
-8. Master Set Completion & Binder Assembly Tracking:
+22. [Medium P2] Master Set Completion & Binder Assembly Tracking:
 Collectors pay a 20%–40% premium for complete master sets (every card, holo variant, and secret rare from an expansion). Stores have thousands of loose singles across bins, but owners have zero visibility into set completion percentages (e.g. knowing that buying just 3 missing singles will turn $350 in loose cards into a $650 Complete Master Set).
 
-9. Fungible Raw Singles vs. Serialized 1-of-1 Graded Slab Tracking:
-Raw singles are fungible counts grouped by (Card ID + Condition), whereas graded slabs are serialized 1-of-1 assets with unique PSA/BGS/CGC cert numbers, subgrades, and individual photos. Generic inventory tools mash them together or swap photos, causing buyers to receive the wrong slab and filing fraud disputes.
+23. [Medium P2] Internal & External Shrinkage / Theft Blindness:
+High-value singles are tiny, featherlight, and easily pocketed or misfiled into the wrong row. Stores cannot detect shrinkage or identify which specific employee or shelf has discrepancies until an order pull fails and the card is missing.
 
-10. FIFO Cost-Basis, Acquisition Batches & Tax Reporting Blindness (COGS):
-Singles are acquired across months at different buylist payouts ($40, $55, $70). Incumbent tools only track current market prices, lacking First-In, First-Out (FIFO) cost-basis tracking. Store owners cannot determine true Cost of Goods Sold (COGS), actual realized gross margin, or accurate capital gains for IRS/CPA tax filings.
+24. [Medium P2] Hardware Gating & $5,000+ Lock-In:
+Systems like SortSwift marry chaos bin routing to expensive $4,299–$24,999 mechanical sorting machines, or require proprietary $249 mini-PC router appliances and high per-scan fees, locking out 90% of local game stores from utilizing chaos warehousing.
 
-11. Dead-Stock Capital Freezing & Inventory Aging Curves (>60/90 Days):
-High-value singles that sit in showcases or warehouse binders for over 60–90 days without selling represent frozen working capital that loses value as the meta shifts. Existing systems lack aging analytics, velocity metrics, and automated liquidation/markdown workflows.
+25. [Low P3] Multi-Language Cross-Contamination:
+Japanese, Korean, Simplified Chinese, German, and French prints have radically different market values and demand curves compared to English prints. Filing non-English cards into English bins or SKUs creates instant customer returns and negative seller feedback.
 
-12. Shrinkage, In-Store Theft & The Store-Shutdown Physical Audit Nightmare:
-High-value singles are tiny, featherlight, and easily pocketed or misfiled into the wrong row. Auditing 150,000 singles requires shutting down the retail store for 3 days to recount everything. Systems lack continuous, barcode-driven rolling cycle counting by box or drawer while the store remains open.`,
+26. [Low P3] High-Density Box Edge Wear & Surface Scuffing:
+Raw cards packed tightly into 5-row cardboard boxes rub against each other and against cardboard divider edges during manual flipping, causing micro-scratches on foil finishes over long storage durations.
 
-    problemsToBuild: `1. Bin-Level "Chaos Warehousing" Spatial Graph & Heuristic TSP Pick-Path Routing:
+27. [Low P3] Bottom-Box Crushing Under Vertical Stacking Towers:
+Card shops stack heavy 5,000-count cardboard monster boxes 4 to 6 units high on wire racks. The vertical weight causes bottom boxes to buckle and bow outward, pinching edge cards in outer rows.
+
+28. [Low P3] Showcase UV & LED Heat Light-Bleaching:
+High-value cards displayed in retail glass showcases under overhead spotlight LEDs or near store windows suffer UV fading over 60–120 days. Software lacks display case rotation timers to alert staff to swap out showcase cards.
+
+29. [Low P3] Non-Standard Physical Form Factors (Relics, 100pt, Slabs, Oversized):
+TCGs include thick 55pt/100pt memorabilia cards, oversized jumbo promos, coin tokens, booster packs, and plastic graded slabs that physically cannot fit into standard single-row channels or card sorter belts.
+
+30. [Low P3] Multi-Item Split-Bin Pull Bottleneck:
+Large multi-card orders requiring visits to numerous fragmented bins when batch consolidation is overdue, creating temporary picking friction until bins are consolidated.`,
+
+    problemsToBuild: `1. Spatial DAG & Traveling Salesperson (TSP) Heuristic Pick-Path Engine:
 In high-volume card operations, cards are stored across physical storage locations (Boxes, Rows, Drawers, Bins) without strict alphabetical ordering. The engine must maintain a real-time spatial graph linking digital SKUs to physical coordinate tags (e.g., Box B-12 -> Row 3 -> Slot 44). When batched daily orders are pulled, the system must calculate a Traveling Salesperson Problem (TSP) heuristic route, compiling orders into a single consolidated, bin-ordered picklist that minimizes fulfillment walking time by 75%.
 
-2. 1-Scan Bulk Bin Re-Routing & Swiss-Cheese Auto-Consolidation:
+2. 1-Scan Atomic Bin Re-Routing & "Swiss-Cheese" Auto-Consolidation:
 Sub-50ms bulk re-indexing when an entire bin or batch is merged into another location, cascading location updates across 500+ SKUs in a single atomic transaction without deadlocks or stale cache artifacts.
 
 3. Disassembly Bill-of-Materials (BOM) & Proportional EV Cost-Basis Allocation Engine:
@@ -241,8 +295,11 @@ Real-time parent-child SKU resolution where playset (4x) availability is dynamic
 5. Dual-Ledger Architecture: Fungible Raw Pools vs. Serialized 1-of-1 Graded Slabs:
 The inventory database must natively support two conflicting data models within a unified schema: pooled fungible ledger (decrementing N -> N-1) and serialized non-fungible ledger (unique UUIDs, PSA/BGS/CGC cert lookups, population data, and front/back high-res photo URLs where quantity is strictly 1).
 
-6. FIFO Cost-Basis Ledger & Rolling Cycle-Counting Reconciler:
-First-In-First-Out acquisition queue per card condition to accurately calculate COGS and tax liabilities upon sale. Non-blocking cycle-counting module allowing staff to scan and audit specific monster boxes on an iPad while in-store POS transactions continue firing concurrently.`,
+6. Non-Blocking Mobile Cycle Counting & Misfile Quarantine Protocol:
+First-In-First-Out acquisition queue per card condition to accurately calculate COGS and tax liabilities upon sale. Non-blocking cycle-counting module allowing staff to scan and audit specific monster boxes on an iPad while in-store POS transactions continue firing concurrently, plus a 'Misfile Quarantine' scan-verification mode.
+
+7. Multi-Location Hierarchical Sub-Inventory & Offline Travel Routing:
+Merchants need to partition inventory into logical sub-locations (Store Showcase, Back-Room Archive, Dallas Card Show Pelican Case). The engine must enforce location-specific channel visibility rules. Sales made at convention centers execute atomic optimistic decrements locally in IndexedDB, syncing upon reconnection.`,
 
     competitorAnalysis: `1. SortSwift (Technologies):
 • Architecture & Implementation: Pioneers basic chaos remarks ('Batch P0001', 'Bin A-12') and bin-sorted order picklists.
