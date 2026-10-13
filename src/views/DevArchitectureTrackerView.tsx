@@ -45,9 +45,9 @@ export const DevArchitectureTrackerView: React.FC = () => {
         ...fallback,
         ...p,
         targetCustomerProblem:
-          p.targetCustomerProblem && p.targetCustomerProblem.length > 150
-            ? p.targetCustomerProblem
-            : fallback.targetCustomerProblem,
+          fallback.targetCustomerProblem && fallback.targetCustomerProblem.length > (p.targetCustomerProblem?.length || 0)
+            ? fallback.targetCustomerProblem
+            : p.targetCustomerProblem || fallback.targetCustomerProblem,
         problemsToBuild: p.problemsToBuild || fallback.problemsToBuild,
         competitorAnalysis: p.competitorAnalysis || fallback.competitorAnalysis,
         targetAudience: p.targetAudience || fallback.targetAudience,

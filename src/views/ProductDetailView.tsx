@@ -43,9 +43,9 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
         ...fallbackProduct,
         ...rawProduct,
         targetCustomerProblem:
-          rawProduct.targetCustomerProblem && rawProduct.targetCustomerProblem.length > 150
-            ? rawProduct.targetCustomerProblem
-            : fallbackProduct?.targetCustomerProblem || rawProduct.targetCustomerProblem || '',
+          fallbackProduct?.targetCustomerProblem && fallbackProduct.targetCustomerProblem.length > (rawProduct.targetCustomerProblem?.length || 0)
+            ? fallbackProduct.targetCustomerProblem
+            : rawProduct.targetCustomerProblem || fallbackProduct?.targetCustomerProblem || '',
         problemsToBuild:
           rawProduct.problemsToBuild && rawProduct.problemsToBuild.trim() !== ''
             ? rawProduct.problemsToBuild
