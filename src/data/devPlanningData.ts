@@ -337,70 +337,67 @@ When a shop acquires 2,500 singles from a collection, alphabetizing them into ex
 8. [High P1] [Profile 3] Non-Linear TSP Picking Walking Fatigue:
 In naive chaos storage, an order for 15 singles is often scattered across 15 different boxes in different aisles. Fulfillment pickers spend 80% of their shift walking back and forth across warehouse aisles rather than picking. Without heuristic Traveling Salesperson Problem (TSP) route optimization compiling orders into a single consolidated, bin-ordered picklist, pulling 50 orders takes an entire 8-hour shift.
 
-9. [High P1] [Profile 3, Profile 4] Real-Time Net Profit, Multi-Channel Sales & Buylist Cash Flow Blindness (Missing P&L Ledger):
-Card dealers process hundreds of daily transactions across Shopify, eBay, TCGplayer, and card shows, while simultaneously paying out thousands of dollars in liquid cash at the buylist intake counter and servicing distributor invoices. Incumbent inventory tools merely display top-line gross revenue numbers, completely failing to calculate dynamic marketplace commissions, shipping label costs, payment processing, or buylist acquisition cash outflows. Store owners operate completely blind to true daily net margins, cash runway, and inventory ROI, making it impossible to know whether high-volume sales are generating real profit or quietly bleeding working capital.
-
-10. [High P1] [Profile 3, Profile 2] FIFO Cost-Basis Blindness & Inability to Calculate Realized COGS:
+9. [High P1] [Profile 3, Profile 2] FIFO Cost-Basis Blindness & Inability to Calculate Realized COGS:
 TCG singles are acquired over months across varying buylist payouts (e.g. buying 5 copies of a card over 6 months at $40, $55, $70). Incumbent sync tools only track current market sale prices, completely lacking First-In, First-Out (FIFO) cost-basis tracking. Store owners have no visibility into true Cost of Goods Sold (COGS), actual realized margin per channel, or tax liability calculations required for CPA and IRS reporting.
 
-11. [High P1] [Profile 3] Return Quarantine & Counterfeit Swap Fraud Traps:
+10. [High P1] [Profile 3] Return Quarantine & Counterfeit Swap Fraud Traps:
 Disreputable buyers return a counterfeit card, an inkjet proxy, or a damaged copy in place of the Near Mint card sent. Current software auto-increments returned items straight back into active sellable stock without forcing a mandatory "Quarantine Inspection" step, resulting in counterfeit or damaged cards being mailed out to the next unsuspecting customer.
 
-12. [High P1] [Profile 1, Profile 2] The Store-Shutdown Physical Audit Nightmare:
+11. [High P1] [Profile 1, Profile 2] The Store-Shutdown Physical Audit Nightmare:
 Auditing 150,000 singles to fix inventory drift requires shutting down the retail store for 3 days to recount everything, forfeiting thousands of dollars in daily sales. If staff attempt an audit while the store is open, live sales corrupt the count. Systems lack continuous, barcode-driven rolling cycle counting by specific drawer or monster box without taking listings offline.
 
-13. [High P1] [Profile 3, Profile 2] Playset (4x) Virtual Bundles vs. Single-Card Stock Depletion:
+12. [High P1] [Profile 3, Profile 2] Playset (4x) Virtual Bundles vs. Single-Card Stock Depletion:
 Competitive TCG players (Magic, Pokémon, Yu-Gi-Oh!, One Piece) buy singles in playsets of 4. Sellers want to offer bundle discounts. Traditional tools treat playsets as static pre-packaged SKUs. If 2 singles sell, the playset listing remains live and oversells; if someone buys a playset, single counts don't decrement. Without dynamic virtual parent-child SKU bundling, inventory desyncs or loose singles are needlessly locked up.
 
-14. [High P1] [Profile 1, Profile 2, Profile 5] Distributor Pre-Order Allocation Cuts & Speculative Deficits:
+13. [High P1] [Profile 1, Profile 2, Profile 5] Distributor Pre-Order Allocation Cuts & Speculative Deficits:
 Distributors (Alliance, ACD, Southern Hobby) routinely cut store allocations by 40–60% on high-demand sets. Traditional POS systems do not distinguish between "Confirmed Allocated Inventory" and "Speculative Distributor POs", causing stores to oversell pre-orders and suffer catastrophic customer cancellations, negative reviews, and chargebacks on release day.
 
-15. [Medium P2] [Profile 3] "Swiss-Cheese" Bin Fragmentation & Empty Space Bloat:
+14. [Medium P2] [Profile 3] "Swiss-Cheese" Bin Fragmentation & Empty Space Bloat:
 In chaos storage, as cards sell out over 60–90 days, older bins become 80–90% empty while new bins keep getting added. Warehouses run out of physical shelf space despite bins being mostly empty air. Consolidating bins without 1-scan bulk re-routing breaks digital picklists and requires manually editing hundreds of individual SKUs one by one.
 
-16. [Medium P2] [Profile 3, Profile 4] Dead-Stock Capital Freezing & Inventory Aging Curves (>60/90 Days):
+15. [Medium P2] [Profile 3, Profile 4] Dead-Stock Capital Freezing & Inventory Aging Curves (>60/90 Days):
 High-value singles that sit in showcases or warehouse binders for over 60–90 days without selling represent frozen working capital that loses value as the meta shifts. Existing systems lack aging analytics, velocity metrics, and automated liquidation or dynamic clearance markdown workflows, leaving store owners with $50,000+ in stagnant, depreciating paper.
 
-17. [Medium P2] [Profile 3, Profile 2] Bill of Materials (BOM) Transformation: Sealed Booster Box Cracking vs. Holding Sealed:
+16. [Medium P2] [Profile 3, Profile 2] Bill of Materials (BOM) Transformation: Sealed Booster Box Cracking vs. Holding Sealed:
 When market singles Expected Value (EV) spikes, a store cracks a $100 sealed booster box into 36 packs, and those into 360 singles + bulk. Standard retail POS systems have zero concept of disassembly BOMs. Assigning the $100 cost basis across a $70 chase rare, an $8 ultra rare, and 350 bulk cards breaks down, causing distorted profit margins or negative bulk COGS.
 
-18. [Medium P2] [Profile 4, Profile 2] Customer Consignment Reconciliation & Multi-Fee Net Payout Nightmare:
+17. [Medium P2] [Profile 4, Profile 2] Customer Consignment Reconciliation & Multi-Fee Net Payout Nightmare:
 Over 30% of high-end card shop showcases consist of customer consignment inventory sold on an 80/20 or 85/15 net split. When a consigned slab sells across disparate platforms with varying fee structures, tracking the consignor's true net payout manually across portals is an accounting nightmare. Furthermore, when a consignor requests their unsold items back on short notice, store managers waste hours searching through three online portals to manually unlist items before they can be returned.
 
-19. [Medium P2] [Profile 3] The Unsorted "Bulk" Dark Inventory Void (C/U/R Weight & Bricks):
+18. [Medium P2] [Profile 3] The Unsorted "Bulk" Dark Inventory Void (C/U/R Weight & Bricks):
 High-volume stores accumulate 100,000 to 1,000,000+ commons and uncommons ("bulk"). Listing a 5-cent card individually clogs databases and sync limits. Bulk is stored in 5,000-count cardboard monster boxes or 1,000-count shrink-wrapped bricks sold by weight, remaining completely untracked "dark inventory" on the store ledger until boxes collapse under their own weight.
 
-20. [Medium P2] [Profile 3] Physical Storage Quality Decay, Foil Humidity Curling ("Pringling") & Regrade Audits:
+19. [Medium P2] [Profile 3] Physical Storage Quality Decay, Foil Humidity Curling ("Pringling") & Regrade Audits:
 Modern holographic foils curl severely due to ambient humidity differences ("pringling"). Raw cards stored in high-density boxes or handled display cases suffer surface scuffs and edge whitening over time. Systems assume a card graded Near Mint in January remains Near Mint in July, causing buyer dispute spikes when aged inventory is shipped without environmental tracking or regrading inspection schedules.
 
-21. [Medium P2] [Profile 3] Condition Subjectivity & Picker Downgrade Clashes:
+20. [Medium P2] [Profile 3] Condition Subjectivity & Picker Downgrade Clashes:
 The intake clerk marked a card as Near Mint. When the order picker pulls it 3 months later, they notice edge wear or a binder dent. The picker has no digital workflow to flag a "Fulfillment Condition Downgrade" and offer the buyer an instant automated discount or replacement before shipping, forcing a manual hold or shipping a flawed card.
 
-22. [Medium P2] [Profile 4, Profile 3] Master Set Completion & Binder Assembly Tracking:
+21. [Medium P2] [Profile 4, Profile 3] Master Set Completion & Binder Assembly Tracking:
 Collectors pay a 20%–40% premium for complete master sets (every card, holo variant, and secret rare from an expansion). Stores have thousands of loose singles across bins, but owners have zero visibility into set completion percentages (e.g. knowing that buying just 3 missing singles will turn $350 in loose cards into a $650 Complete Master Set).
 
-23. [Medium P2] [Profile 1, Profile 2] Internal & External Shrinkage / Theft Blindness:
+22. [Medium P2] [Profile 1, Profile 2] Internal & External Shrinkage / Theft Blindness:
 High-value singles are tiny, featherlight, and easily pocketed or misfiled into the wrong row. Stores cannot detect shrinkage or identify which specific employee or shelf has discrepancies until an order pull fails and the card is missing.
 
-24. [Medium P2] [Profile 3] Hardware Gating & $5,000+ Lock-In:
+23. [Medium P2] [Profile 3] Hardware Gating & $5,000+ Lock-In:
 Systems like SortSwift marry chaos bin routing to expensive $4,299–$24,999 mechanical sorting machines, or require proprietary $249 mini-PC router appliances and high per-scan fees, locking out 90% of local game stores from utilizing chaos warehousing.
 
-25. [Low P3] [Profile 3, Profile 4] Multi-Language Cross-Contamination:
+24. [Low P3] [Profile 3, Profile 4] Multi-Language Cross-Contamination:
 Japanese, Korean, Simplified Chinese, German, and French prints have radically different market values and demand curves compared to English prints. Filing non-English cards into English bins or SKUs creates instant customer returns and negative seller feedback.
 
-26. [Low P3] [Profile 3] High-Density Box Edge Wear & Surface Scuffing:
+25. [Low P3] [Profile 3] High-Density Box Edge Wear & Surface Scuffing:
 Raw cards packed tightly into 5-row cardboard boxes rub against each other and against cardboard divider edges during manual flipping, causing micro-scratches on foil finishes over long storage durations.
 
-27. [Low P3] [Profile 3] Bottom-Box Crushing Under Vertical Stacking Towers:
+26. [Low P3] [Profile 3] Bottom-Box Crushing Under Vertical Stacking Towers:
 Card shops stack heavy 5,000-count cardboard monster boxes 4 to 6 units high on wire racks. The vertical weight causes bottom boxes to buckle and bow outward, pinching edge cards in outer rows.
 
-28. [Low P3] [Profile 1, Profile 2] Showcase UV & LED Heat Light-Bleaching:
+27. [Low P3] [Profile 1, Profile 2] Showcase UV & LED Heat Light-Bleaching:
 High-value cards displayed in retail glass showcases under overhead spotlight LEDs or near store windows suffer UV fading over 60–120 days. Software lacks display case rotation timers to alert staff to swap out showcase cards.
 
-29. [Low P3] [Profile 4, Profile 3] Non-Standard Physical Form Factors (Relics, 100pt, Slabs, Oversized):
+28. [Low P3] [Profile 4, Profile 3] Non-Standard Physical Form Factors (Relics, 100pt, Slabs, Oversized):
 TCGs include thick 55pt/100pt memorabilia cards, oversized jumbo promos, coin tokens, booster packs, and plastic graded slabs that physically cannot fit into standard single-row channels or card sorter belts.
 
-30. [Low P3] [Profile 3] Multi-Item Split-Bin Pull Bottleneck:
+29. [Low P3] [Profile 3] Multi-Item Split-Bin Pull Bottleneck:
 Large multi-card orders requiring visits to numerous fragmented bins when batch consolidation is overdue, creating temporary picking friction until bins are consolidated.`,
 
     problemsToBuild: `1. Spatial DAG & Traveling Salesperson (TSP) Heuristic Pick-Path Engine:
