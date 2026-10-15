@@ -1,0 +1,102 @@
+{
+  "totalMessages": 8244,
+  "uniqueAuthors": 439,
+  "dateRange": {
+    "start": "2024-09-21T01:17:53.7810000+06:00",
+    "end": "2026-10-15T19:38:55.8570000+06:00"
+  },
+  "topSpeakers": [
+    [
+      "mtechcave",
+      2395
+    ],
+    [
+      "Swift#1889",
+      956
+    ],
+    [
+      "thecrystalgoblin",
+      361
+    ],
+    [
+      "dazzah02",
+      343
+    ],
+    [
+      "normanalata",
+      313
+    ],
+    [
+      "Sortman#3923",
+      246
+    ],
+    [
+      "steve_sortswift",
+      177
+    ],
+    [
+      "philallen",
+      148
+    ],
+    [
+      "mustardman666",
+      85
+    ],
+    [
+      "nick12344963",
+      79
+    ],
+    [
+      "wookiee",
+      73
+    ],
+    [
+      "simply1692",
+      73
+    ],
+    [
+      "lestratageme_00339",
+      68
+    ],
+    [
+      ".recoome",
+      60
+    ],
+    [
+      "coconutts969",
+      58
+    ],
+    [
+      "d3strophe",
+      57
+    ],
+    [
+      "hyp3rdriv3",
+      52
+    ],
+    [
+      "cardboardventures",
+      51
+    ],
+    [
+      "pineoakrevival",
+      50
+    ],
+    [
+      "rambogodz",
+      44
+    ]
+  ],
+  "clustersCount": {
+    "hardware_scanners": 1348,
+    "sorter_mini": 324,
+    "sync_box": 243,
+    "marketplace_sync": 1417,
+    "pricing_and_plans": 1184,
+    "card_accuracy_and_grading": 1433,
+    "competitors_mentioned": 120,
+    "buylist_intake": 137,
+    "live_breaks_rip_ship": 282,
+    "frustrations_and_bugs": 761
+  }
+}
