@@ -251,6 +251,11 @@ export const CompetitorMatrixView: React.FC = () => {
                 <div className="text-xs text-slate-400">
                   {selectedCompetitor.parentCompany} • {selectedCompetitor.targetMarket}
                 </div>
+                {selectedCompetitor.teamStructure && (
+                  <div className="text-[11px] text-indigo-300/90 font-mono pt-0.5">
+                    👥 {selectedCompetitor.teamStructure}
+                  </div>
+                )}
               </div>
 
               <button
@@ -347,6 +352,33 @@ export const CompetitorMatrixView: React.FC = () => {
               <div className="text-[10px] text-slate-500 uppercase font-bold pt-2">Primary Marketing Funnel</div>
               <div className="text-slate-300 text-[11px]">{selectedCompetitor.marketing.primaryFunnel}</div>
             </div>
+
+            {/* Active Engineering Focus & Priorities (if present) */}
+            {selectedCompetitor.engineeringFocus && selectedCompetitor.engineeringFocus.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-ink-800">
+                <div className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Where They Spend Their Engineering Time (Recent Update Focus)</span>
+                </div>
+                <div className="space-y-2">
+                  {selectedCompetitor.engineeringFocus.map((focus, i) => (
+                    <div key={i} className="p-2.5 rounded-lg bg-ink-950 border border-ink-800 space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-slate-200">{focus.focusArea}</span>
+                        <span className="font-mono text-amber-400 font-bold">{focus.percentage}% of updates</span>
+                      </div>
+                      <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                        <div 
+                          className="bg-amber-500 h-full rounded-full" 
+                          style={{ width: `${focus.percentage}%` }}
+                        />
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-normal">{focus.details}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="flex justify-end pt-2 border-t border-ink-800">
               <button

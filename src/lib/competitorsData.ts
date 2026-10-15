@@ -30,6 +30,12 @@ export interface Competitor {
   attackVector: string;
   techStackSummary: string;
   targetMarket: string;
+  teamStructure?: string;
+  engineeringFocus?: {
+    focusArea: string;
+    percentage: number;
+    details: string;
+  }[];
 }
 
 export const competitorsData: Competitor[] = [
@@ -299,53 +305,89 @@ export const competitorsData: Competitor[] = [
   {
     id: "sortswift",
     name: "SortSwift",
-    parentCompany: "SortSwift Technologies",
+    parentCompany: "SortSwift Technologies (MTechCave LLC)",
     category: "all-in-one",
-    categoryLabel: "All-in-One Commerce",
+    categoryLabel: "All-in-One Commerce & Live Breaks",
     status: "active",
-    statusLabel: "Hardware + Chaos Storage",
-    estCustomers: "~400 – 700 users/stores",
-    estARR: "$450K – $900K ARR",
-    arrNumberM: 0.7,
-    churnRate: "Moderate (9% – 12%)",
+    statusLabel: "Hardware + Live Breaks Suite",
+    estCustomers: "~500 – 850 active stores",
+    estARR: "$650K – $1.2M ARR",
+    arrNumberM: 0.9,
+    churnRate: "Moderate (8% – 11%)",
     churnLevel: "med",
+    teamStructure: "5 Core Members: mtechcave (Founder/Ops/Hardware), Devon (Lead Dev), Steve (Dev), Saqib (Dev), Kai (Catalogue Lead)",
     pricing: {
-      base: "Free Entry (up to 5k items); 9 Bundles ($19 to $499/mo; $219/mo min for Buylist) or A La Carte",
-      setupFee: "$0 ($249 one-time for TCGplayer Sync Box appliance)",
-      commissionRate: "0% on POS & synced marketplaces; 2% on SortSwift storefront orders",
-      hardwareCost: "Super Sorter Mini 9-bin ($8,999) or 29-bin ($24,999) + $199/mo device scan plan; Sync Box ($249)",
+      base: "Free Entry (5k items, 500 scans); Entry+ ($19/mo), Starter ($99/mo), Online ($219/mo), Core ($249/mo), Core+ ($369/mo), Core Max ($499/mo)",
+      setupFee: "$0 ($249 for SortSwiftOS Sync Box appliance + $12.99/mo per channel)",
+      commissionRate: "0% on synced marketplaces; 2% on SortSwift storefront orders",
+      hardwareCost: "Simple Sifter (Raspberry Pi 64-bit); Super Sorter Mini ($9,000 + $199/mo software fee); Full Sorter ($35k+)",
       pricingModel: "Freemium"
     },
     offerings: [
-      "Integrated software suite: inventory management, auto-pricing via TCGplayer",
-      "Buylist trade-in management with store credit payouts",
-      "Shopify and multi-channel marketplace integrations",
-      "Chaos-style organization: Bin-level card tracking (random slot storage with barcode locators)",
-      "Mechanical hardware integration with the Super Sorter automated card sorter"
+      "Live Breaks & Rip-and-Ship Suite: /breaks page, OBS stream overlay, Stream Deck cockpit, live queue, hit clips & unified holds",
+      "Unified cross-channel inventory holds (Shopify, eBay, Square, WooCommerce, CardTrader, ManaPool, CardNexus, Walmart)",
+      "Simple Sifter computer vision scanner with automated condition grading (whitening brush AI model v10.3.5, 64-bit Pi image)",
+      "57 Scannable TCG games (Weiss Schwarz Japanese 66k cards, European Yu-Gi-Oh LOB-E/MRD-E, Decipher Star Wars CCG, LOTR)",
+      "Autopricing V2 modular engine with SKU-level market pricing & PriceCharting integration for sports and retro games",
+      "In-Store Kiosk ($9.99/mo, ElasticSearch backend) and Point of Sale (POS) supporting singles and sealed",
+      "QZ Tray integration for 2x1 break tags and 4x6 carrier-cost shipping labels ($0.99 tracked letters)"
     ],
     moats: [
-      "Chaos-style bin-level tracking: allows stores to store cards randomly and find them in seconds via bin IDs",
-      "Mechanical card sorting hardware integration provides extreme switching cost moat",
-      "Generous freemium tier with free scanning up to 5,000 items"
+      "Physical hardware switching lock-in (Raspberry Pi Sifter, Sync Box, and $9,000 Super Sorter Mini)",
+      "Live Breaks streaming cockpit eliminating Whatnot's 8-11% commission fee for card shops",
+      "Vast 57-game catalog breadth with obscure retro CCGs and Japanese Weiss Schwarz",
+      "Real-time cross-channel stock reservation preventing overselling during live stream pack breaks"
     ],
     weaknesses: [
-      "Full efficiency requires proprietary sorting hardware investment",
-      "Bin-level chaos storage requires disciplined physical barcode scanning by store staff",
-      "Hardware manufacturing lead times and mechanical wear-and-tear support"
+      "Zero FIFO Cost-Basis & Real Tax COGS Accounting (no purchase order lot tracking or IRS-ready tax reports)",
+      "Zero Return Quarantine Air-Lock or Counterfeit Defense (swapped proxies restock automatically)",
+      "Physical inability to process encapsulated Graded Slabs (PSA, BGS, CGC) in sifter/sorter hardware",
+      "MicroSD firmware maintenance hell (Raspberry Pi manual re-flashing; 32-bit to 64-bit migration wiped scan batches)",
+      "Heavy fee stacking: base ($249) + sorter software ($199) + consignment ($49.99) + buylist ($25) + sync box ($12.99/sync) = $570+/mo",
+      "Fragile TCGplayer scraping workarounds via local Sync Box appliance and Chrome extensions",
+      "No dynamic 4x playset bundling algorithm (cannot sync floor(N/4) virtual playsets)"
+    ],
+    engineeringFocus: [
+      {
+        focusArea: "Catalog Ingestion & Breadth",
+        percentage: 64,
+        details: "Continuously adding long-tail card sets and obscure games (57 games total, Weiss Schwarz Japanese 66k cards, European Yu-Gi-Oh regional codes) driven by Kai."
+      },
+      {
+        focusArea: "Hardware & Edge Firmware",
+        percentage: 58,
+        details: "Constant maintenance of Raspberry Pi Linux images (migrated to 64-bit v11.5.2), Sync Box thermal fan fixes, and LAN socket protocols."
+      },
+      {
+        focusArea: "Condition Grading & Computer Vision",
+        percentage: 44,
+        details: "Crowdsourced whitening brush training on Sifter scans (v10.3.5) to automate Near Mint vs Lightly Played classification."
+      },
+      {
+        focusArea: "Marketplace Sync & Channel Monetization",
+        percentage: 38,
+        details: "Sync slot gating (1 to 7 slots) across Shopify, eBay, Square, WooCommerce, CardTrader, ManaPool, and CardNexus."
+      },
+      {
+        focusArea: "Live Breaks & Streaming Commerce",
+        percentage: 25,
+        details: "Flagship Q4 2026 pivot: /breaks storefronts, Stream Deck cockpit, OBS browser overlays, hype meters, and automated vertical short clippers."
+      }
     ],
     marketingStrategy: [
-      "Viral TikTok and YouTube Shorts showing automated mechanical card sorting",
-      "Freemium software tier acting as a lead magnet for hardware sales",
-      "Live hardware booths at trade shows (GAMA, Gen Con, Collect-A-Con)"
+      "Community-driven Discord announcements (337 official updates) and interactive in-app walkthroughs",
+      "Viral TikTok & YouTube Shorts clips produced directly from live break hit clips",
+      "Freemium software tier ($0 for 5,000 items) acting as a top-of-funnel lead magnet for hardware & sync box upsells",
+      "Partnership promotions (e.g. CardNexus integration with 0% seller fees for 2 months)"
     ],
     marketing: {
-      channels: ["TikTok & YouTube Shorts", "Shopify App Store", "Trade Shows (GAMA, Gen Con, Collect-A-Con)"],
-      tactics: ["Viral mechanical sorting machine video demonstrations", "Free tier for up to 5,000 items (chaos tracking lead magnet)", "Live trade show sorting challenges"],
-      primaryFunnel: "Freemium Software Signup -> Paid Bundle ($219-$499/mo) -> Hardware Upsell ($8,999 - $24,999 Super Sorter + $199/mo)"
+      channels: ["Discord Community", "TikTok & YouTube Shorts", "CardNexus & Marketplace Partnerships", "Shopify App Store"],
+      tactics: ["Daily feature changelog on Discord", "Automated vertical TikTok clip generator for live hits", "Hardware demonstration videos"],
+      primaryFunnel: "Free Entry Plan -> Paid Bundle ($99-$499/mo) -> Sync Box ($249) or Super Sorter Mini ($9,000 + $199/mo)"
     },
-    attackVector: "Build software-based chaos bin management and 14-point Pokémon variant CV without gating exact printing/foil behind expensive monthly scan credit tiers or $8,999–$24,999 mechanical sorting machines.",
-    techStackSummary: "Embedded firmware, OpenCV, React web dashboard, Shopify REST/GraphQL API",
-    targetMarket: "High-volume card shops and sorting warehouses processing massive bulk singles"
+    attackVector: "Crush them on zero hardware lock-in (browser WebAssembly/WebRTC vision on any phone/tablet/webcam vs fragile Pi SD cards and $9K sorters), native serialized PSA/BGS slab certification, IRS-compliant FIFO tax accounting, and automated return fraud quarantine.",
+    techStackSummary: "DigitalOcean Spaces CDN, Kubernetes cluster, ElasticSearch, Raspberry Pi ARM64/ARM32 Linux, QZ Tray, Stream Deck, HTML5/WebSocket OBS overlays",
+    targetMarket: "High-volume card shops, live stream rip-and-ship breakers, and multi-channel LGS retailers"
   },
   {
     id: "blstr",
