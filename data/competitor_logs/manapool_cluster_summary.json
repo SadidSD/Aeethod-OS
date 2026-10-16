@@ -1,0 +1,121 @@
+{
+  "totalMessages": 18585,
+  "uniqueAuthors": 827,
+  "dateRange": {
+    "start": "2023-04-19T05:52:04.7170000+06:00",
+    "end": "2026-10-16T19:53:44.2110000+06:00"
+  },
+  "topSpeakers": [
+    [
+      "manapool8387",
+      1441
+    ],
+    [
+      "bugz000",
+      1250
+    ],
+    [
+      "igniz_bird",
+      1168
+    ],
+    [
+      "rocktheshazbot",
+      1107
+    ],
+    [
+      "rambogodz",
+      733
+    ],
+    [
+      "nowwithbacon",
+      433
+    ],
+    [
+      "manapool_jason_58470",
+      429
+    ],
+    [
+      "ashinyfurret",
+      404
+    ],
+    [
+      "xxdarkdiamondskysxx",
+      386
+    ],
+    [
+      "persuasive_gg",
+      360
+    ],
+    [
+      "cynicalelephant",
+      357
+    ],
+    [
+      "aaronblohowiak",
+      318
+    ],
+    [
+      "elosong",
+      302
+    ],
+    [
+      "tehstone",
+      301
+    ],
+    [
+      "zeldazach",
+      226
+    ],
+    [
+      "phlimmphlam",
+      223
+    ],
+    [
+      "thecrystalgoblin",
+      219
+    ],
+    [
+      "yeaver",
+      215
+    ],
+    [
+      "ngower",
+      213
+    ],
+    [
+      "illuminati7645",
+      206
+    ],
+    [
+      "kelgand",
+      205
+    ],
+    [
+      "itsyabubby",
+      176
+    ],
+    [
+      "whitelotusgames",
+      153
+    ],
+    [
+      "Midjourney Bot#9282",
+      126
+    ],
+    [
+      "mjaxon19",
+      126
+    ]
+  ],
+  "clustersCount": {
+    "tcgplayer_mentions": 426,
+    "binderpos_and_tools": 200,
+    "fees_and_pricing": 604,
+    "shipping_and_labels": 883,
+    "inventory_and_sync": 758,
+    "card_grading_and_condition": 2309,
+    "buylist_intake": 27,
+    "bugs_and_frustrations": 920,
+    "games_supported": 536
+  }
+}
