@@ -4,69 +4,28 @@ import {
   Search,
   Filter,
   ChevronRight,
+  ArrowLeft,
   Layers,
   Sparkles,
   DollarSign,
   TrendingUp,
-  TrendingDown,
   Calendar,
-  Tag,
   Grid,
   List,
   ExternalLink,
-  Info,
   X,
   ShieldCheck,
-  CheckCircle2,
   AlertCircle,
   Hash,
   Eye,
-  ArrowUpDown,
-  Flame,
+  RefreshCw,
+  Package,
   Award,
   Zap,
-  RefreshCw,
-  Package
+  Flame,
+  CheckCircle2,
+  Clock
 } from 'lucide-react';
-
-const INITIAL_GAMES: Game[] = [
-  { id: '1', slug: 'pokemon', name: 'Pokémon TCG', code: 'PKMN', set_count: 408, card_count: 39144, variant_count: 97875 },
-  { id: '2', slug: 'mtg', name: 'Magic: The Gathering', code: 'MTG', set_count: 0, card_count: 0, variant_count: 0 },
-  { id: '3', slug: 'one-piece', name: 'One Piece Card Game', code: 'OP', set_count: 0, card_count: 0, variant_count: 0 },
-  { id: '4', slug: 'lorcana', name: 'Disney Lorcana', code: 'LORC', set_count: 0, card_count: 0, variant_count: 0 },
-  { id: '5', slug: 'yugioh', name: 'Yu-Gi-Oh! TCG', code: 'YGO', set_count: 0, card_count: 0, variant_count: 0 }
-];
-
-const INITIAL_ERAS: Era[] = [
-  { id: 'sv', name: 'Scarlet & Violet', order: 1, years: '2023–Present', set_count: 39, sets: [] },
-  { id: 'swsh', name: 'Sword & Shield', order: 2, years: '2020–2023', set_count: 68, sets: [] },
-  { id: 'sm', name: 'Sun & Moon', order: 3, years: '2017–2019', set_count: 20, sets: [] },
-  { id: 'xy', name: 'XY Series', order: 4, years: '2014–2016', set_count: 17, sets: [] },
-  { id: 'bw', name: 'Black & White', order: 5, years: '2011–2013', set_count: 15, sets: [] },
-  { id: 'dp-hgss', name: 'Diamond & Pearl / HGSS', order: 6, years: '2007–2010', set_count: 19, sets: [] },
-  { id: 'ex', name: 'EX Series / Advance', order: 7, years: '2003–2007', set_count: 21, sets: [] },
-  { id: 'ecard', name: 'e-Card Series', order: 8, years: '2001–2003', set_count: 3, sets: [] },
-  { id: 'neo', name: 'Neo Series', order: 9, years: '2000–2002', set_count: 8, sets: [] },
-  { id: 'classic', name: 'Original Classic / WotC', order: 10, years: '1996–2000', set_count: 14, sets: [] },
-  { id: 'special', name: 'Promos & Special Collections', order: 11, years: 'All Eras', set_count: 184, sets: [] },
-];
-
-function normalizeEraClient(eraBlock: string | null | undefined, setCode: string | null | undefined): string {
-  const code = (setCode || '').toUpperCase();
-  const rawEra = (eraBlock || '').trim();
-
-  if (rawEra === 'Scarlet & Violet' || code.startsWith('SV') || rawEra === 'SV') return 'sv';
-  if (rawEra === 'Sword & Shield' || code.startsWith('SWSH') || code.startsWith('S') || rawEra === 'S') return 'swsh';
-  if (rawEra === 'Sun & Moon' || code.startsWith('SM') || rawEra === 'SM') return 'sm';
-  if (rawEra === 'XY' || code.startsWith('XY') || rawEra === 'XY') return 'xy';
-  if (rawEra === 'Black & White' || code.startsWith('BW') || rawEra === 'BW') return 'bw';
-  if (rawEra === 'HeartGold & SoulSilver' || code.startsWith('HGSS') || rawEra === 'Platinum' || rawEra === 'Diamond & Pearl' || code.startsWith('DP')) return 'dp-hgss';
-  if (rawEra === 'EX' || code.startsWith('EX') || code.startsWith('ADV') || code.startsWith('PCG')) return 'ex';
-  if (rawEra === 'E-Card' || code.startsWith('E') || code.startsWith('ECARD')) return 'ecard';
-  if (rawEra === 'Neo' || code.startsWith('NEO')) return 'neo';
-  if (rawEra === 'Base' || rawEra === 'Gym' || code.startsWith('BASE') || code.startsWith('PMCG')) return 'classic';
-  return 'special';
-}
 
 interface Game {
   id: string;
@@ -83,14 +42,14 @@ interface Era {
   name: string;
   order: number;
   years: string;
+  description: string;
+  icon: string;
+  gradient: string;
+  badgeColor: string;
   set_count: number;
-  sets: Array<{
-    id: string;
-    set_code: string;
-    name: string;
-    language: string;
-    release_date: string;
-  }>;
+  featuredSets: string[];
+  totalCards?: number;
+  totalValuation?: number;
 }
 
 interface SetSummary {
@@ -138,116 +97,250 @@ interface MasterCard {
   variants: CardVariant[];
 }
 
+type ViewLevel = 'eras' | 'sets' | 'cards';
+
+const INITIAL_GAMES: Game[] = [
+  { id: '1', slug: 'pokemon', name: 'Pokémon TCG', code: 'PKMN', set_count: 408, card_count: 39144, variant_count: 97875 },
+  { id: '2', slug: 'mtg', name: 'Magic: The Gathering', code: 'MTG', set_count: 0, card_count: 0, variant_count: 0 },
+  { id: '3', slug: 'one-piece', name: 'One Piece Card Game', code: 'OP', set_count: 0, card_count: 0, variant_count: 0 },
+  { id: '4', slug: 'lorcana', name: 'Disney Lorcana', code: 'LORC', set_count: 0, card_count: 0, variant_count: 0 },
+  { id: '5', slug: 'yugioh', name: 'Yu-Gi-Oh! TCG', code: 'YGO', set_count: 0, card_count: 0, variant_count: 0 }
+];
+
+const ERA_METADATA: Era[] = [
+  {
+    id: 'sv',
+    name: 'Scarlet & Violet',
+    order: 1,
+    years: '2023 – Present',
+    description: 'Terastal Pokémon ex, Ancient & Future paradox species, Special Illustration Rares, and the iconic 151 special expansion.',
+    icon: '🌟',
+    gradient: 'from-rose-500/20 via-purple-600/20 to-indigo-600/10 border-rose-500/30 text-rose-300',
+    badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+    set_count: 69,
+    featuredSets: ['151', 'Paldea Evolved', 'Surging Sparks', 'Terastal Fest ex', 'Prismatic Evolutions']
+  },
+  {
+    id: 'swsh',
+    name: 'Sword & Shield',
+    order: 2,
+    years: '2020 – 2023',
+    description: 'VMAX Dynamax Pokémon, VSTAR mechanics, Alternate Art chase cards, Trainer Gallery subsets, and Crown Zenith / VSTAR Universe.',
+    icon: '⚔️',
+    gradient: 'from-cyan-500/20 via-blue-600/20 to-indigo-600/10 border-cyan-500/30 text-cyan-300',
+    badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+    set_count: 140,
+    featuredSets: ['Crown Zenith', 'Evolving Skies', 'VSTAR Universe', 'Brilliant Stars', 'Silver Tempest']
+  },
+  {
+    id: 'sm',
+    name: 'Sun & Moon',
+    order: 3,
+    years: '2017 – 2019',
+    description: 'GX Pokémon, Ultra Beasts, and legendary TAG TEAM GX cards featuring dual-character full-art textures.',
+    icon: '☀️',
+    gradient: 'from-amber-500/20 via-orange-600/20 to-yellow-600/10 border-amber-500/30 text-amber-300',
+    badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+    set_count: 20,
+    featuredSets: ['Team Up', 'Cosmic Eclipse', 'Hidden Fates', 'Unified Minds', 'Ultra Prism']
+  },
+  {
+    id: 'xy',
+    name: 'XY Series',
+    order: 4,
+    years: '2014 – 2016',
+    description: 'Mega Evolutions, Fairy Type debut, EX & Full Art Secret Rares, and the 20th Anniversary Generations celebration.',
+    icon: '⚡',
+    gradient: 'from-blue-500/20 via-indigo-600/20 to-sky-600/10 border-blue-500/30 text-blue-300',
+    badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+    set_count: 17,
+    featuredSets: ['Roaring Skies', 'Evolutions', 'Phantom Forces', 'Ancient Origins', 'Generations']
+  },
+  {
+    id: 'bw',
+    name: 'Black & White',
+    order: 5,
+    years: '2011 – 2013',
+    description: 'Modern Full-Art cards debut, Dragon Vault, Plasma Freeze, and Legendary Treasures radiant collections.',
+    icon: '⬛',
+    gradient: 'from-slate-600/30 via-zinc-700/20 to-neutral-800/20 border-slate-500/30 text-slate-200',
+    badgeColor: 'bg-slate-500/20 text-slate-300 border-slate-500/30',
+    set_count: 15,
+    featuredSets: ['Plasma Freeze', 'Dark Explorers', 'Plasma Storm', 'Legendary Treasures', 'Noble Victories']
+  },
+  {
+    id: 'dp-hgss',
+    name: 'Diamond & Pearl / Platinum / HGSS',
+    order: 6,
+    years: '2007 – 2010',
+    description: 'Level X Pokémon, Secret Holo Shinies, Rotom Forms, and dual-card HeartGold & SoulSilver LEGEND cards.',
+    icon: '💎',
+    gradient: 'from-sky-500/20 via-emerald-600/20 to-teal-600/10 border-sky-500/30 text-sky-300',
+    badgeColor: 'bg-sky-500/20 text-sky-300 border-sky-500/30',
+    set_count: 19,
+    featuredSets: ['HeartGold SoulSilver', 'Platinum', 'Stormfront', 'Legends Awakened', 'Unleashed']
+  },
+  {
+    id: 'ex',
+    name: 'EX Series / Advance Generation',
+    order: 7,
+    years: '2003 – 2007',
+    description: 'Gold Star chase cards, Holofoil Delta Species, and classic EX Pokémon printed in the golden era of vintage collecting.',
+    icon: '🌋',
+    gradient: 'from-emerald-500/20 via-teal-600/20 to-rose-600/10 border-emerald-500/30 text-emerald-300',
+    badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+    set_count: 21,
+    featuredSets: ['EX Deoxys', 'EX Team Rocket Returns', 'EX Dragon Frontiers', 'EX Holon Phantoms', 'EX Ruby & Sapphire']
+  },
+  {
+    id: 'ecard',
+    name: 'e-Card Series',
+    order: 8,
+    years: '2001 – 2003',
+    description: 'Dot-matrix barcode borders scannable via Nintendo e-Reader. Home of Crystal Pokémon in Expedition, Aquapolis, and Skyridge.',
+    icon: '🎴',
+    gradient: 'from-amber-600/20 via-yellow-600/20 to-orange-600/10 border-amber-500/30 text-amber-300',
+    badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+    set_count: 3,
+    featuredSets: ['Skyridge', 'Aquapolis', 'Expedition Base Set']
+  },
+  {
+    id: 'neo',
+    name: 'Neo Series',
+    order: 9,
+    years: '2000 – 2002',
+    description: 'Johto region debut, Shining Magikarp & Gyarados, Dark and Light Pokémon mechanics across Genesis, Discovery, Revelation, and Destiny.',
+    icon: '🌿',
+    gradient: 'from-teal-500/20 via-emerald-600/20 to-green-600/10 border-teal-500/30 text-teal-300',
+    badgeColor: 'bg-teal-500/20 text-teal-300 border-teal-500/30',
+    set_count: 8,
+    featuredSets: ['Neo Destiny', 'Neo Revelation', 'Neo Discovery', 'Neo Genesis']
+  },
+  {
+    id: 'classic',
+    name: 'Original Classic / WotC Series',
+    order: 10,
+    years: '1996 – 2000',
+    description: 'The legendary foundation: 1st Edition Base Set, Shadowless, Jungle, Fossil, Team Rocket, Gym Heroes, and Gym Challenge.',
+    icon: '🏆',
+    gradient: 'from-yellow-500/25 via-amber-600/20 to-orange-600/10 border-yellow-500/40 text-yellow-300',
+    badgeColor: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
+    set_count: 14,
+    featuredSets: ['Base Set', 'Base Set (Shadowless)', 'Jungle', 'Fossil', 'Team Rocket', 'Gym Challenge']
+  },
+  {
+    id: 'special',
+    name: 'Promos & Special Collections',
+    order: 11,
+    years: '1996 – Present',
+    description: 'Black Star Promos, Japanese Vending series, McDonald’s collections, CoroCoro exclusives, and World Championship decks.',
+    icon: '🎁',
+    gradient: 'from-purple-500/20 via-fuchsia-600/20 to-pink-600/10 border-purple-500/30 text-purple-300',
+    badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+    set_count: 82,
+    featuredSets: ['WotC Black Star Promos', 'Japanese Vending Series', 'Best of Game', 'SV Black Star Promos']
+  }
+];
+
+function normalizeEraClient(eraBlock: string | null | undefined, setCode: string | null | undefined): string {
+  const code = (setCode || '').toUpperCase();
+  const rawEra = (eraBlock || '').trim();
+
+  if (rawEra === 'Scarlet & Violet' || code.startsWith('SV') || rawEra === 'SV') return 'sv';
+  if (rawEra === 'Sword & Shield' || code.startsWith('SWSH') || code.startsWith('S') || rawEra === 'S') return 'swsh';
+  if (rawEra === 'Sun & Moon' || code.startsWith('SM') || rawEra === 'SM') return 'sm';
+  if (rawEra === 'XY' || code.startsWith('XY') || rawEra === 'XY') return 'xy';
+  if (rawEra === 'Black & White' || code.startsWith('BW') || rawEra === 'BW') return 'bw';
+  if (rawEra === 'HeartGold & SoulSilver' || code.startsWith('HGSS') || rawEra === 'Platinum' || rawEra === 'Diamond & Pearl' || code.startsWith('DP')) return 'dp-hgss';
+  if (rawEra === 'EX' || code.startsWith('EX') || code.startsWith('ADV') || code.startsWith('PCG')) return 'ex';
+  if (rawEra === 'E-Card' || code.startsWith('E') || code.startsWith('ECARD')) return 'ecard';
+  if (rawEra === 'Neo' || code.startsWith('NEO')) return 'neo';
+  if (rawEra === 'Base' || rawEra === 'Gym' || code.startsWith('BASE') || code.startsWith('PMCG')) return 'classic';
+  return 'special';
+}
+
 export const UniversalCatalogView: React.FC = () => {
   // Navigation State: Game > Era > Expansion/Set > Cards
+  const [viewLevel, setViewLevel] = useState<ViewLevel>('eras');
   const [selectedGameSlug, setSelectedGameSlug] = useState<string>('pokemon');
   const [selectedLanguage, setSelectedLanguage] = useState<'all' | 'en' | 'jp'>('all');
-  const [selectedEraId, setSelectedEraId] = useState<string>('all');
+  const [selectedEra, setSelectedEra] = useState<Era | null>(null);
   const [selectedSet, setSelectedSet] = useState<SetSummary | null>(null);
   const [selectedCard, setSelectedCard] = useState<MasterCard | null>(null);
 
-  // Data State - initialized with instant prebundled fallback
+  // Data State
   const [games, setGames] = useState<Game[]>(INITIAL_GAMES);
-  const [eras, setEras] = useState<Era[]>(INITIAL_ERAS);
-  const [sets, setSets] = useState<SetSummary[]>((prebundledSetsData as unknown) as SetSummary[]);
+  const [allSets, setAllSets] = useState<SetSummary[]>((prebundledSetsData as unknown) as SetSummary[]);
   const [cards, setCards] = useState<MasterCard[]>([]);
   const [totalCardsInSet, setTotalCardsInSet] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(false);
   const [cardsLoading, setCardsLoading] = useState<boolean>(false);
   const [cardError, setCardError] = useState<string | null>(null);
 
-  // Filters & Controls
-  const [cardSearch, setCardSearch] = useState<string>('');
+  // Search & Filtering inside Sets & Cards
   const [setSearch, setSetSearch] = useState<string>('');
+  const [cardSearch, setCardSearch] = useState<string>('');
   const [rarityFilter, setRarityFilter] = useState<string>('all');
   const [supertypeFilter, setSupertypeFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('number_asc');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [page, setPage] = useState<number>(1);
 
-  // 1. Fetch Games on Mount
+  // 1. Fetch Games from API
   useEffect(() => {
     fetch('/api/catalog/games')
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
+      .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) setGames(data);
       })
-      .catch((e) => console.warn('Using initial games due to:', e.message));
+      .catch(() => {});
   }, []);
 
-  // 2. Fetch Eras whenever Game or Language changes
+  // 2. Fetch Fresh Sets from API (fallback to prebundled)
   useEffect(() => {
-    setLoading(true);
-    fetch(`/api/catalog/eras?gameSlug=${selectedGameSlug}&language=${selectedLanguage}`)
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
+    fetch(`/api/catalog/sets?gameSlug=${selectedGameSlug}&language=all`)
+      .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
-          setEras(data);
-          if (selectedEraId !== 'all' && !data.some((e) => e.id === selectedEraId)) {
-            setSelectedEraId('all');
-          }
+          setAllSets(data);
         }
       })
-      .catch((e) => {
-        console.warn('Using prebundled eras calculation due to:', e.message);
-        // Calculate era set counts from prebundled sets locally
-        let filtered = (prebundledSetsData as unknown) as SetSummary[];
-        if (selectedLanguage !== 'all') {
-          filtered = filtered.filter((s) => s.language === selectedLanguage);
-        }
-        const updatedEras = INITIAL_ERAS.map((era) => {
-          const count = filtered.filter((s) => normalizeEraClient(s.era_block, s.set_code) === era.id).length;
-          return { ...era, set_count: count };
-        });
-        setEras(updatedEras);
-      })
-      .finally(() => setLoading(false));
-  }, [selectedGameSlug, selectedLanguage]);
+      .catch(() => {});
+  }, [selectedGameSlug]);
 
-  // 3. Fetch Sets whenever Game, Era, or Language changes
-  useEffect(() => {
-    fetch(`/api/catalog/sets?gameSlug=${selectedGameSlug}&eraId=${selectedEraId}&language=${selectedLanguage}`)
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setSets(data);
-          if (!selectedSet && data.length > 0) {
-            setSelectedSet(data[0]);
-          } else if (selectedSet && !data.some((s) => s.id === selectedSet.id) && data.length > 0) {
-            setSelectedSet(data[0]);
-          }
-        } else {
-          throw new Error('Empty sets response');
-        }
-      })
-      .catch((e) => {
-        console.warn('Filtering prebundled sets locally due to:', e.message);
-        let filtered = (prebundledSetsData as unknown) as SetSummary[];
-        if (selectedLanguage !== 'all') {
-          filtered = filtered.filter((s) => s.language === selectedLanguage);
-        }
-        if (selectedEraId !== 'all') {
-          filtered = filtered.filter((s) => normalizeEraClient(s.era_block, s.set_code) === selectedEraId);
-        }
-        setSets(filtered);
-        if (filtered.length > 0) {
-          if (!selectedSet || !filtered.some((s) => s.id === selectedSet.id)) {
-            setSelectedSet(filtered[0]);
-          }
-        }
-      });
-  }, [selectedGameSlug, selectedEraId, selectedLanguage]);
+  // 3. Compute active sets for the selected era & language
+  const eraSets = useMemo(() => {
+    if (!selectedEra) return [];
+    let list = allSets.filter((s) => normalizeEraClient(s.era_block, s.set_code) === selectedEra.id);
+    if (selectedLanguage !== 'all') {
+      list = list.filter((s) => s.language === selectedLanguage);
+    }
+    if (setSearch) {
+      const q = setSearch.toLowerCase();
+      list = list.filter((s) => s.name.toLowerCase().includes(q) || s.set_code.toLowerCase().includes(q));
+    }
+    return list;
+  }, [allSets, selectedEra, selectedLanguage, setSearch]);
 
-  // 4. Fetch Cards whenever selectedSet, search, rarity, or sort changes
+  // 4. Compute Era stats dynamically based on current language
+  const computedEras = useMemo(() => {
+    return ERA_METADATA.map((era) => {
+      let filtered = allSets.filter((s) => normalizeEraClient(s.era_block, s.set_code) === era.id);
+      if (selectedLanguage !== 'all') {
+        filtered = filtered.filter((s) => s.language === selectedLanguage);
+      }
+      const totalCards = filtered.reduce((acc, s) => acc + Number(s.actual_card_count || 0), 0);
+      const totalValuation = filtered.reduce((acc, s) => acc + Number(s.total_valuation_cents || 0), 0);
+
+      return {
+        ...era,
+        set_count: filtered.length,
+        totalCards,
+        totalValuation
+      };
+    });
+  }, [allSets, selectedLanguage]);
+
+  // 5. Fetch Cards when a Set is selected
   useEffect(() => {
     if (!selectedSet) {
       setCards([]);
@@ -259,7 +352,7 @@ export const UniversalCatalogView: React.FC = () => {
     const query = new URLSearchParams({
       setId: selectedSet.id,
       page: page.toString(),
-      limit: '100',
+      limit: '120',
       sortBy: sortBy,
       search: cardSearch,
       rarity: rarityFilter,
@@ -272,7 +365,7 @@ export const UniversalCatalogView: React.FC = () => {
         return r.json();
       })
       .then((data) => {
-        if (data.cards) {
+        if (data && data.cards) {
           setCards(data.cards);
           setTotalCardsInSet(data.totalCards);
         } else {
@@ -286,16 +379,9 @@ export const UniversalCatalogView: React.FC = () => {
       .finally(() => setCardsLoading(false));
   }, [selectedSet, cardSearch, rarityFilter, supertypeFilter, sortBy, page]);
 
-  // Filtered sets list based on search inside Era
-  const filteredSets = useMemo(() => {
-    if (!setSearch) return sets;
-    const q = setSearch.toLowerCase();
-    return sets.filter((s) => s.name.toLowerCase().includes(q) || s.set_code.toLowerCase().includes(q));
-  }, [sets, setSearch]);
-
-  // Format currency helpers
+  // Currency Formatter
   const formatUSD = (cents: number | null | undefined) => {
-    if (cents === null || cents === undefined) return '—';
+    if (cents === null || cents === undefined || isNaN(cents)) return '—';
     return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
@@ -308,57 +394,102 @@ export const UniversalCatalogView: React.FC = () => {
     return 'bg-slate-700/40 text-slate-300 border-slate-600/40';
   };
 
+  // Navigation handlers
+  const handleSelectEra = (era: Era) => {
+    setSelectedEra(era);
+    setSelectedSet(null);
+    setSetSearch('');
+    setViewLevel('sets');
+  };
+
+  const handleSelectSet = (set: SetSummary) => {
+    setSelectedSet(set);
+    setCardSearch('');
+    setPage(1);
+    setViewLevel('cards');
+  };
+
+  const handleBackToEras = () => {
+    setSelectedEra(null);
+    setSelectedSet(null);
+    setViewLevel('eras');
+  };
+
+  const handleBackToSets = () => {
+    setSelectedSet(null);
+    setViewLevel('sets');
+  };
+
   return (
-    <div className="flex flex-col h-full bg-[#141414] text-[#e6e6e6]">
+    <div className="flex flex-col h-full bg-[#121212] text-[#e6e6e6] overflow-hidden">
       {/* ======================================================== */}
-      {/* 1. TOP HEADER & BREADCRUMBS: Game > Era > Set > Cards */}
+      {/* 1. TOP HEADER & INTERACTIVE DRILL-DOWN BREADCRUMBS */}
       {/* ======================================================== */}
-      <div className="border-b border-[#262626] bg-[#1a1a1a] px-6 py-3.5 shrink-0">
+      <div className="border-b border-[#242424] bg-[#181818] px-6 py-3 shrink-0">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          {/* Breadcrumb Navigation */}
-          <div className="flex items-center gap-2 text-xs">
-            <span className="font-mono text-slate-500 text-[11px] uppercase tracking-wider">Catalog Hierarchy:</span>
-            
-            {/* Game Breadcrumb */}
-            <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">
+          {/* Breadcrumb Path */}
+          <div className="flex items-center gap-2 text-xs flex-wrap">
+            <span className="font-mono text-slate-500 text-[11px] uppercase tracking-wider">Catalog Flow:</span>
+
+            {/* Game Node */}
+            <span className="px-2.5 py-1 rounded-md bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">
               {games.find((g) => g.slug === selectedGameSlug)?.name || 'Pokémon TCG'}
             </span>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
 
-            {/* Era Breadcrumb */}
-            <span
-              onClick={() => setSelectedSet(null)}
-              className="cursor-pointer hover:underline px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-medium border border-purple-500/30"
+            <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
+
+            {/* Eras Node */}
+            <button
+              onClick={handleBackToEras}
+              className={`px-2.5 py-1 rounded-md font-medium transition cursor-pointer ${
+                viewLevel === 'eras'
+                  ? 'bg-purple-600 text-white shadow-sm'
+                  : 'bg-[#222222] text-slate-300 hover:text-white hover:bg-[#2b2b2b] border border-[#2f2f2f]'
+              }`}
             >
-              {selectedEraId === 'all' ? 'All Eras' : eras.find((e) => e.id === selectedEraId)?.name || selectedEraId}
-            </span>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+              All Eras ({computedEras.length})
+            </button>
 
-            {/* Set Breadcrumb */}
-            {selectedSet ? (
-              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-medium border border-emerald-500/30">
-                {selectedSet.name} ({selectedSet.set_code})
-              </span>
-            ) : (
-              <span className="text-slate-400 italic">Select an Expansion</span>
+            {/* Set Level Node */}
+            {selectedEra && (
+              <>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
+                <button
+                  onClick={handleBackToSets}
+                  className={`px-2.5 py-1 rounded-md font-medium transition cursor-pointer flex items-center gap-1.5 ${
+                    viewLevel === 'sets'
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'bg-[#222222] text-slate-300 hover:text-white hover:bg-[#2b2b2b] border border-[#2f2f2f]'
+                  }`}
+                >
+                  <span>{selectedEra.icon}</span>
+                  <span>{selectedEra.name}</span>
+                </button>
+              </>
             )}
 
+            {/* Cards Level Node */}
             {selectedSet && (
               <>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
-                <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-medium border border-amber-500/30">
-                  {totalCardsInSet} Cards
+                <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
+                <span className="px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-300 font-medium border border-emerald-500/30 flex items-center gap-1.5">
+                  <Package className="w-3.5 h-3.5" />
+                  <span>{selectedSet.name}</span>
+                  <span className="text-[10px] font-mono px-1 py-0.2 rounded bg-black/40 text-emerald-200">
+                    {selectedSet.set_code}
+                  </span>
                 </span>
               </>
             )}
           </div>
 
-          {/* Language Selector & Global Stats Pill */}
+          {/* Right Controls: Language Selector & Verification Pill */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center bg-[#222222] border border-[#333333] rounded-lg p-0.5 text-xs">
+            {/* Language Toggle */}
+            <div className="flex items-center bg-[#202020] border border-[#2d2d2d] rounded-lg p-0.5 text-xs">
               <button
                 onClick={() => setSelectedLanguage('all')}
-                className={`px-2.5 py-1 rounded-md transition font-medium ${
+                className={`px-2.5 py-1 rounded-md transition font-medium cursor-pointer ${
                   selectedLanguage === 'all' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -366,7 +497,7 @@ export const UniversalCatalogView: React.FC = () => {
               </button>
               <button
                 onClick={() => setSelectedLanguage('en')}
-                className={`px-2.5 py-1 rounded-md transition font-medium ${
+                className={`px-2.5 py-1 rounded-md transition font-medium cursor-pointer ${
                   selectedLanguage === 'en' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -374,7 +505,7 @@ export const UniversalCatalogView: React.FC = () => {
               </button>
               <button
                 onClick={() => setSelectedLanguage('jp')}
-                className={`px-2.5 py-1 rounded-md transition font-medium ${
+                className={`px-2.5 py-1 rounded-md transition font-medium cursor-pointer ${
                   selectedLanguage === 'jp' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -382,35 +513,33 @@ export const UniversalCatalogView: React.FC = () => {
               </button>
             </div>
 
-            <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 bg-[#1f1f1f] border border-[#2d2d2d] rounded-lg text-xs font-mono text-slate-300">
+            <div className="hidden md:flex items-center gap-1.5 px-3 py-1 bg-[#1c1c1c] border border-[#2c2c2c] rounded-lg text-xs font-mono text-slate-300">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
               <span>97,875 Variants 100% Autopriced</span>
             </div>
           </div>
         </div>
 
-        {/* ======================================================== */}
-        {/* GAME TABS (Level 1: Game) */}
-        {/* ======================================================== */}
-        <div className="flex items-center gap-2 mt-3 pt-2 border-t border-[#252525] overflow-x-auto no-scrollbar">
+        {/* Game Tabs (Level 1) */}
+        <div className="flex items-center gap-2 mt-3 pt-2.5 border-t border-[#222222] overflow-x-auto no-scrollbar">
           {games.map((g) => (
             <button
               key={g.slug}
               onClick={() => {
                 setSelectedGameSlug(g.slug);
-                setSelectedSet(null);
+                handleBackToEras();
               }}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 cursor-pointer ${
                 selectedGameSlug === g.slug
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'bg-[#212121] text-slate-400 hover:text-white hover:bg-[#2a2a2a] border border-[#2b2b2b]'
+                  : 'bg-[#1f1f1f] text-slate-400 hover:text-white hover:bg-[#282828] border border-[#292929]'
               }`}
             >
               <span>{g.slug === 'pokemon' ? '⚡' : g.slug === 'mtg' ? '🔮' : g.slug === 'one-piece' ? '🏴‍☠️' : g.slug === 'lorcana' ? '✨' : '⚔️'}</span>
               <span>{g.name}</span>
               {Number(g.card_count) > 0 && (
                 <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                  selectedGameSlug === g.slug ? 'bg-indigo-700 text-indigo-100' : 'bg-[#2b2b2b] text-slate-400'
+                  selectedGameSlug === g.slug ? 'bg-indigo-700 text-indigo-100' : 'bg-[#292929] text-slate-400'
                 }`}>
                   {Number(g.card_count).toLocaleString()}
                 </span>
@@ -421,156 +550,255 @@ export const UniversalCatalogView: React.FC = () => {
       </div>
 
       {/* ======================================================== */}
-      {/* 2. ERA SELECTION BAR (Level 2: Era) */}
+      {/* 2. MAIN WORKSPACE AREA ACCORDING TO VIEW LEVEL */}
       {/* ======================================================== */}
-      <div className="bg-[#181818] border-b border-[#242424] px-6 py-2.5 shrink-0 overflow-x-auto no-scrollbar">
-        <div className="flex items-center gap-2 min-w-max">
-          <span className="text-[11px] font-mono text-slate-500 uppercase font-semibold mr-1">Era:</span>
-          
-          <button
-            onClick={() => setSelectedEraId('all')}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition ${
-              selectedEraId === 'all'
-                ? 'bg-purple-600 text-white shadow-sm'
-                : 'bg-[#222222] text-slate-400 hover:text-white hover:bg-[#2c2c2c] border border-[#2e2e2e]'
-            }`}
-          >
-            All Eras ({sets.length} sets)
-          </button>
+      <div className="flex-1 overflow-y-auto min-h-0 p-6">
+        {/* ======================================================== */}
+        {/* LEVEL 1: ALL ERAS AS CARDS */}
+        {/* ======================================================== */}
+        {viewLevel === 'eras' && (
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Eras Header Banner */}
+            <div className="bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-[#181818] border border-[#2a2a2a] rounded-2xl p-6">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 text-indigo-400 text-xs font-mono font-semibold uppercase tracking-wider">
+                    <Sparkles className="w-4 h-4" />
+                    <span>Select an Era to Browse Expansions & Sets</span>
+                  </div>
+                  <h1 className="text-xl md:text-2xl font-black text-white mt-1">
+                    Historical TCG Eras & Generations
+                  </h1>
+                  <p className="text-xs md:text-sm text-slate-400 mt-1 max-w-2xl leading-relaxed">
+                    Explore all 11 eras spanning 1996 to the present day. Click on any era card below to unlock its complete expansions, booster sets, and autopriced card singles.
+                  </p>
+                </div>
 
-          {eras.map((era) => (
-            <button
-              key={era.id}
-              onClick={() => setSelectedEraId(era.id)}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition ${
-                selectedEraId === era.id
-                  ? 'bg-purple-600 text-white shadow-sm'
-                  : 'bg-[#222222] text-slate-400 hover:text-white hover:bg-[#2c2c2c] border border-[#2e2e2e]'
-              }`}
-            >
-              <span>{era.name}</span>
-              <span className={`text-[10px] px-1.5 rounded-full font-mono ${
-                selectedEraId === era.id ? 'bg-purple-700 text-purple-100' : 'bg-[#2c2c2c] text-slate-400'
-              }`}>
-                {era.set_count}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ======================================================== */}
-      {/* 3. MAIN SPLIT BODY: EXPANSIONS & SETS (Left) + CARDS (Right) */}
-      {/* ======================================================== */}
-      <div className="flex-1 flex overflow-hidden min-h-0">
-        {/* ---------------------------------------------------- */}
-        {/* EXPANSIONS & SETS SIDEBAR / LIST (Level 3: Sets) */}
-        {/* ---------------------------------------------------- */}
-        <div className="w-80 border-r border-[#242424] bg-[#161616] flex flex-col shrink-0">
-          {/* Sets Header & Search */}
-          <div className="p-3 border-b border-[#242424] space-y-2">
-            <div className="flex items-center justify-between text-xs font-bold text-slate-300">
-              <span className="flex items-center gap-1.5">
-                <Package className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Expansions & Sets</span>
-              </span>
-              <span className="font-mono text-[11px] text-slate-500">{filteredSets.length} sets</span>
+                {/* Census Card */}
+                <div className="flex items-center gap-4 bg-[#141414]/80 border border-[#2c2c2c] rounded-xl p-3 shrink-0 font-mono text-xs">
+                  <div>
+                    <span className="text-[10px] text-slate-500 uppercase block">Total Sets</span>
+                    <span className="font-bold text-white text-base">{allSets.length}</span>
+                  </div>
+                  <div className="w-px h-8 bg-[#2d2d2d]" />
+                  <div>
+                    <span className="text-[10px] text-slate-500 uppercase block">Total Cards</span>
+                    <span className="font-bold text-indigo-300 text-base">39,144</span>
+                  </div>
+                  <div className="w-px h-8 bg-[#2d2d2d]" />
+                  <div>
+                    <span className="text-[10px] text-slate-500 uppercase block">Catalog Value</span>
+                    <span className="font-bold text-emerald-400 text-base">$1.07M+</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
-              <input
-                type="text"
-                placeholder="Search set name or code..."
-                value={setSearch}
-                onChange={(e) => setSetSearch(e.target.value)}
-                className="w-full bg-[#1f1f1f] border border-[#2d2d2d] rounded-md pl-8 pr-3 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-              />
+            {/* The Grid of 11 Era Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {computedEras.map((era) => (
+                <div
+                  key={era.id}
+                  onClick={() => handleSelectEra(era)}
+                  className={`group relative rounded-2xl p-5 border bg-gradient-to-br ${era.gradient} cursor-pointer transition-all duration-300 hover:scale-[1.015] hover:shadow-2xl flex flex-col justify-between`}
+                >
+                  <div className="space-y-3">
+                    {/* Era Top Bar: Icon + Years */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">{era.icon}</span>
+                        <h3 className="font-black text-base text-white group-hover:text-indigo-200 transition">
+                          {era.name}
+                        </h3>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-mono font-semibold border ${era.badgeColor}`}>
+                        {era.years}
+                      </span>
+                    </div>
+
+                    {/* Era Description */}
+                    <p className="text-xs text-slate-300 leading-relaxed line-clamp-2">
+                      {era.description}
+                    </p>
+
+                    {/* Featured Sets preview pills */}
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {era.featuredSets.map((setName, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2 py-0.5 rounded bg-black/40 text-[10px] font-mono text-slate-300 border border-white/5"
+                        >
+                          {setName}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Era Bottom Stats & CTA */}
+                  <div className="mt-5 pt-3.5 border-t border-white/10 flex items-center justify-between">
+                    <div className="flex items-center gap-3 text-xs font-mono">
+                      <div>
+                        <span className="text-[10px] text-slate-400 block uppercase">Expansions</span>
+                        <span className="font-bold text-white">{era.set_count} sets</span>
+                      </div>
+                      <div className="w-px h-6 bg-white/10" />
+                      <div>
+                        <span className="text-[10px] text-slate-400 block uppercase">Cards</span>
+                        <span className="font-bold text-slate-200">{era.totalCards.toLocaleString()}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1 text-xs font-semibold text-white group-hover:translate-x-1 transition-transform">
+                      <span>Explore Era</span>
+                      <ChevronRight className="w-4 h-4 text-indigo-400" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
+        )}
 
-          {/* Sets Scrollable List */}
-          <div className="flex-1 overflow-y-auto divide-y divide-[#202020] p-1.5 space-y-0.5">
-            {filteredSets.map((s) => {
-              const isSelected = selectedSet?.id === s.id;
-              return (
+        {/* ======================================================== */}
+        {/* LEVEL 2: EXPANSIONS & SETS OF THE SELECTED ERA */}
+        {/* ======================================================== */}
+        {viewLevel === 'sets' && selectedEra && (
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Top Navigation & Back Button */}
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <button
+                onClick={handleBackToEras}
+                className="px-3 py-1.5 rounded-lg bg-[#202020] hover:bg-[#2b2b2b] text-slate-300 hover:text-white text-xs font-semibold border border-[#2e2e2e] flex items-center gap-2 transition cursor-pointer"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back to All Eras</span>
+              </button>
+
+              {/* Set Search within Era */}
+              <div className="relative w-72">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                <input
+                  type="text"
+                  placeholder={`Search in ${selectedEra.name}...`}
+                  value={setSearch}
+                  onChange={(e) => setSetSearch(e.target.value)}
+                  className="w-full bg-[#1c1c1c] border border-[#2d2d2d] rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+            </div>
+
+            {/* Era Header Banner */}
+            <div className={`p-6 rounded-2xl border bg-gradient-to-r ${selectedEra.gradient} relative overflow-hidden`}>
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-mono font-semibold uppercase">
+                    <span>{selectedEra.icon}</span>
+                    <span>Historical Era Selection</span>
+                    <span>•</span>
+                    <span>{selectedEra.years}</span>
+                  </div>
+                  <h2 className="text-2xl font-black text-white mt-1">{selectedEra.name} Expansions</h2>
+                  <p className="text-xs md:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
+                    {selectedEra.description}
+                  </p>
+                </div>
+
+                {/* Era Total Valuation Badge */}
+                <div className="bg-black/60 backdrop-blur-sm border border-white/10 rounded-xl p-3 shrink-0 font-mono text-xs">
+                  <span className="text-[10px] text-slate-400 uppercase block">Total Era Valuation</span>
+                  <span className="font-bold text-emerald-400 text-lg">
+                    {formatUSD(selectedEra.totalValuation)}
+                  </span>
+                  <span className="text-[10px] text-slate-400 block mt-0.5">
+                    {eraSets.length} Expansions Available
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* The Grid of Set / Expansion Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {eraSets.map((s) => (
                 <div
                   key={s.id}
-                  onClick={() => {
-                    setSelectedSet(s);
-                    setPage(1);
-                  }}
-                  className={`p-2.5 rounded-lg cursor-pointer transition flex flex-col gap-1.5 ${
-                    isSelected
-                      ? 'bg-indigo-600/15 border border-indigo-500/40 text-white'
-                      : 'hover:bg-[#1f1f1f] text-slate-300 border border-transparent'
-                  }`}
+                  onClick={() => handleSelectSet(s)}
+                  className="group bg-[#181818] border border-[#272727] hover:border-indigo-500/50 rounded-xl p-4 transition-all duration-200 hover:shadow-xl hover:shadow-indigo-500/10 cursor-pointer flex flex-col justify-between"
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="font-semibold text-xs leading-tight line-clamp-1">
-                      {s.name}
-                    </span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#252525] text-slate-300 shrink-0 uppercase border border-[#333333]">
-                      {s.set_code}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
-                    <span className="flex items-center gap-1">
-                      <span>{s.language === 'en' ? '🇺🇸' : '🇯🇵'}</span>
-                      <span>{s.actual_card_count} cards</span>
-                      <span className="text-slate-600">•</span>
-                      <span>{s.variant_count} var</span>
-                    </span>
-
-                    {Number(s.total_valuation_cents) > 0 && (
-                      <span className="text-emerald-400 font-semibold">
-                        {formatUSD(Number(s.total_valuation_cents))}
+                  <div className="space-y-2.5">
+                    {/* Top Row: Language + Set Code */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-base">{s.language === 'en' ? '🇺🇸' : '🇯🇵'}</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#242424] text-slate-300 border border-[#333333] uppercase">
+                        {s.set_code}
                       </span>
+                    </div>
+
+                    {/* Expansion Name */}
+                    <h4 className="font-bold text-sm text-white group-hover:text-indigo-300 transition line-clamp-2">
+                      {s.name}
+                    </h4>
+
+                    {/* Release Date if present */}
+                    {s.release_date && (
+                      <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-400">
+                        <Calendar className="w-3 h-3 text-slate-500" />
+                        <span>{new Date(s.release_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}</span>
+                      </div>
                     )}
                   </div>
-                </div>
-              );
-            })}
 
-            {filteredSets.length === 0 && (
-              <div className="p-6 text-center text-xs text-slate-500 italic">
-                No sets found matching "{setSearch}"
-              </div>
-            )}
+                  {/* Expansion Card Bottom Stats & Button */}
+                  <div className="mt-4 pt-3 border-t border-[#262626] flex items-center justify-between text-xs font-mono">
+                    <div>
+                      <span className="text-[10px] text-slate-500 uppercase block">Cards</span>
+                      <span className="font-bold text-slate-200">
+                        {s.actual_card_count} cards
+                      </span>
+                    </div>
+
+                    <div className="text-right">
+                      <span className="text-[10px] text-slate-500 uppercase block">Valuation</span>
+                      <span className="font-bold text-emerald-400">
+                        {formatUSD(Number(s.total_valuation_cents))}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Hover Button */}
+                  <button className="w-full mt-3 py-1.5 rounded-lg bg-[#222222] group-hover:bg-indigo-600 text-slate-300 group-hover:text-white text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer">
+                    <span>View Cards</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+
+              {eraSets.length === 0 && (
+                <div className="col-span-full p-12 text-center text-slate-500 italic text-sm">
+                  No expansions found matching your search in this era.
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* ---------------------------------------------------- */}
-        {/* CARDS EXPLORER VIEW (Level 4: Cards) */}
-        {/* ---------------------------------------------------- */}
-        <div className="flex-1 flex flex-col min-w-0 bg-[#121212] overflow-hidden">
-          {/* Card Controls & Filter Bar */}
-          {selectedSet && (
-            <div className="p-4 border-b border-[#242424] bg-[#171717] flex flex-wrap items-center justify-between gap-3 shrink-0">
-              {/* Set Title Banner */}
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center font-bold text-white text-sm shadow-md">
-                  {selectedSet.language === 'en' ? 'EN' : 'JP'}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="font-bold text-sm text-white">{selectedSet.name}</h2>
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase">
-                      {selectedSet.set_code}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-400 font-mono mt-0.5">
-                    <span>{totalCardsInSet} Master Cards</span>
-                    <span>•</span>
-                    <span>Set Valuation: {formatUSD(Number(selectedSet.total_valuation_cents))}</span>
-                  </div>
-                </div>
-              </div>
+        {/* ======================================================== */}
+        {/* LEVEL 3: INDIVIDUAL CARDS IN THE SELECTED EXPANSION */}
+        {/* ======================================================== */}
+        {viewLevel === 'cards' && selectedSet && (
+          <div className="max-w-7xl mx-auto space-y-5">
+            {/* Top Navigation & Back Button */}
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <button
+                onClick={handleBackToSets}
+                className="px-3 py-1.5 rounded-lg bg-[#202020] hover:bg-[#2b2b2b] text-slate-300 hover:text-white text-xs font-semibold border border-[#2e2e2e] flex items-center gap-2 transition cursor-pointer"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back to {selectedEra?.name || 'Era'} Sets</span>
+              </button>
 
-              {/* Filters & Sorting */}
+              {/* Card Controls & Filters */}
               <div className="flex flex-wrap items-center gap-2">
-                {/* Search in Set */}
+                {/* Search Card */}
                 <div className="relative w-44">
                   <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
                   <input
@@ -578,7 +806,7 @@ export const UniversalCatalogView: React.FC = () => {
                     placeholder="Search cards..."
                     value={cardSearch}
                     onChange={(e) => setCardSearch(e.target.value)}
-                    className="w-full bg-[#1f1f1f] border border-[#2d2d2d] rounded-md pl-8 pr-3 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-[#1c1c1c] border border-[#2d2d2d] rounded-md pl-8 pr-3 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                   />
                 </div>
 
@@ -586,7 +814,7 @@ export const UniversalCatalogView: React.FC = () => {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="bg-[#1f1f1f] border border-[#2d2d2d] rounded-md px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+                  className="bg-[#1c1c1c] border border-[#2d2d2d] rounded-md px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer"
                 >
                   <option value="number_asc">Card Number (#1 → #999)</option>
                   <option value="price_desc">Market Price ($ High → Low)</option>
@@ -595,17 +823,17 @@ export const UniversalCatalogView: React.FC = () => {
                 </select>
 
                 {/* View Mode Toggle */}
-                <div className="flex items-center bg-[#1f1f1f] border border-[#2d2d2d] rounded-md p-0.5">
+                <div className="flex items-center bg-[#1c1c1c] border border-[#2d2d2d] rounded-md p-0.5">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-1 rounded ${viewMode === 'grid' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                    className={`p-1 rounded cursor-pointer ${viewMode === 'grid' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
                     title="Grid View"
                   >
                     <Grid className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => setViewMode('table')}
-                    className={`p-1 rounded ${viewMode === 'table' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                    className={`p-1 rounded cursor-pointer ${viewMode === 'table' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
                     title="Table View"
                   >
                     <List className="w-3.5 h-3.5" />
@@ -613,14 +841,34 @@ export const UniversalCatalogView: React.FC = () => {
                 </div>
               </div>
             </div>
-          )}
 
-          {/* Cards Content Area */}
-          <div className="flex-1 overflow-y-auto p-5 min-h-0">
+            {/* Set Banner */}
+            <div className="bg-[#181818] border border-[#282828] rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center font-bold text-white text-base shadow-lg">
+                  {selectedSet.language === 'en' ? 'EN' : 'JP'}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-bold text-lg text-white">{selectedSet.name}</h2>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase">
+                      {selectedSet.set_code}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-400 font-mono mt-0.5">
+                    <span>{totalCardsInSet} Total Master Cards</span>
+                    <span>•</span>
+                    <span>Expansion Value: {formatUSD(Number(selectedSet.total_valuation_cents))}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Cards Gallery */}
             {cardsLoading ? (
               <div className="h-64 flex flex-col items-center justify-center gap-2 text-slate-400 text-xs font-mono">
-                <RefreshCw className="w-5 h-5 animate-spin text-indigo-400" />
-                <span>Loading expansion cards & live prices...</span>
+                <RefreshCw className="w-6 h-6 animate-spin text-indigo-400" />
+                <span>Loading expansion cards & live market prices...</span>
               </div>
             ) : cardError ? (
               <div className="h-64 flex flex-col items-center justify-center gap-3 text-slate-400 text-xs">
@@ -640,9 +888,7 @@ export const UniversalCatalogView: React.FC = () => {
                 <span>No cards found matching your query in this expansion.</span>
               </div>
             ) : viewMode === 'grid' ? (
-              /* ======================================================== */
-              /* GRID VIEW MODE */
-              /* ======================================================== */
+              /* Grid View */
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {cards.map((c) => (
                   <div
@@ -650,7 +896,7 @@ export const UniversalCatalogView: React.FC = () => {
                     onClick={() => setSelectedCard(c)}
                     className="group bg-[#181818] border border-[#262626] hover:border-indigo-500/50 rounded-xl p-2.5 transition flex flex-col justify-between cursor-pointer hover:shadow-xl hover:shadow-indigo-500/10"
                   >
-                    {/* Card Image Container */}
+                    {/* Card Scan Image */}
                     <div className="aspect-[2.5/3.5] bg-[#222222] rounded-lg overflow-hidden relative flex items-center justify-center border border-[#2d2d2d] mb-2">
                       {c.primary_image_url ? (
                         <img
@@ -666,21 +912,19 @@ export const UniversalCatalogView: React.FC = () => {
                         </div>
                       )}
 
-                      {/* Number badge on image */}
+                      {/* Card Number on image */}
                       <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/75 backdrop-blur-sm text-[10px] font-mono text-white font-bold border border-white/10">
                         #{c.card_number}
                       </span>
                     </div>
 
-                    {/* Card Info */}
+                    {/* Card Details */}
                     <div className="space-y-1">
-                      <div className="flex items-start justify-between gap-1">
-                        <span className="font-bold text-xs text-white truncate group-hover:text-indigo-300 transition">
-                          {c.clean_name}
-                        </span>
-                      </div>
+                      <span className="font-bold text-xs text-white truncate block group-hover:text-indigo-300 transition">
+                        {c.clean_name}
+                      </span>
 
-                      {/* Rarity & Variants Counter */}
+                      {/* Rarity & Variants */}
                       <div className="flex items-center justify-between text-[10px]">
                         <span className={`px-1.5 py-0.2 rounded border font-mono truncate max-w-[100px] ${getRarityBadgeColor(c.rarity)}`}>
                           {c.rarity || 'Common'}
@@ -690,7 +934,7 @@ export const UniversalCatalogView: React.FC = () => {
                         </span>
                       </div>
 
-                      {/* Market Price Pill */}
+                      {/* Market Price Tag */}
                       <div className="mt-2 pt-1.5 border-t border-[#262626] flex items-center justify-between">
                         <span className="text-[10px] font-mono text-slate-400 uppercase">Market:</span>
                         <span className="font-mono font-bold text-xs text-emerald-400">
@@ -702,9 +946,7 @@ export const UniversalCatalogView: React.FC = () => {
                 ))}
               </div>
             ) : (
-              /* ======================================================== */
-              /* TABLE VIEW MODE */
-              /* ======================================================== */
+              /* Table View */
               <div className="border border-[#262626] rounded-xl overflow-hidden bg-[#181818]">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
@@ -779,11 +1021,11 @@ export const UniversalCatalogView: React.FC = () => {
               </div>
             )}
           </div>
-        </div>
+        )}
       </div>
 
       {/* ======================================================== */}
-      {/* 4. CARD DEEP-DIVE SLIDE-OVER DRAWER / MODAL */}
+      {/* 3. CARD DEEP-DIVE MODAL & AUTOPRICING MATRIX */}
       {/* ======================================================== */}
       {selectedCard && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
@@ -803,7 +1045,7 @@ export const UniversalCatalogView: React.FC = () => {
               </div>
               <button
                 onClick={() => setSelectedCard(null)}
-                className="w-8 h-8 rounded-lg bg-[#2a2a2a] hover:bg-[#333333] flex items-center justify-center text-slate-400 hover:text-white transition"
+                className="w-8 h-8 rounded-lg bg-[#2a2a2a] hover:bg-[#333333] flex items-center justify-center text-slate-400 hover:text-white transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -811,9 +1053,8 @@ export const UniversalCatalogView: React.FC = () => {
 
             {/* Modal Scrollable Body */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {/* Top Card Presentation Grid */}
+              {/* Card Presentation Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Card Scan */}
                 <div className="aspect-[2.5/3.5] bg-[#121212] rounded-xl overflow-hidden border border-[#333333] flex items-center justify-center shadow-lg">
                   {selectedCard.primary_image_url ? (
                     <img
@@ -829,7 +1070,7 @@ export const UniversalCatalogView: React.FC = () => {
                   )}
                 </div>
 
-                {/* Card Metadata Details */}
+                {/* Metadata Details */}
                 <div className="md:col-span-2 space-y-4">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 bg-[#161616] border border-[#2b2b2b] rounded-xl">
@@ -861,7 +1102,7 @@ export const UniversalCatalogView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Attacks & Rules if available in metadata */}
+                  {/* Attacks & Rules */}
                   {selectedCard.game_metadata?.attacks && (
                     <div className="p-3 bg-[#161616] border border-[#2b2b2b] rounded-xl space-y-2">
                       <span className="text-[10px] font-mono uppercase text-slate-500 block font-bold">Attacks & Moves</span>
