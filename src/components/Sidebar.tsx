@@ -27,6 +27,7 @@ import {
   BookOpen,
   Scan,
   BrainCircuit,
+  Database,
 } from 'lucide-react';
 
 
@@ -145,6 +146,14 @@ export const Sidebar: React.FC = () => {
             title="Content Studio & Planning"
           >
             <Clapperboard className="w-4 h-4 text-indigo-400" />
+          </a>
+
+          <a
+            href="#/catalog"
+            className="w-8 h-8 rounded-md hover:bg-[#2c2c2c] flex items-center justify-center text-[#9b9b9b] hover:text-white transition"
+            title="Universal TCG Catalog"
+          >
+            <Database className="w-4 h-4 text-indigo-400" />
           </a>
 
           <a
@@ -394,6 +403,18 @@ export const Sidebar: React.FC = () => {
                 >
                   <PenTool className="w-3.5 h-3.5 text-amber-400" />
                   <span className="font-semibold text-amber-300">Whiteboard (Miro Canvas)</span>
+                </a>
+                <a
+                  href="#/catalog"
+                  className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs transition ${
+                    currentPath === 'catalog' || currentPath === 'master-catalog' || (currentPath === 'cards' && !currentSub)
+                      ? 'bg-indigo-600/20 text-indigo-300 font-medium border border-indigo-500/30'
+                      : 'text-[#9b9b9b] hover:text-white hover:bg-[#282828]'
+                  }`}
+                >
+                  <Database className="w-3.5 h-3.5 text-indigo-400" />
+                  <span className="font-semibold text-white">Universal TCG Catalog</span>
+                  <span className="ml-auto text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.2 rounded-full font-mono">97.8k</span>
                 </a>
                 <a
                   href="#/knowledge/cards"

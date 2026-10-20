@@ -6,3 +6,9 @@ data/db.json.tmp
 Discord Data/
 data/competitor_logs/*.json
 !data/competitor_logs/*_summary.json
+
+# Bulk raw card dumps & local pricing caches
+data/pokemon-tcg-data/
+data/tcgdex-cards-database/
+data/tcgplayer_cache/
+data/backups/

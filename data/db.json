@@ -2934,7 +2934,48 @@
     }
   ],
   "sprints": [],
-  "epics": [],
+  "epics": [
+    {
+      "id": "epic-optical-scanner-os",
+      "name": "AI Optical Scanner & Sifter Management OS",
+      "color": "#6366f1",
+      "description": "Sub-100ms computer-vision scanning, 9-pocket binder multi-card segmentation, specular foil glare normalization, and industrial Roca Sorter companion API bridge with real-time physical-to-digital bin coordinate mapping.",
+      "startDate": "2026-10-01",
+      "endDate": "2027-01-15",
+      "createdAt": "2026-10-19T22:15:00.000Z",
+      "updatedAt": "2026-10-19T22:15:00.000Z"
+    },
+    {
+      "id": "epic-buylist-tradein-portal",
+      "name": "Automated Buylist & Trade-In Portal",
+      "color": "#10b981",
+      "description": "Standalone customer-facing trade-in portal, self-service counter kiosk, dynamic cash/store-credit spread pricing engine, and pre-inspection mail-in discrepancy reconciliation pipeline.",
+      "startDate": "2026-10-15",
+      "endDate": "2027-02-15",
+      "createdAt": "2026-10-19T22:15:00.000Z",
+      "updatedAt": "2026-10-19T22:15:00.000Z"
+    },
+    {
+      "id": "epic-chaos-warehouse-os",
+      "name": "Smart Chaos Warehousing & Inventory OS",
+      "color": "#f59e0b",
+      "description": "Amazon-style chaotic storage bin-level indexing, 3D warehouse spatial coordinates, dynamic consolidation, Bill-of-Materials (BOM) box cracking, and strict FIFO cost-basis accounting for singles.",
+      "startDate": "2026-11-01",
+      "endDate": "2027-02-28",
+      "createdAt": "2026-10-19T22:15:00.000Z",
+      "updatedAt": "2026-10-19T22:15:00.000Z"
+    },
+    {
+      "id": "epic-omnichannel-sync-engine",
+      "name": "Real-Time Omnichannel Sync Engine",
+      "color": "#3b82f6",
+      "description": "Sub-500ms multi-channel distributed concurrency engine, token-bucket rate limiter, schema normalization across TCGplayer/eBay/Shopify, and mobile convention POS rapid delisting.",
+      "startDate": "2026-10-01",
+      "endDate": "2027-01-31",
+      "createdAt": "2026-10-19T22:15:00.000Z",
+      "updatedAt": "2026-10-19T22:15:00.000Z"
+    }
+  ],
   "content_videos": [
     {
       "id": "vid-101",

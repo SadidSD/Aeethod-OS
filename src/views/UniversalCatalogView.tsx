@@ -1,0 +1,855 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  Search,
+  Filter,
+  ChevronRight,
+  Layers,
+  Sparkles,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Calendar,
+  Tag,
+  Grid,
+  List,
+  ExternalLink,
+  Info,
+  X,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  Hash,
+  Eye,
+  ArrowUpDown,
+  Flame,
+  Award,
+  Zap,
+  RefreshCw,
+  Package
+} from 'lucide-react';
+
+interface Game {
+  id: string;
+  slug: string;
+  name: string;
+  code: string;
+  set_count: string | number;
+  card_count: string | number;
+  variant_count: string | number;
+}
+
+interface Era {
+  id: string;
+  name: string;
+  order: number;
+  years: string;
+  set_count: number;
+  sets: Array<{
+    id: string;
+    set_code: string;
+    name: string;
+    language: string;
+    release_date: string;
+  }>;
+}
+
+interface SetSummary {
+  id: string;
+  set_code: string;
+  slug: string;
+  name: string;
+  language: string;
+  era_block: string;
+  release_date: string;
+  total_printed_cards: number;
+  actual_card_count: string | number;
+  variant_count: string | number;
+  total_valuation_cents: string | number;
+}
+
+interface CardVariant {
+  variant_id: string;
+  finish: string;
+  stamp: string;
+  print_run: string;
+  is_error: boolean;
+  error_details: string | null;
+  image_front_url: string | null;
+  market_cents: number | null;
+  low_cents: number | null;
+  buylist_cents: number | null;
+  pc_cents: number | null;
+  psa_10_pop: number | null;
+}
+
+interface MasterCard {
+  id: string;
+  card_number: string;
+  clean_name: string;
+  official_name: string;
+  rarity: string | null;
+  supertype: string | null;
+  subtypes: string[] | null;
+  artist: string | null;
+  game_metadata: any;
+  primary_image_url: string | null;
+  top_market_cents: number | null;
+  min_market_cents: number | null;
+  variants: CardVariant[];
+}
+
+export const UniversalCatalogView: React.FC = () => {
+  // Navigation State: Game > Era > Expansion/Set > Cards
+  const [selectedGameSlug, setSelectedGameSlug] = useState<string>('pokemon');
+  const [selectedLanguage, setSelectedLanguage] = useState<'all' | 'en' | 'jp'>('all');
+  const [selectedEraId, setSelectedEraId] = useState<string>('all');
+  const [selectedSet, setSelectedSet] = useState<SetSummary | null>(null);
+  const [selectedCard, setSelectedCard] = useState<MasterCard | null>(null);
+
+  // Data State
+  const [games, setGames] = useState<Game[]>([]);
+  const [eras, setEras] = useState<Era[]>([]);
+  const [sets, setSets] = useState<SetSummary[]>([]);
+  const [cards, setCards] = useState<MasterCard[]>([]);
+  const [totalCardsInSet, setTotalCardsInSet] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [cardsLoading, setCardsLoading] = useState<boolean>(false);
+
+  // Filters & Controls
+  const [cardSearch, setCardSearch] = useState<string>('');
+  const [setSearch, setSetSearch] = useState<string>('');
+  const [rarityFilter, setRarityFilter] = useState<string>('all');
+  const [supertypeFilter, setSupertypeFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('number_asc');
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [page, setPage] = useState<number>(1);
+
+  // 1. Fetch Games on Mount
+  useEffect(() => {
+    fetch('/api/catalog/games')
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setGames(data);
+      })
+      .catch((e) => console.error('Error fetching games:', e));
+  }, []);
+
+  // 2. Fetch Eras whenever Game or Language changes
+  useEffect(() => {
+    setLoading(true);
+    fetch(`/api/catalog/eras?gameSlug=${selectedGameSlug}&language=${selectedLanguage}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setEras(data);
+          if (selectedEraId !== 'all' && !data.some((e) => e.id === selectedEraId)) {
+            setSelectedEraId('all');
+          }
+        }
+      })
+      .catch((e) => console.error('Error fetching eras:', e))
+      .finally(() => setLoading(false));
+  }, [selectedGameSlug, selectedLanguage]);
+
+  // 3. Fetch Sets whenever Game, Era, or Language changes
+  useEffect(() => {
+    fetch(`/api/catalog/sets?gameSlug=${selectedGameSlug}&eraId=${selectedEraId}&language=${selectedLanguage}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setSets(data);
+          // If no set selected or current set not in list, auto-select first set
+          if (!selectedSet && data.length > 0) {
+            setSelectedSet(data[0]);
+          } else if (selectedSet && !data.some((s) => s.id === selectedSet.id) && data.length > 0) {
+            setSelectedSet(data[0]);
+          }
+        }
+      })
+      .catch((e) => console.error('Error fetching sets:', e));
+  }, [selectedGameSlug, selectedEraId, selectedLanguage]);
+
+  // 4. Fetch Cards whenever selectedSet, search, rarity, or sort changes
+  useEffect(() => {
+    if (!selectedSet) {
+      setCards([]);
+      return;
+    }
+
+    setCardsLoading(true);
+    const query = new URLSearchParams({
+      setId: selectedSet.id,
+      page: page.toString(),
+      limit: '100',
+      sortBy: sortBy,
+      search: cardSearch,
+      rarity: rarityFilter,
+      supertype: supertypeFilter,
+    });
+
+    fetch(`/api/catalog/cards?${query.toString()}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.cards) {
+          setCards(data.cards);
+          setTotalCardsInSet(data.totalCards);
+        }
+      })
+      .catch((e) => console.error('Error fetching cards:', e))
+      .finally(() => setCardsLoading(false));
+  }, [selectedSet, cardSearch, rarityFilter, supertypeFilter, sortBy, page]);
+
+  // Filtered sets list based on search inside Era
+  const filteredSets = useMemo(() => {
+    if (!setSearch) return sets;
+    const q = setSearch.toLowerCase();
+    return sets.filter((s) => s.name.toLowerCase().includes(q) || s.set_code.toLowerCase().includes(q));
+  }, [sets, setSearch]);
+
+  // Format currency helpers
+  const formatUSD = (cents: number | null | undefined) => {
+    if (cents === null || cents === undefined) return '—';
+    return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  const getRarityBadgeColor = (rarity: string | null) => {
+    const r = (rarity || '').toLowerCase();
+    if (r.includes('secret') || r.includes('special') || r.includes('sar')) return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+    if (r.includes('ultra') || r.includes('vmax') || r.includes('ex')) return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
+    if (r.includes('holo')) return 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30';
+    if (r.includes('uncommon')) return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+    return 'bg-slate-700/40 text-slate-300 border-slate-600/40';
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-[#141414] text-[#e6e6e6]">
+      {/* ======================================================== */}
+      {/* 1. TOP HEADER & BREADCRUMBS: Game > Era > Set > Cards */}
+      {/* ======================================================== */}
+      <div className="border-b border-[#262626] bg-[#1a1a1a] px-6 py-3.5 shrink-0">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          {/* Breadcrumb Navigation */}
+          <div className="flex items-center gap-2 text-xs">
+            <span className="font-mono text-slate-500 text-[11px] uppercase tracking-wider">Catalog Hierarchy:</span>
+            
+            {/* Game Breadcrumb */}
+            <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">
+              {games.find((g) => g.slug === selectedGameSlug)?.name || 'Pokémon TCG'}
+            </span>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+
+            {/* Era Breadcrumb */}
+            <span
+              onClick={() => setSelectedSet(null)}
+              className="cursor-pointer hover:underline px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-medium border border-purple-500/30"
+            >
+              {selectedEraId === 'all' ? 'All Eras' : eras.find((e) => e.id === selectedEraId)?.name || selectedEraId}
+            </span>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+
+            {/* Set Breadcrumb */}
+            {selectedSet ? (
+              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-medium border border-emerald-500/30">
+                {selectedSet.name} ({selectedSet.set_code})
+              </span>
+            ) : (
+              <span className="text-slate-400 italic">Select an Expansion</span>
+            )}
+
+            {selectedSet && (
+              <>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+                <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-medium border border-amber-500/30">
+                  {totalCardsInSet} Cards
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* Language Selector & Global Stats Pill */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center bg-[#222222] border border-[#333333] rounded-lg p-0.5 text-xs">
+              <button
+                onClick={() => setSelectedLanguage('all')}
+                className={`px-2.5 py-1 rounded-md transition font-medium ${
+                  selectedLanguage === 'all' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                🌐 All
+              </button>
+              <button
+                onClick={() => setSelectedLanguage('en')}
+                className={`px-2.5 py-1 rounded-md transition font-medium ${
+                  selectedLanguage === 'en' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                🇺🇸 English
+              </button>
+              <button
+                onClick={() => setSelectedLanguage('jp')}
+                className={`px-2.5 py-1 rounded-md transition font-medium ${
+                  selectedLanguage === 'jp' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                🇯🇵 Japanese
+              </button>
+            </div>
+
+            <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 bg-[#1f1f1f] border border-[#2d2d2d] rounded-lg text-xs font-mono text-slate-300">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>97,875 Variants 100% Autopriced</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ======================================================== */}
+        {/* GAME TABS (Level 1: Game) */}
+        {/* ======================================================== */}
+        <div className="flex items-center gap-2 mt-3 pt-2 border-t border-[#252525] overflow-x-auto no-scrollbar">
+          {games.map((g) => (
+            <button
+              key={g.slug}
+              onClick={() => {
+                setSelectedGameSlug(g.slug);
+                setSelectedSet(null);
+              }}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
+                selectedGameSlug === g.slug
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                  : 'bg-[#212121] text-slate-400 hover:text-white hover:bg-[#2a2a2a] border border-[#2b2b2b]'
+              }`}
+            >
+              <span>{g.slug === 'pokemon' ? '⚡' : g.slug === 'mtg' ? '🔮' : g.slug === 'one-piece' ? '🏴‍☠️' : g.slug === 'lorcana' ? '✨' : '⚔️'}</span>
+              <span>{g.name}</span>
+              {Number(g.card_count) > 0 && (
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                  selectedGameSlug === g.slug ? 'bg-indigo-700 text-indigo-100' : 'bg-[#2b2b2b] text-slate-400'
+                }`}>
+                  {Number(g.card_count).toLocaleString()}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ======================================================== */}
+      {/* 2. ERA SELECTION BAR (Level 2: Era) */}
+      {/* ======================================================== */}
+      <div className="bg-[#181818] border-b border-[#242424] px-6 py-2.5 shrink-0 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-2 min-w-max">
+          <span className="text-[11px] font-mono text-slate-500 uppercase font-semibold mr-1">Era:</span>
+          
+          <button
+            onClick={() => setSelectedEraId('all')}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition ${
+              selectedEraId === 'all'
+                ? 'bg-purple-600 text-white shadow-sm'
+                : 'bg-[#222222] text-slate-400 hover:text-white hover:bg-[#2c2c2c] border border-[#2e2e2e]'
+            }`}
+          >
+            All Eras ({sets.length} sets)
+          </button>
+
+          {eras.map((era) => (
+            <button
+              key={era.id}
+              onClick={() => setSelectedEraId(era.id)}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition ${
+                selectedEraId === era.id
+                  ? 'bg-purple-600 text-white shadow-sm'
+                  : 'bg-[#222222] text-slate-400 hover:text-white hover:bg-[#2c2c2c] border border-[#2e2e2e]'
+              }`}
+            >
+              <span>{era.name}</span>
+              <span className={`text-[10px] px-1.5 rounded-full font-mono ${
+                selectedEraId === era.id ? 'bg-purple-700 text-purple-100' : 'bg-[#2c2c2c] text-slate-400'
+              }`}>
+                {era.set_count}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ======================================================== */}
+      {/* 3. MAIN SPLIT BODY: EXPANSIONS & SETS (Left) + CARDS (Right) */}
+      {/* ======================================================== */}
+      <div className="flex-1 flex overflow-hidden min-h-0">
+        {/* ---------------------------------------------------- */}
+        {/* EXPANSIONS & SETS SIDEBAR / LIST (Level 3: Sets) */}
+        {/* ---------------------------------------------------- */}
+        <div className="w-80 border-r border-[#242424] bg-[#161616] flex flex-col shrink-0">
+          {/* Sets Header & Search */}
+          <div className="p-3 border-b border-[#242424] space-y-2">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+              <span className="flex items-center gap-1.5">
+                <Package className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Expansions & Sets</span>
+              </span>
+              <span className="font-mono text-[11px] text-slate-500">{filteredSets.length} sets</span>
+            </div>
+
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input
+                type="text"
+                placeholder="Search set name or code..."
+                value={setSearch}
+                onChange={(e) => setSetSearch(e.target.value)}
+                className="w-full bg-[#1f1f1f] border border-[#2d2d2d] rounded-md pl-8 pr-3 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+          </div>
+
+          {/* Sets Scrollable List */}
+          <div className="flex-1 overflow-y-auto divide-y divide-[#202020] p-1.5 space-y-0.5">
+            {filteredSets.map((s) => {
+              const isSelected = selectedSet?.id === s.id;
+              return (
+                <div
+                  key={s.id}
+                  onClick={() => {
+                    setSelectedSet(s);
+                    setPage(1);
+                  }}
+                  className={`p-2.5 rounded-lg cursor-pointer transition flex flex-col gap-1.5 ${
+                    isSelected
+                      ? 'bg-indigo-600/15 border border-indigo-500/40 text-white'
+                      : 'hover:bg-[#1f1f1f] text-slate-300 border border-transparent'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-semibold text-xs leading-tight line-clamp-1">
+                      {s.name}
+                    </span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#252525] text-slate-300 shrink-0 uppercase border border-[#333333]">
+                      {s.set_code}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                    <span className="flex items-center gap-1">
+                      <span>{s.language === 'en' ? '🇺🇸' : '🇯🇵'}</span>
+                      <span>{s.actual_card_count} cards</span>
+                      <span className="text-slate-600">•</span>
+                      <span>{s.variant_count} var</span>
+                    </span>
+
+                    {Number(s.total_valuation_cents) > 0 && (
+                      <span className="text-emerald-400 font-semibold">
+                        {formatUSD(Number(s.total_valuation_cents))}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+            {filteredSets.length === 0 && (
+              <div className="p-6 text-center text-xs text-slate-500 italic">
+                No sets found matching "{setSearch}"
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ---------------------------------------------------- */}
+        {/* CARDS EXPLORER VIEW (Level 4: Cards) */}
+        {/* ---------------------------------------------------- */}
+        <div className="flex-1 flex flex-col min-w-0 bg-[#121212] overflow-hidden">
+          {/* Card Controls & Filter Bar */}
+          {selectedSet && (
+            <div className="p-4 border-b border-[#242424] bg-[#171717] flex flex-wrap items-center justify-between gap-3 shrink-0">
+              {/* Set Title Banner */}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center font-bold text-white text-sm shadow-md">
+                  {selectedSet.language === 'en' ? 'EN' : 'JP'}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-bold text-sm text-white">{selectedSet.name}</h2>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase">
+                      {selectedSet.set_code}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-400 font-mono mt-0.5">
+                    <span>{totalCardsInSet} Master Cards</span>
+                    <span>•</span>
+                    <span>Set Valuation: {formatUSD(Number(selectedSet.total_valuation_cents))}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Filters & Sorting */}
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Search in Set */}
+                <div className="relative w-44">
+                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                  <input
+                    type="text"
+                    placeholder="Search cards..."
+                    value={cardSearch}
+                    onChange={(e) => setCardSearch(e.target.value)}
+                    className="w-full bg-[#1f1f1f] border border-[#2d2d2d] rounded-md pl-8 pr-3 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+
+                {/* Sort By Dropdown */}
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="bg-[#1f1f1f] border border-[#2d2d2d] rounded-md px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="number_asc">Card Number (#1 → #999)</option>
+                  <option value="price_desc">Market Price ($ High → Low)</option>
+                  <option value="price_asc">Market Price ($ Low → High)</option>
+                  <option value="name_asc">Card Name (A → Z)</option>
+                </select>
+
+                {/* View Mode Toggle */}
+                <div className="flex items-center bg-[#1f1f1f] border border-[#2d2d2d] rounded-md p-0.5">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-1 rounded ${viewMode === 'grid' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                    title="Grid View"
+                  >
+                    <Grid className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('table')}
+                    className={`p-1 rounded ${viewMode === 'table' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                    title="Table View"
+                  >
+                    <List className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Cards Content Area */}
+          <div className="flex-1 overflow-y-auto p-5 min-h-0">
+            {cardsLoading ? (
+              <div className="h-64 flex flex-col items-center justify-center gap-2 text-slate-400 text-xs font-mono">
+                <RefreshCw className="w-5 h-5 animate-spin text-indigo-400" />
+                <span>Loading expansion cards & live prices...</span>
+              </div>
+            ) : cards.length === 0 ? (
+              <div className="h-64 flex flex-col items-center justify-center gap-2 text-slate-500 text-xs">
+                <AlertCircle className="w-8 h-8 text-slate-600" />
+                <span>No cards found matching your query in this expansion.</span>
+              </div>
+            ) : viewMode === 'grid' ? (
+              /* ======================================================== */
+              /* GRID VIEW MODE */
+              /* ======================================================== */
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                {cards.map((c) => (
+                  <div
+                    key={c.id}
+                    onClick={() => setSelectedCard(c)}
+                    className="group bg-[#181818] border border-[#262626] hover:border-indigo-500/50 rounded-xl p-2.5 transition flex flex-col justify-between cursor-pointer hover:shadow-xl hover:shadow-indigo-500/10"
+                  >
+                    {/* Card Image Container */}
+                    <div className="aspect-[2.5/3.5] bg-[#222222] rounded-lg overflow-hidden relative flex items-center justify-center border border-[#2d2d2d] mb-2">
+                      {c.primary_image_url ? (
+                        <img
+                          src={c.primary_image_url}
+                          alt={c.clean_name}
+                          loading="lazy"
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="text-center p-3 text-slate-600 flex flex-col items-center gap-1">
+                          <Layers className="w-6 h-6" />
+                          <span className="text-[10px] font-mono">Scan pending</span>
+                        </div>
+                      )}
+
+                      {/* Number badge on image */}
+                      <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/75 backdrop-blur-sm text-[10px] font-mono text-white font-bold border border-white/10">
+                        #{c.card_number}
+                      </span>
+                    </div>
+
+                    {/* Card Info */}
+                    <div className="space-y-1">
+                      <div className="flex items-start justify-between gap-1">
+                        <span className="font-bold text-xs text-white truncate group-hover:text-indigo-300 transition">
+                          {c.clean_name}
+                        </span>
+                      </div>
+
+                      {/* Rarity & Variants Counter */}
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className={`px-1.5 py-0.2 rounded border font-mono truncate max-w-[100px] ${getRarityBadgeColor(c.rarity)}`}>
+                          {c.rarity || 'Common'}
+                        </span>
+                        <span className="font-mono text-slate-400">
+                          {c.variants.length} var
+                        </span>
+                      </div>
+
+                      {/* Market Price Pill */}
+                      <div className="mt-2 pt-1.5 border-t border-[#262626] flex items-center justify-between">
+                        <span className="text-[10px] font-mono text-slate-400 uppercase">Market:</span>
+                        <span className="font-mono font-bold text-xs text-emerald-400">
+                          {formatUSD(c.top_market_cents)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* ======================================================== */
+              /* TABLE VIEW MODE */
+              /* ======================================================== */
+              <div className="border border-[#262626] rounded-xl overflow-hidden bg-[#181818]">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-[#262626] bg-[#1e1e1e] text-slate-400 font-mono text-[11px]">
+                      <th className="py-2.5 px-3">Card</th>
+                      <th className="py-2.5 px-3">Name</th>
+                      <th className="py-2.5 px-3">Rarity</th>
+                      <th className="py-2.5 px-3">Type</th>
+                      <th className="py-2.5 px-3">Artist</th>
+                      <th className="py-2.5 px-3 text-right">Market Price</th>
+                      <th className="py-2.5 px-3 text-right">Low Listing</th>
+                      <th className="py-2.5 px-3 text-right">Buylist</th>
+                      <th className="py-2.5 px-3 text-center">Variants</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#222222]">
+                    {cards.map((c) => {
+                      const topVariant = c.variants[0];
+                      return (
+                        <tr
+                          key={c.id}
+                          onClick={() => setSelectedCard(c)}
+                          className="hover:bg-[#202020] cursor-pointer transition"
+                        >
+                          <td className="py-2 px-3 font-mono font-bold text-slate-300">
+                            #{c.card_number}
+                          </td>
+                          <td className="py-2 px-3">
+                            <div className="flex items-center gap-2">
+                              {c.primary_image_url && (
+                                <img
+                                  src={c.primary_image_url}
+                                  alt={c.clean_name}
+                                  className="w-6 h-8 object-contain rounded shrink-0 bg-[#2b2b2b]"
+                                />
+                              )}
+                              <span className="font-semibold text-white hover:text-indigo-300">
+                                {c.clean_name}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-2 px-3">
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${getRarityBadgeColor(c.rarity)}`}>
+                              {c.rarity || 'Common'}
+                            </span>
+                          </td>
+                          <td className="py-2 px-3 text-slate-400 font-mono text-[11px]">
+                            {c.supertype || 'Pokémon'}
+                          </td>
+                          <td className="py-2 px-3 text-slate-400 text-[11px] truncate max-w-[120px]">
+                            {c.artist || '—'}
+                          </td>
+                          <td className="py-2 px-3 text-right font-mono font-bold text-emerald-400">
+                            {formatUSD(c.top_market_cents)}
+                          </td>
+                          <td className="py-2 px-3 text-right font-mono text-slate-400">
+                            {formatUSD(topVariant?.low_cents)}
+                          </td>
+                          <td className="py-2 px-3 text-right font-mono text-indigo-300">
+                            {formatUSD(topVariant?.buylist_cents)}
+                          </td>
+                          <td className="py-2 px-3 text-center">
+                            <span className="px-2 py-0.5 rounded bg-[#2b2b2b] text-[10px] font-mono text-slate-300">
+                              {c.variants.length} var
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ======================================================== */}
+      {/* 4. CARD DEEP-DIVE SLIDE-OVER DRAWER / MODAL */}
+      {/* ======================================================== */}
+      {selectedCard && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-3xl bg-[#1a1a1a] border border-[#2e2e2e] rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="p-4 border-b border-[#2e2e2e] flex items-center justify-between bg-[#202020]">
+              <div className="flex items-center gap-3">
+                <div className="px-2 py-1 rounded bg-indigo-600/20 text-indigo-300 font-mono font-bold text-xs border border-indigo-500/30">
+                  #{selectedCard.card_number}
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-white">{selectedCard.clean_name}</h3>
+                  <p className="text-xs text-slate-400 font-mono">
+                    Official Name: {selectedCard.official_name} • Set: {selectedSet?.name} ({selectedSet?.set_code})
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedCard(null)}
+                className="w-8 h-8 rounded-lg bg-[#2a2a2a] hover:bg-[#333333] flex items-center justify-center text-slate-400 hover:text-white transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Scrollable Body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Top Card Presentation Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Card Scan */}
+                <div className="aspect-[2.5/3.5] bg-[#121212] rounded-xl overflow-hidden border border-[#333333] flex items-center justify-center shadow-lg">
+                  {selectedCard.primary_image_url ? (
+                    <img
+                      src={selectedCard.primary_image_url}
+                      alt={selectedCard.clean_name}
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <div className="text-center p-4 text-slate-600 flex flex-col items-center gap-2">
+                      <Layers className="w-8 h-8" />
+                      <span className="text-xs font-mono">No High-Res Scan Available</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Card Metadata Details */}
+                <div className="md:col-span-2 space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-[#161616] border border-[#2b2b2b] rounded-xl">
+                      <span className="text-[10px] font-mono uppercase text-slate-500 block">Rarity</span>
+                      <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-mono border ${getRarityBadgeColor(selectedCard.rarity)}`}>
+                        {selectedCard.rarity || 'Common'}
+                      </span>
+                    </div>
+
+                    <div className="p-3 bg-[#161616] border border-[#2b2b2b] rounded-xl">
+                      <span className="text-[10px] font-mono uppercase text-slate-500 block">Supertype / Stage</span>
+                      <span className="text-xs font-semibold text-white mt-1 block font-mono">
+                        {selectedCard.supertype || 'Pokémon'} {selectedCard.subtypes?.length ? `(${selectedCard.subtypes.join(', ')})` : ''}
+                      </span>
+                    </div>
+
+                    <div className="p-3 bg-[#161616] border border-[#2b2b2b] rounded-xl">
+                      <span className="text-[10px] font-mono uppercase text-slate-500 block">Illustrator / Artist</span>
+                      <span className="text-xs font-medium text-slate-300 mt-1 block">
+                        {selectedCard.artist || 'Unknown'}
+                      </span>
+                    </div>
+
+                    <div className="p-3 bg-[#161616] border border-[#2b2b2b] rounded-xl">
+                      <span className="text-[10px] font-mono uppercase text-slate-500 block">Top Market Valuation</span>
+                      <span className="text-base font-bold text-emerald-400 font-mono mt-0.5 block">
+                        {formatUSD(selectedCard.top_market_cents)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Attacks & Rules if available in metadata */}
+                  {selectedCard.game_metadata?.attacks && (
+                    <div className="p-3 bg-[#161616] border border-[#2b2b2b] rounded-xl space-y-2">
+                      <span className="text-[10px] font-mono uppercase text-slate-500 block font-bold">Attacks & Moves</span>
+                      <div className="space-y-1.5">
+                        {selectedCard.game_metadata.attacks.map((atk: any, idx: number) => (
+                          <div key={idx} className="text-xs border-b border-[#242424] pb-1 last:border-none">
+                            <span className="font-bold text-white mr-2">{atk.name}</span>
+                            <span className="font-mono text-amber-400 mr-2">{atk.damage ? `[${atk.damage}]` : ''}</span>
+                            <span className="text-slate-400">{atk.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Complete Physical Variants & Autopricing Matrix Table */}
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-sm text-white flex items-center gap-1.5">
+                    <DollarSign className="w-4 h-4 text-emerald-400" />
+                    <span>Physical Variants & Real-Time Market Prices</span>
+                  </h4>
+                  <span className="text-xs font-mono text-slate-400">
+                    {selectedCard.variants.length} Registered Physical Variants
+                  </span>
+                </div>
+
+                <div className="border border-[#2e2e2e] rounded-xl overflow-hidden bg-[#161616]">
+                  <table className="w-full text-left text-xs border-collapse font-mono">
+                    <thead>
+                      <tr className="border-b border-[#2e2e2e] bg-[#222222] text-slate-400 text-[11px]">
+                        <th className="py-2.5 px-3">Finish</th>
+                        <th className="py-2.5 px-3">Print Run</th>
+                        <th className="py-2.5 px-3">Stamp</th>
+                        <th className="py-2.5 px-3 text-right">TCGplayer Market</th>
+                        <th className="py-2.5 px-3 text-right">Low Listing</th>
+                        <th className="py-2.5 px-3 text-right">Buylist (Wholesale)</th>
+                        <th className="py-2.5 px-3 text-right">PriceCharting</th>
+                        <th className="py-2.5 px-3 text-center">PSA 10 Pop</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#242424]">
+                      {selectedCard.variants.map((v) => (
+                        <tr key={v.variant_id} className="hover:bg-[#1f1f1f] transition">
+                          <td className="py-2.5 px-3 font-semibold text-white capitalize">
+                            {v.finish.replace('_', ' ')}
+                            {v.is_error && (
+                              <span className="ml-1.5 px-1 py-0.2 rounded bg-rose-500/20 text-rose-300 text-[10px] border border-rose-500/30">
+                                ERROR
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2.5 px-3 text-slate-300 capitalize">
+                            {v.print_run.replace('_', ' ')}
+                          </td>
+                          <td className="py-2.5 px-3 text-slate-400">
+                            {v.stamp !== 'none' ? v.stamp : '—'}
+                          </td>
+                          <td className="py-2.5 px-3 text-right font-bold text-emerald-400">
+                            {formatUSD(v.market_cents)}
+                          </td>
+                          <td className="py-2.5 px-3 text-right text-slate-400">
+                            {formatUSD(v.low_cents)}
+                          </td>
+                          <td className="py-2.5 px-3 text-right text-indigo-300 font-medium">
+                            {formatUSD(v.buylist_cents)}
+                          </td>
+                          <td className="py-2.5 px-3 text-right text-slate-300">
+                            {formatUSD(v.pc_cents)}
+                          </td>
+                          <td className="py-2.5 px-3 text-center text-slate-400">
+                            {v.psa_10_pop !== null ? v.psa_10_pop.toLocaleString() : '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default UniversalCatalogView;

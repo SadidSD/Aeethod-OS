@@ -28,6 +28,7 @@ import { TechStackView } from './views/TechStackView';
 import { ProductDetailView } from './views/ProductDetailView';
 import { CardKnowledgeHubView } from './views/CardKnowledgeHubView';
 import { CardAnatomyView } from './views/CardAnatomyView';
+import { UniversalCatalogView } from './views/UniversalCatalogView';
 
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 
@@ -193,6 +194,12 @@ export const App: React.FC = () => {
       case 'board-canvas':
         return <WhiteboardView />;
 
+      case 'catalog':
+      case 'master-catalog':
+      case 'cards-catalog':
+      case 'universal-catalog':
+        return <UniversalCatalogView />;
+
       case 'knowledge':
         if (sub === 'cards' || sub === 'card' || !sub) return <CardKnowledgeHubView />;
         return <CardKnowledgeHubView />;
@@ -201,8 +208,9 @@ export const App: React.FC = () => {
         return <CardKnowledgeHubView />;
       case 'cards':
       case 'card':
-        if (sub === 'anatomy' || sub === 'explorer') return <CardAnatomyView />;
-        return <CardKnowledgeHubView />;
+        if (sub === 'catalog' || sub === 'explorer' || !sub) return <UniversalCatalogView />;
+        if (sub === 'anatomy') return <CardAnatomyView />;
+        return <UniversalCatalogView />;
       case 'card-anatomy':
       case 'anatomy':
         return <CardAnatomyView />;

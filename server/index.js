@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { randomUUID } from 'crypto';
 import { buildSeed } from './seed.js';
+import catalogRoutes from './catalogRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -130,6 +131,9 @@ const validCol = (req, res, next) => {
 };
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, file: DB_FILE }));
+
+// Universal TCG Catalog API (Supabase PostgreSQL backend)
+app.use('/api/catalog', catalogRoutes);
 
 app.get('/api/db', (_req, res) => res.json(db));
 
