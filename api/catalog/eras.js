@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     const eraMap = new Map();
 
     for (const set of setsResult.rows) {
-      const eraInfo = normalizeEra(set.era_block, set.set_code);
+      const eraInfo = normalizeEra(set.era_block, set.set_code, set.name);
       if (!eraMap.has(eraInfo.id)) {
         eraMap.set(eraInfo.id, {
           id: eraInfo.id,
