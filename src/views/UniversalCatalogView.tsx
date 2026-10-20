@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import prebundledSetsData from '../data/prebundledSets.json';
 import {
   Search,
   Filter,
@@ -27,6 +28,45 @@ import {
   RefreshCw,
   Package
 } from 'lucide-react';
+
+const INITIAL_GAMES: Game[] = [
+  { id: '1', slug: 'pokemon', name: 'Pokémon TCG', code: 'PKMN', set_count: 408, card_count: 39144, variant_count: 97875 },
+  { id: '2', slug: 'mtg', name: 'Magic: The Gathering', code: 'MTG', set_count: 0, card_count: 0, variant_count: 0 },
+  { id: '3', slug: 'one-piece', name: 'One Piece Card Game', code: 'OP', set_count: 0, card_count: 0, variant_count: 0 },
+  { id: '4', slug: 'lorcana', name: 'Disney Lorcana', code: 'LORC', set_count: 0, card_count: 0, variant_count: 0 },
+  { id: '5', slug: 'yugioh', name: 'Yu-Gi-Oh! TCG', code: 'YGO', set_count: 0, card_count: 0, variant_count: 0 }
+];
+
+const INITIAL_ERAS: Era[] = [
+  { id: 'sv', name: 'Scarlet & Violet', order: 1, years: '2023–Present', set_count: 39, sets: [] },
+  { id: 'swsh', name: 'Sword & Shield', order: 2, years: '2020–2023', set_count: 68, sets: [] },
+  { id: 'sm', name: 'Sun & Moon', order: 3, years: '2017–2019', set_count: 20, sets: [] },
+  { id: 'xy', name: 'XY Series', order: 4, years: '2014–2016', set_count: 17, sets: [] },
+  { id: 'bw', name: 'Black & White', order: 5, years: '2011–2013', set_count: 15, sets: [] },
+  { id: 'dp-hgss', name: 'Diamond & Pearl / HGSS', order: 6, years: '2007–2010', set_count: 19, sets: [] },
+  { id: 'ex', name: 'EX Series / Advance', order: 7, years: '2003–2007', set_count: 21, sets: [] },
+  { id: 'ecard', name: 'e-Card Series', order: 8, years: '2001–2003', set_count: 3, sets: [] },
+  { id: 'neo', name: 'Neo Series', order: 9, years: '2000–2002', set_count: 8, sets: [] },
+  { id: 'classic', name: 'Original Classic / WotC', order: 10, years: '1996–2000', set_count: 14, sets: [] },
+  { id: 'special', name: 'Promos & Special Collections', order: 11, years: 'All Eras', set_count: 184, sets: [] },
+];
+
+function normalizeEraClient(eraBlock: string | null | undefined, setCode: string | null | undefined): string {
+  const code = (setCode || '').toUpperCase();
+  const rawEra = (eraBlock || '').trim();
+
+  if (rawEra === 'Scarlet & Violet' || code.startsWith('SV') || rawEra === 'SV') return 'sv';
+  if (rawEra === 'Sword & Shield' || code.startsWith('SWSH') || code.startsWith('S') || rawEra === 'S') return 'swsh';
+  if (rawEra === 'Sun & Moon' || code.startsWith('SM') || rawEra === 'SM') return 'sm';
+  if (rawEra === 'XY' || code.startsWith('XY') || rawEra === 'XY') return 'xy';
+  if (rawEra === 'Black & White' || code.startsWith('BW') || rawEra === 'BW') return 'bw';
+  if (rawEra === 'HeartGold & SoulSilver' || code.startsWith('HGSS') || rawEra === 'Platinum' || rawEra === 'Diamond & Pearl' || code.startsWith('DP')) return 'dp-hgss';
+  if (rawEra === 'EX' || code.startsWith('EX') || code.startsWith('ADV') || code.startsWith('PCG')) return 'ex';
+  if (rawEra === 'E-Card' || code.startsWith('E') || code.startsWith('ECARD')) return 'ecard';
+  if (rawEra === 'Neo' || code.startsWith('NEO')) return 'neo';
+  if (rawEra === 'Base' || rawEra === 'Gym' || code.startsWith('BASE') || code.startsWith('PMCG')) return 'classic';
+  return 'special';
+}
 
 interface Game {
   id: string;
@@ -106,14 +146,15 @@ export const UniversalCatalogView: React.FC = () => {
   const [selectedSet, setSelectedSet] = useState<SetSummary | null>(null);
   const [selectedCard, setSelectedCard] = useState<MasterCard | null>(null);
 
-  // Data State
-  const [games, setGames] = useState<Game[]>([]);
-  const [eras, setEras] = useState<Era[]>([]);
-  const [sets, setSets] = useState<SetSummary[]>([]);
+  // Data State - initialized with instant prebundled fallback
+  const [games, setGames] = useState<Game[]>(INITIAL_GAMES);
+  const [eras, setEras] = useState<Era[]>(INITIAL_ERAS);
+  const [sets, setSets] = useState<SetSummary[]>((prebundledSetsData as unknown) as SetSummary[]);
   const [cards, setCards] = useState<MasterCard[]>([]);
   const [totalCardsInSet, setTotalCardsInSet] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [cardsLoading, setCardsLoading] = useState<boolean>(false);
+  const [cardError, setCardError] = useState<string | null>(null);
 
   // Filters & Controls
   const [cardSearch, setCardSearch] = useState<string>('');
@@ -127,46 +168,83 @@ export const UniversalCatalogView: React.FC = () => {
   // 1. Fetch Games on Mount
   useEffect(() => {
     fetch('/api/catalog/games')
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) setGames(data);
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
       })
-      .catch((e) => console.error('Error fetching games:', e));
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) setGames(data);
+      })
+      .catch((e) => console.warn('Using initial games due to:', e.message));
   }, []);
 
   // 2. Fetch Eras whenever Game or Language changes
   useEffect(() => {
     setLoading(true);
     fetch(`/api/catalog/eras?gameSlug=${selectedGameSlug}&language=${selectedLanguage}`)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then((data) => {
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           setEras(data);
           if (selectedEraId !== 'all' && !data.some((e) => e.id === selectedEraId)) {
             setSelectedEraId('all');
           }
         }
       })
-      .catch((e) => console.error('Error fetching eras:', e))
+      .catch((e) => {
+        console.warn('Using prebundled eras calculation due to:', e.message);
+        // Calculate era set counts from prebundled sets locally
+        let filtered = (prebundledSetsData as unknown) as SetSummary[];
+        if (selectedLanguage !== 'all') {
+          filtered = filtered.filter((s) => s.language === selectedLanguage);
+        }
+        const updatedEras = INITIAL_ERAS.map((era) => {
+          const count = filtered.filter((s) => normalizeEraClient(s.era_block, s.set_code) === era.id).length;
+          return { ...era, set_count: count };
+        });
+        setEras(updatedEras);
+      })
       .finally(() => setLoading(false));
   }, [selectedGameSlug, selectedLanguage]);
 
   // 3. Fetch Sets whenever Game, Era, or Language changes
   useEffect(() => {
     fetch(`/api/catalog/sets?gameSlug=${selectedGameSlug}&eraId=${selectedEraId}&language=${selectedLanguage}`)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then((data) => {
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           setSets(data);
-          // If no set selected or current set not in list, auto-select first set
           if (!selectedSet && data.length > 0) {
             setSelectedSet(data[0]);
           } else if (selectedSet && !data.some((s) => s.id === selectedSet.id) && data.length > 0) {
             setSelectedSet(data[0]);
           }
+        } else {
+          throw new Error('Empty sets response');
         }
       })
-      .catch((e) => console.error('Error fetching sets:', e));
+      .catch((e) => {
+        console.warn('Filtering prebundled sets locally due to:', e.message);
+        let filtered = (prebundledSetsData as unknown) as SetSummary[];
+        if (selectedLanguage !== 'all') {
+          filtered = filtered.filter((s) => s.language === selectedLanguage);
+        }
+        if (selectedEraId !== 'all') {
+          filtered = filtered.filter((s) => normalizeEraClient(s.era_block, s.set_code) === selectedEraId);
+        }
+        setSets(filtered);
+        if (filtered.length > 0) {
+          if (!selectedSet || !filtered.some((s) => s.id === selectedSet.id)) {
+            setSelectedSet(filtered[0]);
+          }
+        }
+      });
   }, [selectedGameSlug, selectedEraId, selectedLanguage]);
 
   // 4. Fetch Cards whenever selectedSet, search, rarity, or sort changes
@@ -177,6 +255,7 @@ export const UniversalCatalogView: React.FC = () => {
     }
 
     setCardsLoading(true);
+    setCardError(null);
     const query = new URLSearchParams({
       setId: selectedSet.id,
       page: page.toString(),
@@ -188,14 +267,22 @@ export const UniversalCatalogView: React.FC = () => {
     });
 
     fetch(`/api/catalog/cards?${query.toString()}`)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}: Failed to load cards`);
+        return r.json();
+      })
       .then((data) => {
         if (data.cards) {
           setCards(data.cards);
           setTotalCardsInSet(data.totalCards);
+        } else {
+          setCards([]);
         }
       })
-      .catch((e) => console.error('Error fetching cards:', e))
+      .catch((e) => {
+        console.error('Error fetching cards:', e);
+        setCardError(e.message);
+      })
       .finally(() => setCardsLoading(false));
   }, [selectedSet, cardSearch, rarityFilter, supertypeFilter, sortBy, page]);
 
@@ -534,6 +621,18 @@ export const UniversalCatalogView: React.FC = () => {
               <div className="h-64 flex flex-col items-center justify-center gap-2 text-slate-400 text-xs font-mono">
                 <RefreshCw className="w-5 h-5 animate-spin text-indigo-400" />
                 <span>Loading expansion cards & live prices...</span>
+              </div>
+            ) : cardError ? (
+              <div className="h-64 flex flex-col items-center justify-center gap-3 text-slate-400 text-xs">
+                <AlertCircle className="w-8 h-8 text-rose-400" />
+                <span className="font-mono text-rose-300">{cardError}</span>
+                <button
+                  onClick={() => setPage((p) => p)}
+                  className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium flex items-center gap-1.5 cursor-pointer"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Retry</span>
+                </button>
               </div>
             ) : cards.length === 0 ? (
               <div className="h-64 flex flex-col items-center justify-center gap-2 text-slate-500 text-xs">
