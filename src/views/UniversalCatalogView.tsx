@@ -112,7 +112,7 @@ const INITIAL_GAMES: Game[] = [
   { id: '5', slug: 'yugioh', name: 'Yu-Gi-Oh! TCG', code: 'YGO', set_count: 0, card_count: 0, variant_count: 0 }
 ];
 
-const ERA_METADATA: Era[] = [
+const ENGLISH_ERAS: Era[] = [
   {
     id: 'mega',
     name: 'Mega Evolution Series',
@@ -143,7 +143,7 @@ const ERA_METADATA: Era[] = [
     grailPrice: '$185.00+',
     bannerGradient: 'from-rose-900 via-purple-900 to-slate-900',
     badgeStyle: 'bg-rose-500/25 text-rose-300 border-rose-500/50',
-    set_count: 69,
+    set_count: 19,
     keyMechanics: ['✨ Terastal ex', '⏳ Ancient & Future', '🎨 Special Illustration Rares'],
     featuredSets: ['151', 'Paldea Evolved', 'Surging Sparks', 'Prismatic Evolutions', 'Stellar Crown', 'Twilight Masquerade']
   },
@@ -160,9 +160,9 @@ const ERA_METADATA: Era[] = [
     grailPrice: '$1,250.00+',
     bannerGradient: 'from-cyan-900 via-blue-900 to-slate-900',
     badgeStyle: 'bg-cyan-500/25 text-cyan-300 border-cyan-500/50',
-    set_count: 79,
+    set_count: 24,
     keyMechanics: ['⚡ Gigantamax VMAX', '🌟 VSTAR', '🖼️ Alternate Art Grails', '👥 Trainer Gallery'],
-    featuredSets: ['Crown Zenith', 'Evolving Skies', 'VSTAR Universe', 'Brilliant Stars', 'Silver Tempest', 'Lost Origin']
+    featuredSets: ['Crown Zenith', 'Evolving Skies', 'Brilliant Stars', 'Silver Tempest', 'Lost Origin', 'Fusion Strike']
   },
   {
     id: 'sm',
@@ -177,7 +177,7 @@ const ERA_METADATA: Era[] = [
     grailPrice: '$1,100.00+',
     bannerGradient: 'from-amber-900 via-orange-900 to-slate-900',
     badgeStyle: 'bg-amber-500/25 text-amber-300 border-amber-500/50',
-    set_count: 61,
+    set_count: 18,
     keyMechanics: ['🤝 TAG TEAM GX', '🌌 Ultra Beasts', '🌈 Rainbow Rares', '👤 Full-Art Trainers'],
     featuredSets: ['Team Up', 'Cosmic Eclipse', 'Hidden Fates', 'Unified Minds', 'Ultra Prism', 'Unbroken Bonds']
   },
@@ -194,7 +194,7 @@ const ERA_METADATA: Era[] = [
     grailPrice: '$350.00+',
     bannerGradient: 'from-blue-900 via-indigo-900 to-slate-900',
     badgeStyle: 'bg-blue-500/25 text-blue-300 border-blue-500/50',
-    set_count: 39,
+    set_count: 16,
     keyMechanics: ['🔥 Mega Evolutions', '🧚 Fairy Type Debut', '✨ Secret Rare EX', '💥 BREAK Cards'],
     featuredSets: ['Roaring Skies', 'Evolutions', 'Phantom Forces', 'Ancient Origins', 'Generations', 'Flashfire']
   },
@@ -211,7 +211,7 @@ const ERA_METADATA: Era[] = [
     grailPrice: '$420.00+',
     bannerGradient: 'from-slate-800 via-zinc-900 to-black',
     badgeStyle: 'bg-slate-500/25 text-slate-200 border-slate-500/50',
-    set_count: 14,
+    set_count: 13,
     keyMechanics: ['🌟 1st Full-Art Cards', '⚡ Plasma Storm', '🐉 Dragon Vault', '💎 Radiant Collection'],
     featuredSets: ['Plasma Freeze', 'Dark Explorers', 'Plasma Storm', 'Legendary Treasures', 'Noble Victories', 'Next Destinies']
   },
@@ -228,7 +228,7 @@ const ERA_METADATA: Era[] = [
     grailPrice: '$380.00+',
     bannerGradient: 'from-amber-900 via-yellow-900 to-slate-900',
     badgeStyle: 'bg-amber-500/25 text-amber-300 border-amber-500/50',
-    set_count: 10,
+    set_count: 6,
     keyMechanics: ['📜 Two-Card LEGEND Slabs', '✨ Alph Lithograph Secrets', '🌟 Prime Pokémon'],
     featuredSets: ['HeartGold SoulSilver', 'Triumphant', 'Undaunted', 'Unleashed', 'Call of Legends']
   },
@@ -279,7 +279,7 @@ const ERA_METADATA: Era[] = [
     grailPrice: '$4,500.00+',
     bannerGradient: 'from-emerald-900 via-teal-900 to-slate-900',
     badgeStyle: 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50',
-    set_count: 35,
+    set_count: 20,
     keyMechanics: ['⭐ Gold Star Holos', 'δ Holofoil Delta Species', '💥 Classic EX Rules', '🚀 Rocket Dark Types'],
     featuredSets: ['EX Deoxys', 'EX Team Rocket Returns', 'EX Dragon Frontiers', 'EX Holon Phantoms', 'EX Ruby & Sapphire', 'EX FireRed LeafGreen']
   },
@@ -296,32 +296,15 @@ const ERA_METADATA: Era[] = [
     grailPrice: '$6,800.00+',
     bannerGradient: 'from-amber-900 via-yellow-900 to-slate-900',
     badgeStyle: 'bg-amber-500/25 text-amber-300 border-amber-500/50',
-    set_count: 6,
+    set_count: 3,
     keyMechanics: ['📊 e-Reader Barcodes', '💎 Crystal Pokémon', '🏔️ Skyridge & Aquapolis Art', '📉 Ultra-Low Print Runs'],
     featuredSets: ['Skyridge', 'Aquapolis', 'Expedition Base Set']
-  },
-  {
-    id: 'neo',
-    name: 'Neo Series',
-    generation: 'Gen II • 2000 – 2002',
-    order: 12,
-    years: '2000 – 2002',
-    description: 'Johto region debut introducing Darkness and Metal types, Dark and Light Pokémon mechanics, and the first-ever textured metallic Shining Pokémon.',
-    icon: '🌿',
-    coverCardUrl: 'https://images.pokemontcg.io/neo4/107_hires.png',
-    coverCardName: '1st Edition Shining Charizard #107 (Destiny)',
-    grailPrice: '$2,400.00+',
-    bannerGradient: 'from-teal-900 via-cyan-900 to-slate-900',
-    badgeStyle: 'bg-teal-500/25 text-teal-300 border-teal-500/50',
-    set_count: 4,
-    keyMechanics: ['✨ 1st Edition Shinings', '🌙 Darkness & Metal Types Debut', '⚡ Dark & Light Pokémon'],
-    featuredSets: ['Neo Destiny', 'Neo Revelation', 'Neo Discovery', 'Neo Genesis']
   },
   {
     id: 'gym',
     name: 'Gym Series',
     generation: 'Gen I Gym • 2000',
-    order: 13,
+    order: 12,
     years: '2000',
     description: 'Battle alongside Kanto’s Gym Leaders: Brock, Misty, Lt. Surge, Erika, Koga, Sabrina, Blaine, and Team Rocket Leader Giovanni.',
     icon: '🏅',
@@ -338,7 +321,7 @@ const ERA_METADATA: Era[] = [
     id: 'base',
     name: 'Base Set & Vintage Classic Series',
     generation: 'Gen I • 1998 – 2000',
-    order: 14,
+    order: 13,
     years: '1998 – 2000',
     description: 'The immortal genesis by Wizards of the Coast. 1st Edition Base Set, Shadowless runs, and Ken Sugimori original hand-drawn watercolors.',
     icon: '🏆',
@@ -347,7 +330,7 @@ const ERA_METADATA: Era[] = [
     grailPrice: '$185,000.00+',
     bannerGradient: 'from-yellow-900 via-amber-900 to-red-950',
     badgeStyle: 'bg-yellow-500/25 text-yellow-300 border-yellow-500/50',
-    set_count: 13,
+    set_count: 7,
     keyMechanics: ['🏆 1st Edition Base Set', '👻 Shadowless Runs', '🚀 Team Rocket Dark Holos', '🎆 Legendary Collection Fireworks'],
     featuredSets: ['Base Set', 'Base Set (Shadowless)', 'Jungle', 'Fossil', 'Base Set 2', 'Team Rocket', 'Legendary Collection']
   },
@@ -355,18 +338,242 @@ const ERA_METADATA: Era[] = [
     id: 'special',
     name: 'Promos, POP Series & Special Sets',
     generation: '1998 – Present',
-    order: 15,
+    order: 14,
     years: '1998 – Present',
-    description: 'Black Star Promos, POP Series tournament packs, Japanese peelable Vending Sheets, movie theater releases, and World Championship decks.',
+    description: 'Black Star Promos, POP Series tournament packs, movie releases, and World Championship decks.',
     icon: '🎁',
     coverCardUrl: 'https://images.pokemontcg.io/basep/8_hires.png',
     coverCardName: 'Ancient Mew Movie Holo Promo #8',
     grailPrice: '$1,200.00+',
     bannerGradient: 'from-purple-900 via-fuchsia-900 to-slate-900',
     badgeStyle: 'bg-purple-500/25 text-purple-300 border-purple-500/50',
+    set_count: 24,
+    keyMechanics: ['⭐ Black Star Promos', '🎫 POP Series 1–9', '🍔 McDonald\'s Collections', '🏆 Best of Game'],
+    featuredSets: ['WotC Black Star Promos', 'POP Series 1–9', 'SV Black Star Promos', 'McDonald’s Collections']
+  }
+];
+
+const JAPANESE_ERAS: Era[] = [
+  {
+    id: 'mega',
+    name: 'メガ エボリューション (Mega Evolution)',
+    generation: '最新世代・第10世代 • 2025 – Present',
+    order: 1,
+    years: '2025 – Present',
+    description: '日本の新時代「MEGAドリームex」「メガシンフォニア」「メガブレイブ」など、メガシンカexが完全復活した最新シリーズ。',
+    icon: '🔥',
+    coverCardUrl: 'https://images.pokemontcg.io/xy7/98_hires.png',
+    coverCardName: 'メガレックウザEX 色違い (Shiny Full Art)',
+    grailPrice: '$480.00+ (¥72,000)',
+    bannerGradient: 'from-emerald-900 via-teal-900 to-slate-900',
+    badgeStyle: 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50',
+    set_count: 11,
+    keyMechanics: ['🔥 メガシンカex', '✨ MEGAドリームex', '🌌 メガシンフォニア / メガブレイブ'],
+    featuredSets: ['MEGAドリームex (M2a)', 'メガシンフォニア (M1S)', 'メガブレイブ (M1L)', 'インフェルノX (M2)', 'ストームエメラルダ (M6)']
+  },
+  {
+    id: 'sv',
+    name: 'スカーレット＆バイオレット (Scarlet & Violet)',
+    generation: '第9世代 • 2023 – Present',
+    order: 2,
+    years: '2023 – Present',
+    description: '国内で大旋風を巻き起こした「ポケモンカード151」、テラスタルフェスex、シャイニートレジャーex、最高峰のSAR仕様カード群。',
+    icon: '🌟',
+    coverCardUrl: 'https://assets.tcgdex.net/ja/SV/SV2a/003/high.png',
+    coverCardName: 'フシギバナex SAR / リザードンex (151 SV2a)',
+    grailPrice: '$250.00+ (¥38,000)',
+    bannerGradient: 'from-rose-900 via-purple-900 to-slate-900',
+    badgeStyle: 'bg-rose-500/25 text-rose-300 border-rose-500/50',
+    set_count: 50,
+    keyMechanics: ['🎨 スペシャルアートレア (SAR)', '💎 テラスタルex', '🏆 ポケモンカード151', '🌟 シャイニートレジャーex'],
+    featuredSets: ['ポケモンカード151 (SV2a)', 'クレイバースト (SV2D)', 'テラスタルフェスex (SV8a)', 'シャイニートレジャーex (SV4a)', '黒炎の支配者 (SV3)']
+  },
+  {
+    id: 'swsh',
+    name: 'ソード＆シールド (Sword & Shield)',
+    generation: '第8世代 • 2020 – 2023',
+    order: 3,
+    years: '2020 – 2023',
+    description: '世界的人気の「イーブイヒーローズ」「VSTARユニバース」「VMAXクライマックス」など、現代コレクター市場を牽引する最高峰。',
+    icon: '⚔️',
+    coverCardUrl: 'https://assets.tcgdex.net/ja/S/S6a/002/high.png',
+    coverCardName: 'ブラッキーVMAX スペシャルアート (イーブイヒーローズ s6a)',
+    grailPrice: '$1,850.00+ (¥280,000)',
+    bannerGradient: 'from-cyan-900 via-blue-900 to-slate-900',
+    badgeStyle: 'bg-cyan-500/25 text-cyan-300 border-cyan-500/50',
     set_count: 55,
-    keyMechanics: ['⭐ Black Star Promos', '🇯🇵 Japanese Vending Sheets', '🎫 POP Series 1–9', '🍔 McDonald\'s Collections'],
-    featuredSets: ['WotC Black Star Promos', 'POP Series 1–9', 'Japanese Vending Series', 'Best of Game', 'SV Black Star Promos', 'McDonald’s Collections']
+    keyMechanics: ['🦊 イーブイヒーローズ SA', '🌟 VSTARユニバース UR', '⚡ VMAXクライマックス CSR', '✨ 25th アニバーサリー'],
+    featuredSets: ['イーブイヒーローズ (S6a)', 'VSTARユニバース (S12a)', 'VMAXクライマックス (S8b)', '蒼空ストリーム (S7R)', 'シャイニースターV (S4a)']
+  },
+  {
+    id: 'sm',
+    name: 'サン＆ムーン (Sun & Moon)',
+    generation: '第7世代 • 2017 – 2019',
+    order: 4,
+    years: '2017 – 2019',
+    description: '「GXウルトラシャイニー」「TAG TEAM GX タッグオールスターズ」「ドリームリーグ」「タッグボルト」など、伝説のタッグチーム時代。',
+    icon: '☀️',
+    coverCardUrl: 'https://assets.tcgdex.net/ja/SM/SM11b/016/high.png',
+    coverCardName: 'ピカチュウ CHR / ラティアス＆ラティオスGX (SM9)',
+    grailPrice: '$1,250.00+ (¥190,000)',
+    bannerGradient: 'from-amber-900 via-orange-900 to-slate-900',
+    badgeStyle: 'bg-amber-500/25 text-amber-300 border-amber-500/50',
+    set_count: 43,
+    keyMechanics: ['🤝 TAG TEAM GX', '👥 キャラクターレア (CHR)', '🌈 GXウルトラシャイニー', '👑 ドリームリーグ'],
+    featuredSets: ['タッグオールスターズ (SM12a)', 'GXウルトラシャイニー (SM8b)', 'ドリームリーグ (SM11b)', 'タッグボルト (SM9)', '新たなる試練の向こう (SM2+)']
+  },
+  {
+    id: 'xy',
+    name: 'XY・XY BREAK (XY Series)',
+    generation: '第6世代 • 2014 – 2016',
+    order: 5,
+    years: '2014 – 2016',
+    description: 'メガシンカ旋風、「拡張パック 20th Anniversary (CP6)」、「ポケキュンコレクション」など珠玉のコンセプトパック。',
+    icon: '⚡',
+    coverCardUrl: 'https://images.pokemontcg.io/xy12/11_hires.png',
+    coverCardName: 'MリザードンEX / 20th Anniversary (CP6)',
+    grailPrice: '$430.00+ (¥65,000)',
+    bannerGradient: 'from-blue-900 via-indigo-900 to-slate-900',
+    badgeStyle: 'bg-blue-500/25 text-blue-300 border-blue-500/50',
+    set_count: 22,
+    keyMechanics: ['🔥 メガシンカEX', '💖 ポケキュンコレクション (CP3)', '🏆 20th Anniversary (CP6)', '💥 BREAK進化'],
+    featuredSets: ['20th Anniversary (CP6)', 'ポケキュンコレクション (CP3)', 'エメラルドブレイク (XY6)', 'ファントムゲート (XY4)', 'ガイアボルケーノ (XY5a)']
+  },
+  {
+    id: 'bw',
+    name: 'ブラック＆ホワイト (Black & White)',
+    generation: '第5世代 • 2011 – 2013',
+    order: 6,
+    years: '2011 – 2013',
+    description: '日本初のレリーフ加工フルアートSRや、豪華仕様の「EXバトルブースト (EBB)」「シャイニーコレクション」。',
+    icon: '⬛',
+    coverCardUrl: 'https://images.pokemontcg.io/bw1/113_hires.png',
+    coverCardName: 'レシラム SR フルアート (BW1 / EBB)',
+    grailPrice: '$360.00+ (¥55,000)',
+    bannerGradient: 'from-slate-800 via-zinc-900 to-black',
+    badgeStyle: 'bg-slate-500/25 text-slate-200 border-slate-500/50',
+    set_count: 1,
+    keyMechanics: ['🌟 日本初フルアートSR', '⚡ EXバトルブースト (EBB)', '💎 シャイニーコレクション'],
+    featuredSets: ['BW8a', 'EXバトルブースト (EBB)']
+  },
+  {
+    id: 'hgss',
+    name: 'LEGEND (ハートゴールド＆ソウルシルバー)',
+    generation: '第4世代 HGSS • 2010 – 2011',
+    order: 7,
+    years: '2010 – 2011',
+    description: '上下2枚で完成する「ポケモンLEGEND」、グレートポケモン、そして幻の「強化パック ロストリンク (LL)」。',
+    icon: '🏆',
+    coverCardUrl: 'https://images.pokemontcg.io/hgss1/9_hires.png',
+    coverCardName: 'ルギア・ホウオウ LEGEND (L1a / L1b)',
+    grailPrice: '$620.00+ (¥95,000)',
+    bannerGradient: 'from-amber-900 via-yellow-900 to-slate-900',
+    badgeStyle: 'bg-amber-500/25 text-amber-300 border-amber-500/50',
+    set_count: 5,
+    keyMechanics: ['📜 ポケモンLEGEND 上下合体', '✨ ロストリンク (LL)', '🌟 グレートポケモン'],
+    featuredSets: ['ハートゴールドコレクション (L1a)', 'ソウルシルバーコレクション (L1b)', 'よみがえる伝説 (L2)', '頂上大激突 (L3)', 'ロストリンク (LL)']
+  },
+  {
+    id: 'ex',
+    name: 'ADV・PCGシリーズ (EX Series)',
+    generation: '第3世代 • 2003 – 2007',
+    order: 8,
+    years: '2003 – 2007',
+    description: '福田正和氏が手掛けた伝説の「色違い☆（ゴールドスター）」、δ-デルタ種、ポケモンexを擁するヴィンテージの至宝。',
+    icon: '🌋',
+    coverCardUrl: 'https://images.pokemontcg.io/ex8/107_hires.png',
+    coverCardName: 'レックウザ☆ ゴールドスター (きせきの結晶 PCG8)',
+    grailPrice: '$4,950.00+ (¥750,000)',
+    bannerGradient: 'from-emerald-900 via-teal-900 to-slate-900',
+    badgeStyle: 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50',
+    set_count: 15,
+    keyMechanics: ['⭐ 色違い☆（ゴールドスター）', 'δ-デルタ種', '💥 ADV/PCG ポケモンex', '🔬 ホロンの研究塔・幻影'],
+    featuredSets: ['きせきの結晶 (PCG8)', 'さいはての攻防 (PCG9)', 'ホロンの幻影 (PCG7)', 'ロケット団の逆襲 (PCG3)', 'ADV 拡張パック第1弾']
+  },
+  {
+    id: 'ecard',
+    name: 'eシリーズ (e-Card Series)',
+    generation: 'e-Reader世代 • 2001 – 2003',
+    order: 9,
+    years: '2001 – 2003',
+    description: 'カード縁にe-Readerドットコードを配した特別仕様。「地図にない町」「神秘なる山」クリスタルタイプ収録の至高。',
+    icon: '🎴',
+    coverCardUrl: 'https://images.pokemontcg.io/ecard3/146_hires.png',
+    coverCardName: 'クリスタルタイプ リザードン (神秘なる山 E5)',
+    grailPrice: '$5,600.00+ (¥850,000)',
+    bannerGradient: 'from-amber-900 via-yellow-900 to-slate-900',
+    badgeStyle: 'bg-amber-500/25 text-amber-300 border-amber-500/50',
+    set_count: 5,
+    keyMechanics: ['📊 e-Reader ドットコード', '💎 クリスタルタイプ', '🏔️ 神秘なる山・地図にない町'],
+    featuredSets: ['基本拡張パック (E1)', '地図にない町 (E2)', '海からの風 (E3)', '裂けた大地 (E4)', '神秘なる山 (E5)']
+  },
+  {
+    id: 'neo',
+    name: 'neoシリーズ (Neo Series)',
+    generation: '第2世代 • 2000 – 2002',
+    order: 10,
+    years: '2000 – 2002',
+    description: '「金、銀、新世界へ...」から「闇、そして光へ...」まで、悪・鋼タイプ初登場と史上初の「ひかるポケモン」。',
+    icon: '🌿',
+    coverCardUrl: 'https://images.pokemontcg.io/neo4/107_hires.png',
+    coverCardName: 'ひかるリザードン (闇、そして光へ... neo4)',
+    grailPrice: '$2,500.00+ (¥380,000)',
+    bannerGradient: 'from-teal-900 via-cyan-900 to-slate-900',
+    badgeStyle: 'bg-teal-500/25 text-teal-300 border-teal-500/50',
+    set_count: 4,
+    keyMechanics: ['✨ ひかるポケモン (Shining)', '🌙 悪・鋼タイプ初登場', '🌓 わるいポケモン・やさしいポケモン'],
+    featuredSets: ['金、銀、新世界へ... (neo1)', '遺跡をこえて... (neo2)', 'めざめる伝説 (neo3)', '闇、そして光へ... (neo4)']
+  },
+  {
+    id: 'gym',
+    name: 'リーダーズ・ジムシリーズ (Gym Leaders)',
+    generation: '第1世代 ジム • 1998 – 1999',
+    order: 11,
+    years: '1998 – 1999',
+    description: 'カントー地方ジムリーダー「タケシ・カスミ・マチス・エリカ・キョウ・ナツメ・カツラ・サカキ」の激闘拡張パック。',
+    icon: '🏅',
+    coverCardUrl: 'https://images.pokemontcg.io/gym2/2_hires.png',
+    coverCardName: 'カツラのリザードン / ナツメのゲンガー (PMCG5/6)',
+    grailPrice: '$620.00+ (¥95,000)',
+    bannerGradient: 'from-orange-900 via-red-900 to-slate-900',
+    badgeStyle: 'bg-orange-500/25 text-orange-300 border-orange-500/50',
+    set_count: 2,
+    keyMechanics: ['🏅 ジムリーダーのポケモン', '🔥 カツラのリザードン', '👻 ナツメのゲンガー', '🚀 サカキのニドキング'],
+    featuredSets: ['リーダーズスタジアム (PMCG5)', '闇からの挑戦 (PMCG6)']
+  },
+  {
+    id: 'base',
+    name: 'ポケットモンスター オリジナル (1996 Classic)',
+    generation: '第1世代 原点 • 1996 – 1998',
+    order: 12,
+    years: '1996 – 1998',
+    description: '1996年10月20日誕生。初版（マークなし）、第1弾拡張パック、ポケモンジャングル、化石の秘密、ロケット団。',
+    icon: '🏆',
+    coverCardUrl: 'https://images.pokemontcg.io/base1/4_hires.png',
+    coverCardName: '初版 マークなし リザードン (第1弾 拡張パック PMCG1)',
+    grailPrice: '$23,000.00+ (¥3,500,000)',
+    bannerGradient: 'from-yellow-900 via-amber-900 to-red-950',
+    badgeStyle: 'bg-yellow-500/25 text-yellow-300 border-yellow-500/50',
+    set_count: 4,
+    keyMechanics: ['🏆 初版（マークなし）', '🌿 ポケモンジャングル', '🦴 化石の秘密', '🚀 ロケット団（わるいリザードン）'],
+    featuredSets: ['第1弾 拡張パック (PMCG1)', 'ポケモンジャングル (PMCG2)', '化石の秘密 (PMCG3)', 'ロケット団 (PMCG4)']
+  },
+  {
+    id: 'special',
+    name: 'プロモ・VS・web・劇場記念 (Special Sets)',
+    generation: '1998 – Present',
+    order: 13,
+    years: '1998 – Present',
+    description: 'ポケモンカード★VS、ポケモンカード★web、劇場入場者特典プロモ、コロコロコミック限定カードなどの特別セット。',
+    icon: '🎁',
+    coverCardUrl: 'https://images.pokemontcg.io/basep/8_hires.png',
+    coverCardName: '古代ミュウ ルギア爆誕 / モーティのゲンガー (VS1)',
+    grailPrice: '$640.00+ (¥98,000)',
+    bannerGradient: 'from-purple-900 via-fuchsia-900 to-slate-900',
+    badgeStyle: 'bg-purple-500/25 text-purple-300 border-purple-500/50',
+    set_count: 18,
+    keyMechanics: ['⚔️ ポケモンカード★VS', '🌐 ポケモンカード★web', '🎫 プロモカード・映画記念', '🎴 コロコロ限定'],
+    featuredSets: ['ポケモンカード★VS (VS1)', 'ポケモンカード★web (web1)', 'SVプロモ (SV-P)', 'Sプロモ (S-P)']
   }
 ];
 
@@ -375,57 +582,154 @@ function normalizeEraClient(eraBlock: string | null | undefined, setCode: string
   const rawEra = (eraBlock || '').trim();
   const n = (name || '').toLowerCase();
 
-  // 1. Mega Evolution
-  if (rawEra === 'Mega Evolution' || code.startsWith('ME') || n.includes('mega evolution') || n.includes('pitch black') || n.includes('white flare') || n.includes('30th celebration')) return 'mega';
+  // 1. Mega Evolution (both English and Japanese: M1S, M1L, M2, M2a, M3, M4, M5, M6, M-P, MC)
+  if (
+    rawEra === 'Mega Evolution' ||
+    code.startsWith('ME') ||
+    code.startsWith('M-') ||
+    /^M[0-9]/.test(code) ||
+    code === 'MC' ||
+    n.includes('mega evolution') ||
+    n.includes('mega dream') ||
+    n.includes('pitch black') ||
+    n.includes('white flare') ||
+    n.includes('30th celebration') ||
+    n.includes('メガ') ||
+    n.includes('インフェルノ') ||
+    n.includes('アビスアイ') ||
+    n.includes('ストームエメラルダ') ||
+    n.includes('ニンジャスピナー') ||
+    n.includes('ムニキスゼロ')
+  ) {
+    return 'mega';
+  }
 
   // 2. Scarlet & Violet
-  if (rawEra === 'Scarlet & Violet' || rawEra === 'SV' || code.startsWith('SV') || code.startsWith('SVP') || code.includes('SV')) return 'sv';
+  if (rawEra === 'Scarlet & Violet' || rawEra === 'SV' || code.startsWith('SV') || code.startsWith('SVP') || code.includes('SV')) {
+    return 'sv';
+  }
 
-  // 3. Sword & Shield
-  if (rawEra === 'Sword & Shield' || rawEra === 'S' || code.startsWith('SWSH') || code.startsWith('SWSHP') || code.startsWith('S1') || code.startsWith('S2') || code.startsWith('S3') || code.startsWith('S4') || code.startsWith('S5') || code.startsWith('S6') || code.startsWith('S7') || code.startsWith('S8') || code.startsWith('S9') || code.startsWith('S10') || code.startsWith('S11') || code.startsWith('S12') || code.startsWith('S-P') || (code.startsWith('SP') && !code.startsWith('SPEC'))) return 'swsh';
+  // 3. Sword & Shield (SWSH, S1-S12, S-P, SC)
+  if (
+    rawEra === 'Sword & Shield' ||
+    rawEra === 'S' ||
+    code.startsWith('SWSH') ||
+    code.startsWith('SWSHP') ||
+    code.startsWith('S-P') ||
+    code.startsWith('SC') ||
+    /^S[0-9]/.test(code)
+  ) {
+    return 'swsh';
+  }
 
-  // 4. Sun & Moon
-  if (rawEra === 'Sun & Moon' || rawEra === 'SM' || code.startsWith('SM') || code.startsWith('SMP') || code.includes('SM')) return 'sm';
+  // 4. Sun & Moon (SM, SMP, CSMP)
+  if (rawEra === 'Sun & Moon' || rawEra === 'SM' || code.startsWith('SM') || code.startsWith('SMP') || code.includes('SM')) {
+    return 'sm';
+  }
 
-  // 5. XY Series
-  if (rawEra === 'XY' || rawEra === 'M' || code.startsWith('XY') || code.startsWith('XYP') || code.startsWith('CP') || code.includes('XY')) return 'xy';
+  // 5. XY Series (XY, XYP, CP, M6a, MF)
+  if (rawEra === 'XY' || rawEra === 'M' || code.startsWith('XY') || code.startsWith('XYP') || code.startsWith('CP') || code.includes('XY')) {
+    return 'xy';
+  }
 
-  // 6. Black & White
-  if (rawEra === 'Black & White' || rawEra === 'BW' || code.startsWith('BW') || code.startsWith('BWP') || code.startsWith('EBB')) return 'bw';
+  // 6. Black & White (BW, BWP, EBB)
+  if (rawEra === 'Black & White' || rawEra === 'BW' || code.startsWith('BW') || code.startsWith('BWP') || code.startsWith('EBB')) {
+    return 'bw';
+  }
 
-  // 7. HeartGold & SoulSilver
-  if (rawEra === 'HeartGold & SoulSilver' || code.startsWith('HGSS') || code.startsWith('HGSSP') || code.startsWith('L1') || code.startsWith('L2') || code.startsWith('L3') || n.includes('heartgold') || n.includes('soulsilver') || n.includes('triumphant') || n.includes('undaunted') || n.includes('unleashed')) return 'hgss';
+  // 7. HeartGold & SoulSilver / LEGEND (HGSS, L1, L2, L3, LL)
+  if (
+    rawEra === 'HeartGold & SoulSilver' ||
+    code.startsWith('HGSS') ||
+    code.startsWith('HGSSP') ||
+    code.startsWith('L1') ||
+    code.startsWith('L2') ||
+    code.startsWith('L3') ||
+    code === 'LL' ||
+    n.includes('heartgold') ||
+    n.includes('soulsilver') ||
+    n.includes('triumphant') ||
+    n.includes('undaunted') ||
+    n.includes('unleashed') ||
+    n.includes('よみがえる伝説') ||
+    n.includes('頂上大激突') ||
+    n.includes('ロストリンク')
+  ) {
+    return 'hgss';
+  }
 
   // 8. Platinum
-  if (rawEra === 'Platinum' || code.startsWith('PL') || code.startsWith('PT') || code.startsWith('DPt') || n.includes('platinum') || n.includes('arceus') || n.includes('supreme victors') || n.includes('rising rivals')) return 'platinum';
+  if (rawEra === 'Platinum' || code.startsWith('PL') || code.startsWith('PT') || code.startsWith('DPt') || n.includes('platinum') || n.includes('arceus') || n.includes('supreme victors') || n.includes('rising rivals')) {
+    return 'platinum';
+  }
 
   // 9. Diamond & Pearl
-  if (rawEra === 'Diamond & Pearl' || code.startsWith('DP') || code.startsWith('DPP') || n.includes('diamond') || n.includes('pearl') || n.includes('stormfront') || n.includes('legends awakened') || n.includes('majestic dawn') || n.includes('great encounters') || n.includes('secret wonders') || n.includes('mysterious treasures')) return 'dp';
+  if (rawEra === 'Diamond & Pearl' || code.startsWith('DP') || code.startsWith('DPP') || n.includes('diamond') || n.includes('pearl') || n.includes('stormfront') || n.includes('legends awakened') || n.includes('majestic dawn') || n.includes('great encounters') || n.includes('secret wonders') || n.includes('mysterious treasures')) {
+    return 'dp';
+  }
 
-  // 10. EX Series (Ruby & Sapphire)
-  if (rawEra === 'EX' || code.startsWith('EX') || code.startsWith('ADV') || code.startsWith('PCG') || n.includes('ruby') || n.includes('sapphire') || n.includes('deoxys') || n.includes('dragon frontiers') || n.includes('power keepers') || n.includes('legend maker') || n.includes('holon')) return 'ex';
+  // 10. EX Series (Ruby & Sapphire) / ADV & PCG
+  if (
+    rawEra === 'EX' ||
+    code.startsWith('EX') ||
+    code.startsWith('ADV') ||
+    code.startsWith('PCG') ||
+    n.includes('ruby') ||
+    n.includes('sapphire') ||
+    n.includes('deoxys') ||
+    n.includes('dragon frontiers') ||
+    n.includes('power keepers') ||
+    n.includes('legend maker') ||
+    n.includes('holon') ||
+    n.includes('ホロン')
+  ) {
+    return 'ex';
+  }
 
   // 11. e-Card Series
-  if (rawEra === 'E-Card' || code.startsWith('ECARD') || code.startsWith('E1') || code.startsWith('E2') || code.startsWith('E3') || n.includes('skyridge') || n.includes('aquapolis') || n.includes('expedition')) return 'ecard';
+  if (
+    rawEra === 'E-Card' ||
+    code.startsWith('ECARD') ||
+    code.startsWith('E1') ||
+    code.startsWith('E2') ||
+    code.startsWith('E3') ||
+    code.startsWith('E4') ||
+    code.startsWith('E5') ||
+    n.includes('skyridge') ||
+    n.includes('aquapolis') ||
+    n.includes('expedition') ||
+    n.includes('地図にない町') ||
+    n.includes('海からの風') ||
+    n.includes('裂けた大地') ||
+    n.includes('神秘なる山')
+  ) {
+    return 'ecard';
+  }
 
   // 12. Neo Series
-  if (rawEra === 'Neo' || code.startsWith('NEO') || n.includes('neo genesis') || n.includes('neo discovery') || n.includes('neo revelation') || n.includes('neo destiny')) return 'neo';
+  if (rawEra === 'Neo' || code.startsWith('NEO') || n.includes('neo genesis') || n.includes('neo discovery') || n.includes('neo revelation') || n.includes('neo destiny') || n.includes('新世界へ') || n.includes('遺跡をこえて') || n.includes('めざめる伝説') || n.includes('闇、そして光へ')) {
+    return 'neo';
+  }
 
   // 13. Gym Series
-  if (rawEra === 'Gym' || code.startsWith('GYM') || n.includes('gym heroes') || n.includes('gym challenge')) return 'gym';
+  if (rawEra === 'Gym' || code.startsWith('GYM') || code === 'PMCG5' || code === 'PMCG6' || n.includes('gym heroes') || n.includes('gym challenge') || n.includes('リーダーズスタジアム') || n.includes('闇からの挑戦')) {
+    return 'gym';
+  }
 
   // 14. Base Set / Classic Series
-  if (rawEra === 'Base' || code.startsWith('BASE') || code.startsWith('PMCG') || n.includes('base set') || n.includes('jungle') || n.includes('fossil') || n.includes('team rocket') || n.includes('legendary collection')) return 'base';
+  if (rawEra === 'Base' || code.startsWith('BASE') || code.startsWith('PMCG') || n.includes('base set') || n.includes('jungle') || n.includes('fossil') || n.includes('team rocket') || n.includes('legendary collection') || n.includes('拡張パック') || n.includes('化石の秘密') || n.includes('ロケット団')) {
+    return 'base';
+  }
 
   // 15. Promos & Special Sets
   return 'special';
 }
 
 export const UniversalCatalogView: React.FC = () => {
-  // Navigation State: Game > Era > Expansion/Set > Cards
+  // Navigation State: Game > Category (EN/JP) > Era > Expansion/Set > Cards
   const [viewLevel, setViewLevel] = useState<ViewLevel>('eras');
   const [selectedGameSlug, setSelectedGameSlug] = useState<string>('pokemon');
-  const [selectedLanguage, setSelectedLanguage] = useState<'all' | 'en' | 'jp'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<'en' | 'jp'>('en');
   const [selectedEra, setSelectedEra] = useState<Era | null>(null);
   const [selectedSet, setSelectedSet] = useState<SetSummary | null>(null);
   const [selectedCard, setSelectedCard] = useState<MasterCard | null>(null);
@@ -469,27 +773,26 @@ export const UniversalCatalogView: React.FC = () => {
       .catch(() => {});
   }, [selectedGameSlug]);
 
-  // 3. Compute active sets for the selected era & language
+  // 3. Compute active sets strictly for the selected era & master language category
   const eraSets = useMemo(() => {
     if (!selectedEra) return [];
-    let list = allSets.filter((s) => normalizeEraClient(s.era_block, s.set_code, s.name) === selectedEra.id);
-    if (selectedLanguage !== 'all') {
-      list = list.filter((s) => s.language === selectedLanguage);
-    }
+    let list = allSets.filter(
+      (s) => s.language === selectedCategory && normalizeEraClient(s.era_block, s.set_code, s.name) === selectedEra.id
+    );
     if (setSearch) {
       const q = setSearch.toLowerCase();
       list = list.filter((s) => s.name.toLowerCase().includes(q) || s.set_code.toLowerCase().includes(q));
     }
     return list;
-  }, [allSets, selectedEra, selectedLanguage, setSearch]);
+  }, [allSets, selectedEra, selectedCategory, setSearch]);
 
-  // 4. Compute Era stats dynamically based on current language
+  // 4. Compute Era stats dynamically based on current Category (English vs Japanese)
   const computedEras = useMemo(() => {
-    return ERA_METADATA.map((era) => {
-      let filtered = allSets.filter((s) => normalizeEraClient(s.era_block, s.set_code, s.name) === era.id);
-      if (selectedLanguage !== 'all') {
-        filtered = filtered.filter((s) => s.language === selectedLanguage);
-      }
+    const sourceEras = selectedCategory === 'en' ? ENGLISH_ERAS : JAPANESE_ERAS;
+    return sourceEras.map((era) => {
+      const filtered = allSets.filter(
+        (s) => s.language === selectedCategory && normalizeEraClient(s.era_block, s.set_code, s.name) === era.id
+      );
       const totalCards = filtered.reduce((acc, s) => acc + Number(s.actual_card_count || 0), 0);
       const totalValuation = filtered.reduce((acc, s) => acc + Number(s.total_valuation_cents || 0), 0);
 
@@ -500,7 +803,27 @@ export const UniversalCatalogView: React.FC = () => {
         totalValuation
       };
     });
-  }, [allSets, selectedLanguage]);
+  }, [allSets, selectedCategory]);
+
+  // Census counts for current category
+  const categoryStats = useMemo(() => {
+    const list = allSets.filter((s) => s.language === selectedCategory);
+    const setsCount = list.length;
+    const cardsCount = list.reduce((acc, s) => acc + Number(s.actual_card_count || 0), 0);
+    const valuationCents = list.reduce((acc, s) => acc + Number(s.total_valuation_cents || 0), 0);
+    return { setsCount, cardsCount, valuationCents };
+  }, [allSets, selectedCategory]);
+
+  // Switch Master Category
+  const handleSelectCategory = (cat: 'en' | 'jp') => {
+    if (cat === selectedCategory) return;
+    setSelectedCategory(cat);
+    setSelectedEra(null);
+    setSelectedSet(null);
+    setSelectedCard(null);
+    setViewLevel('eras');
+    setSetSearch('');
+  };
 
   // 5. Fetch Cards when a Set is selected
   useEffect(() => {
@@ -600,16 +923,22 @@ export const UniversalCatalogView: React.FC = () => {
 
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
 
-            {/* Eras Node */}
+            {/* Category Node (English vs Japanese) */}
             <button
               onClick={handleBackToEras}
-              className={`px-2.5 py-1 rounded-md font-medium transition cursor-pointer ${
+              className={`px-2.5 py-1 rounded-md font-medium transition cursor-pointer flex items-center gap-1.5 ${
                 viewLevel === 'eras'
-                  ? 'bg-indigo-600 text-white shadow-xs font-semibold'
+                  ? selectedCategory === 'en'
+                    ? 'bg-indigo-600 text-white shadow-xs font-semibold'
+                    : 'bg-rose-600 text-white shadow-xs font-semibold'
                   : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
               }`}
             >
-              All Eras ({computedEras.length})
+              <span>{selectedCategory === 'en' ? '🇺🇸' : '🇯🇵'}</span>
+              <span>{selectedCategory === 'en' ? 'English Eras' : 'Japanese Series'}</span>
+              <span className="text-[10px] px-1 py-0.2 rounded bg-black/20 font-mono">
+                {computedEras.length}
+              </span>
             </button>
 
             {/* Set Level Node */}
@@ -645,33 +974,29 @@ export const UniversalCatalogView: React.FC = () => {
             )}
           </div>
 
-          {/* Right Controls: Language Selector & Verification Pill */}
+          {/* Right Controls: Prominent Category Switcher & Verification Pill */}
           <div className="flex items-center gap-3">
-            {/* Language Toggle */}
+            {/* Top Category Toggle Pill */}
             <div className="flex items-center bg-slate-100 border border-slate-200 rounded-lg p-0.5 text-xs">
               <button
-                onClick={() => setSelectedLanguage('all')}
-                className={`px-2.5 py-1 rounded-md transition font-medium cursor-pointer ${
-                  selectedLanguage === 'all' ? 'bg-white text-indigo-700 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                onClick={() => handleSelectCategory('en')}
+                className={`px-3 py-1 rounded-md transition font-semibold cursor-pointer flex items-center gap-1.5 ${
+                  selectedCategory === 'en' ? 'bg-white text-indigo-700 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                🌐 All
+                <span>🇺🇸</span>
+                <span>English</span>
+                <span className="text-[10px] font-mono text-slate-400">173</span>
               </button>
               <button
-                onClick={() => setSelectedLanguage('en')}
-                className={`px-2.5 py-1 rounded-md transition font-medium cursor-pointer ${
-                  selectedLanguage === 'en' ? 'bg-white text-indigo-700 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                onClick={() => handleSelectCategory('jp')}
+                className={`px-3 py-1 rounded-md transition font-semibold cursor-pointer flex items-center gap-1.5 ${
+                  selectedCategory === 'jp' ? 'bg-white text-rose-700 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                🇺🇸 English
-              </button>
-              <button
-                onClick={() => setSelectedLanguage('jp')}
-                className={`px-2.5 py-1 rounded-md transition font-medium cursor-pointer ${
-                  selectedLanguage === 'jp' ? 'bg-white text-indigo-700 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                🇯🇵 Japanese
+                <span>🇯🇵</span>
+                <span>Japanese</span>
+                <span className="text-[10px] font-mono text-slate-400">235</span>
               </button>
             </div>
 
@@ -720,6 +1045,111 @@ export const UniversalCatalogView: React.FC = () => {
         {/* ======================================================== */}
         {viewLevel === 'eras' && (
           <div className="max-w-7xl mx-auto space-y-6">
+            {/* MASTER CATEGORY SELECTOR CARDS (ENGLISH VS JAPANESE) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 1. English Pokémon TCG Master Card */}
+              <button
+                onClick={() => handleSelectCategory('en')}
+                className={`p-5 rounded-2xl border transition-all text-left flex items-center justify-between cursor-pointer relative overflow-hidden group ${
+                  selectedCategory === 'en'
+                    ? 'bg-white border-indigo-600 shadow-md ring-2 ring-indigo-500/20'
+                    : 'bg-white/70 hover:bg-white border-slate-200 hover:border-slate-300 shadow-xs'
+                }`}
+              >
+                <div className="flex items-center gap-4 relative z-10">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0 transition-transform group-hover:scale-105 shadow-sm ${
+                    selectedCategory === 'en' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700'
+                  }`}>
+                    🇺🇸
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-black text-lg text-slate-900">English Pokémon TCG</h3>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 uppercase">
+                        US / International
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 font-mono mt-0.5">
+                      14 Historical Eras • 173 Sets • 20,271 Master Cards
+                    </p>
+                    <div className="flex items-center gap-2 text-[11px] font-mono text-indigo-600 font-semibold mt-1">
+                      <span>Pokellector US Catalog</span>
+                      <span>•</span>
+                      <span>100% Autopriced</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 relative z-10">
+                  {selectedCategory === 'en' ? (
+                    <span className="px-3 py-1 rounded-full bg-indigo-600 text-white text-xs font-bold font-mono shadow-xs flex items-center gap-1">
+                      <span>✓</span>
+                      <span>Active</span>
+                    </span>
+                  ) : (
+                    <span className="text-xs font-semibold text-slate-400 group-hover:text-indigo-600 transition">
+                      Switch →
+                    </span>
+                  )}
+                </div>
+
+                {selectedCategory === 'en' && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-50/40 via-transparent to-transparent pointer-events-none" />
+                )}
+              </button>
+
+              {/* 2. Japanese Pokémon TCG Master Card */}
+              <button
+                onClick={() => handleSelectCategory('jp')}
+                className={`p-5 rounded-2xl border transition-all text-left flex items-center justify-between cursor-pointer relative overflow-hidden group ${
+                  selectedCategory === 'jp'
+                    ? 'bg-white border-rose-600 shadow-md ring-2 ring-rose-500/20'
+                    : 'bg-white/70 hover:bg-white border-slate-200 hover:border-slate-300 shadow-xs'
+                }`}
+              >
+                <div className="flex items-center gap-4 relative z-10">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0 transition-transform group-hover:scale-105 shadow-sm ${
+                    selectedCategory === 'jp' ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-700'
+                  }`}>
+                    🇯🇵
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-black text-lg text-slate-900">Japanese Pokémon TCG</h3>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-50 text-rose-700 border border-rose-200 uppercase">
+                        ポケモンカードゲーム
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 font-mono mt-0.5">
+                      12 Historical Series • 235 Sets • 18,873 Master Cards
+                    </p>
+                    <div className="flex items-center gap-2 text-[11px] font-mono text-rose-600 font-semibold mt-1">
+                      <span>Pokellector Japan Catalog</span>
+                      <span>•</span>
+                      <span>First Editions & Exclusives</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 relative z-10">
+                  {selectedCategory === 'jp' ? (
+                    <span className="px-3 py-1 rounded-full bg-rose-600 text-white text-xs font-bold font-mono shadow-xs flex items-center gap-1">
+                      <span>✓</span>
+                      <span>Active</span>
+                    </span>
+                  ) : (
+                    <span className="text-xs font-semibold text-slate-400 group-hover:text-rose-600 transition">
+                      Switch →
+                    </span>
+                  )}
+                </div>
+
+                {selectedCategory === 'jp' && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-rose-50/40 via-transparent to-transparent pointer-events-none" />
+                )}
+              </button>
+            </div>
+
             {/* Top Vault Hero Banner */}
             <div className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 relative overflow-hidden shadow-xs">
               {/* Subtle ambient light gradient */}
@@ -729,13 +1159,21 @@ export const UniversalCatalogView: React.FC = () => {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-indigo-600 text-xs font-mono font-semibold uppercase tracking-wider">
                     <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
-                    <span>Collector Vault & Historical Catalog (Pokellector Series)</span>
+                    <span>
+                      {selectedCategory === 'en'
+                        ? 'English Collector Vault & Historical Catalog (Pokellector US)'
+                        : '日本のポケモンカードゲーム 歴史的全シリーズカタログ (Pokellector Japan)'}
+                    </span>
                   </div>
                   <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
-                    Historical TCG Eras & Generations
+                    {selectedCategory === 'en'
+                      ? 'English Pokémon TCG Eras & Expansions'
+                      : 'Japanese Pokémon TCG Series (全12シリーズ)'}
                   </h1>
                   <p className="text-xs md:text-sm text-slate-600 max-w-2xl leading-relaxed">
-                    Explore all 15 iconic Pokellector series spanning 1998 to the present day. Every series showcases signature chase grails, verified booster sets, and 100% autopriced card singles.
+                    {selectedCategory === 'en'
+                      ? 'Explore all 14 official English Pokellector series spanning 1998 to 2025. Every series features verified booster expansions, signature chase grails, and 100% autopriced card singles.'
+                      : '日本の公式全12シリーズを網羅。最新メガシンカ、社会現象の151、イーブイヒーローズから1996年誕生の第1弾拡張パックまで、全235セットと18,873枚のカードを完全収録。'}
                   </p>
                 </div>
 
@@ -743,17 +1181,17 @@ export const UniversalCatalogView: React.FC = () => {
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 shrink-0 flex items-center gap-6 font-mono">
                   <div>
                     <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Total Sets</span>
-                    <span className="font-black text-slate-900 text-xl md:text-2xl">{allSets.length}</span>
+                    <span className="font-black text-slate-900 text-xl md:text-2xl">{categoryStats.setsCount}</span>
                   </div>
                   <div className="w-px h-10 bg-slate-200" />
                   <div>
                     <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Master Cards</span>
-                    <span className="font-black text-indigo-600 text-xl md:text-2xl">39,144</span>
+                    <span className="font-black text-indigo-600 text-xl md:text-2xl">{categoryStats.cardsCount.toLocaleString()}</span>
                   </div>
                   <div className="w-px h-10 bg-slate-200" />
                   <div>
                     <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Catalog Value</span>
-                    <span className="font-black text-emerald-600 text-xl md:text-2xl">$1.07M+</span>
+                    <span className="font-black text-emerald-600 text-xl md:text-2xl">{formatUSD(categoryStats.valuationCents)}</span>
                   </div>
                 </div>
               </div>
@@ -894,7 +1332,7 @@ export const UniversalCatalogView: React.FC = () => {
                 className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 text-xs font-semibold border border-slate-200 flex items-center gap-2 transition cursor-pointer shadow-xs"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Back to All Eras</span>
+                <span>Back to All {selectedCategory === 'en' ? 'English' : 'Japanese'} Eras</span>
               </button>
 
               {/* Set Search within Era */}
@@ -1008,7 +1446,7 @@ export const UniversalCatalogView: React.FC = () => {
 
               {eraSets.length === 0 && (
                 <div className="col-span-full p-12 text-center text-slate-500 italic text-sm">
-                  No expansions found matching your search in this era.
+                  No {selectedCategory === 'en' ? 'English' : 'Japanese'} expansions found matching your search in this era.
                 </div>
               )}
             </div>
