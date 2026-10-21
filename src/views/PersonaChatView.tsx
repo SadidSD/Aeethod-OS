@@ -151,13 +151,19 @@ export const PersonaChatView: React.FC = () => {
       const saved = localStorage.getItem('aeethod_persona_api_config');
       if (saved) {
         const parsed = JSON.parse(saved);
+        const provider = parsed.provider === 'openai' ? 'openai' : 'groq';
+        let model = parsed.model || 'llama-3.3-70b-versatile';
+        // Auto-correct stale localStorage model if it was left as gpt-4o for Groq
+        if (provider === 'groq' && (!model || model === 'gpt-4o' || model.startsWith('gpt-') || model.startsWith('claude-'))) {
+          model = 'llama-3.3-70b-versatile';
+        }
         return {
           ...DEFAULT_API_CONFIG,
           ...parsed,
-          provider: 'groq',
+          provider,
           apiKey: parsed.apiKey || envGroqKey,
-          model: parsed.model || 'llama-3.3-70b-versatile',
-          baseUrl: 'https://api.groq.com/openai/v1',
+          model,
+          baseUrl: provider === 'groq' ? 'https://api.groq.com/openai/v1' : (parsed.baseUrl || 'https://api.openai.com/v1'),
         };
       }
     } catch {}
@@ -166,6 +172,17 @@ export const PersonaChatView: React.FC = () => {
       apiKey: envGroqKey || DEFAULT_API_CONFIG.apiKey,
     };
   });
+
+  // Ensure state auto-sanitizes if localStorage held gpt-4o
+  useEffect(() => {
+    if (apiConfig.provider === 'groq' && (apiConfig.model === 'gpt-4o' || apiConfig.model?.startsWith('gpt-') || !apiConfig.model)) {
+      setApiConfig((prev) => ({
+        ...prev,
+        model: 'llama-3.3-70b-versatile',
+        baseUrl: 'https://api.groq.com/openai/v1',
+      }));
+    }
+  }, [apiConfig.provider, apiConfig.model]);
 
   const [quickKeyInput, setQuickKeyInput] = useState('');
 
@@ -343,8 +360,14 @@ export const PersonaChatView: React.FC = () => {
         ? 'https://openrouter.ai/api/v1/chat/completions'
         : `${config.baseUrl.replace(/\/+$/, '')}/chat/completions`;
 
-    const modelToUse =
-      config.model || (config.provider === 'groq' ? 'llama-3.3-70b-versatile' : 'gpt-4o');
+    let modelToUse = config.model;
+    if (config.provider === 'groq') {
+      if (!modelToUse || modelToUse === 'gpt-4o' || modelToUse.startsWith('gpt-') || modelToUse.startsWith('claude-')) {
+        modelToUse = 'llama-3.3-70b-versatile';
+      }
+    } else if (!modelToUse) {
+      modelToUse = 'gpt-4o';
+    }
 
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -1425,13 +1448,25 @@ Please verify your Groq API Key or check your rate limits at [console.groq.com](
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="font-semibold text-white block mb-1">Model Name</label>
-                  <input
-                    type="text"
-                    value={apiConfig.model}
-                    onChange={(e) => setApiConfig((prev) => ({ ...prev, model: e.target.value }))}
-                    placeholder="llama-3.3-70b-versatile"
-                    className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6] font-mono focus:outline-none focus:border-amber-500"
-                  />
+                  {apiConfig.provider === 'groq' ? (
+                    <select
+                      value={apiConfig.model}
+                      onChange={(e) => setApiConfig((prev) => ({ ...prev, model: e.target.value }))}
+                      className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6] font-mono focus:outline-none focus:border-amber-500 cursor-pointer"
+                    >
+                      <option value="llama-3.3-70b-versatile">llama-3.3-70b-versatile (Recommended • 70B Deep Reasoning)</option>
+                      <option value="llama-3.1-8b-instant">llama-3.1-8b-instant (Fastest • Ultra-Low Latency)</option>
+                      <option value="mixtral-8x7b-32768">mixtral-8x7b-32768 (32k High Context)</option>
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={apiConfig.model}
+                      onChange={(e) => setApiConfig((prev) => ({ ...prev, model: e.target.value }))}
+                      placeholder="e.g. gpt-4o or meta-llama/llama-3.1-70b-instruct"
+                      className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6] font-mono focus:outline-none focus:border-amber-500"
+                    />
+                  )}
                 </div>
 
                 <div>
