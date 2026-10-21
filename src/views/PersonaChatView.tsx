@@ -47,7 +47,6 @@ import {
   DEFAULT_API_CONFIG,
   INITIAL_PERSONAS,
   MIKAH_PERSONA,
-  generateSimulatedReply,
 } from '../data/personaChatData';
 
 // Legacy personas to purge from storage
@@ -118,6 +117,9 @@ const PERSONA_STARTER_PRESETS: Array<Omit<Persona, 'id' | 'createdAt'>> = [
 ];
 
 export const PersonaChatView: React.FC = () => {
+  // Global Vercel Environment API Key support for shared access
+  const envGroqKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY) || '';
+
   // 1. Core State: Pre-loaded with Mikah Walters & custom personas
   const [personas, setPersonas] = useState<Persona[]>(() => {
     try {
@@ -127,7 +129,6 @@ export const PersonaChatView: React.FC = () => {
         const validCustom = parsed.filter(
           (p) => p && p.id && !LEGACY_PERSONA_IDS.has(p.id)
         );
-        // Ensure Mikah Walters is always loaded
         const hasMikah = validCustom.some((p) => p.id === MIKAH_PERSONA.id);
         if (!hasMikah) {
           return [MIKAH_PERSONA, ...validCustom];
@@ -143,9 +144,6 @@ export const PersonaChatView: React.FC = () => {
   const [activePersonaId, setActivePersonaId] = useState<string | null>(() => {
     return MIKAH_PERSONA.id;
   });
-
-  // Global Vercel Environment API Key support for shared access across all visitors
-  const envGroqKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY) || '';
 
   // Default API configuration set to Groq Llama-3.3-70B
   const [apiConfig, setApiConfig] = useState<ApiConfig>(() => {
@@ -169,6 +167,8 @@ export const PersonaChatView: React.FC = () => {
     };
   });
 
+  const [quickKeyInput, setQuickKeyInput] = useState('');
+
   const [sessions, setSessions] = useState<ChatSession[]>(() => {
     try {
       const saved = localStorage.getItem('aeethod_persona_chat_sessions');
@@ -187,20 +187,7 @@ export const PersonaChatView: React.FC = () => {
         personaId: MIKAH_PERSONA.id,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        messages: [
-          {
-            id: 'msg-mikah-1',
-            role: 'assistant',
-            content: `Hey! Mikah here from SortSwift and MTech Cave 🙂
-
-Whether you're looking into our **Simple Sifter** (running on the new 64-bit Pi image v11.5.2), checking out our **Super Sorter** machines, or trying to eliminate the manual nightmare of alphabetizing cards with **Chaos Sorting**, I'm happy to help!
-
-What questions do you have about your card shop intake, scanner hardware, or marketplace syncing?`,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            personaId: MIKAH_PERSONA.id,
-            isSimulated: true,
-          },
-        ],
+        messages: [],
       },
     ];
   });
@@ -277,6 +264,23 @@ What questions do you have about your card shop intake, scanner hardware, or mar
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeSession?.messages, isGenerating]);
 
+  const effectiveApiKey = apiConfig.apiKey?.trim() || envGroqKey.trim();
+  const isUsingEnvKey = !apiConfig.apiKey?.trim() && Boolean(envGroqKey.trim());
+
+  // Quick Key Save Handler
+  const handleSaveQuickKey = () => {
+    if (!quickKeyInput.trim()) return;
+    const cleanKey = quickKeyInput.trim();
+    setApiConfig((prev) => ({
+      ...prev,
+      provider: 'groq',
+      apiKey: cleanKey,
+      model: 'llama-3.3-70b-versatile',
+      baseUrl: 'https://api.groq.com/openai/v1',
+    }));
+    setQuickKeyInput('');
+  };
+
   // Create New Session
   const handleCreateNewSession = (personaId?: string) => {
     const targetPersona =
@@ -320,7 +324,89 @@ What questions do you have about your card shop intake, scanner hardware, or mar
     );
   };
 
-  // Send Message Logic (Supports Real Groq API with Mikah In-Character Fallback)
+  // Real Streaming LLM API Caller via Fetch & ReadableStream
+  const callRealApiStream = async (
+    persona: Persona,
+    history: ChatMessage[],
+    config: ApiConfig,
+    onChunk: (accumulatedText: string) => void
+  ): Promise<string> => {
+    const keyToUse = config.apiKey?.trim() || envGroqKey.trim();
+    if (!keyToUse) {
+      throw new Error('Groq API Key is required. Please paste your key to enable live LLM simulation.');
+    }
+
+    const endpoint =
+      config.provider === 'groq'
+        ? 'https://api.groq.com/openai/v1/chat/completions'
+        : config.provider === 'openrouter'
+        ? 'https://openrouter.ai/api/v1/chat/completions'
+        : `${config.baseUrl.replace(/\/+$/, '')}/chat/completions`;
+
+    const modelToUse =
+      config.model || (config.provider === 'groq' ? 'llama-3.3-70b-versatile' : 'gpt-4o');
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${keyToUse}`,
+      },
+      body: JSON.stringify({
+        model: modelToUse,
+        temperature: config.temperature ?? 0.7,
+        max_tokens: config.maxTokens ?? 1024,
+        stream: true,
+        messages: [
+          { role: 'system', content: persona.systemPrompt },
+          ...history.map((m) => ({ role: m.role, content: m.content })),
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const errJson = await response.json().catch(() => ({}));
+      throw new Error(errJson.error?.message || `Groq API returned HTTP ${response.status}`);
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error('Response stream not available from endpoint');
+
+    const decoder = new TextDecoder('utf-8');
+    let accumulated = '';
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith(':')) continue;
+        if (trimmed === 'data: [DONE]') break;
+        if (trimmed.startsWith('data: ')) {
+          try {
+            const parsed = JSON.parse(trimmed.slice(6));
+            const delta = parsed.choices?.[0]?.delta?.content;
+            if (delta) {
+              accumulated += delta;
+              onChunk(accumulated);
+            }
+          } catch {
+            // Partial JSON line
+          }
+        }
+      }
+    }
+
+    return accumulated;
+  };
+
+  // Send Message Logic (100% LLM-Based with Real Streaming)
   const handleSendMessage = async (textToSend?: string) => {
     const messageContent = (textToSend || inputMessage).trim();
     if (!messageContent || isGenerating || !activePersona) return;
@@ -360,14 +446,59 @@ What questions do you have about your card shop intake, scanner hardware, or mar
 
     const newMessages = [...currentSession.messages, userMessage];
 
-    // Optimistically update session
+    // If no key is configured, prompt user to add their Groq key
+    if (!effectiveApiKey) {
+      const keyPromptMsg: ChatMessage = {
+        id: `msg-resp-${Date.now()}`,
+        role: 'assistant',
+        content: `⚠️ **Groq API Key Required for Live Simulation:**
+
+To chat with **${activePersona.name}** in a true live LLM simulation, please connect your Groq API Key:
+
+1. Grab a free API key at **[console.groq.com/keys](https://console.groq.com/keys)** (Takes 10 seconds, zero payment needed).
+2. Paste your key in the top amber bar and click **Connect**.
+3. Or configure \`VITE_GROQ_API_KEY\` in your Vercel project settings for instant public access across all visitors.`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        personaId: activePersona.id,
+        modelUsed: 'groq:unauthenticated',
+        isSimulated: false,
+      };
+
+      setSessions((prev) =>
+        prev.map((s) =>
+          s.id === currentSessionId
+            ? {
+                ...s,
+                title: updatedTitle,
+                messages: [...newMessages, keyPromptMsg],
+                updatedAt: new Date().toISOString(),
+              }
+            : s
+        )
+      );
+      return;
+    }
+
+    // Placeholder assistant message for streaming
+    const assistantMsgId = `msg-resp-${Date.now()}`;
+    const initialAssistantMsg: ChatMessage = {
+      id: assistantMsgId,
+      role: 'assistant',
+      content: '',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      personaId: activePersona.id,
+      modelUsed: `${apiConfig.provider}:${apiConfig.model}`,
+      isSimulated: false,
+    };
+
+    // Optimistically update session with user message and empty streaming bubble
     setSessions((prev) =>
       prev.map((s) =>
         s.id === currentSessionId
           ? {
               ...s,
               title: updatedTitle,
-              messages: newMessages,
+              messages: [...newMessages, initialAssistantMsg],
               updatedAt: new Date().toISOString(),
             }
           : s
@@ -377,75 +508,38 @@ What questions do you have about your card shop intake, scanner hardware, or mar
     setIsGenerating(true);
 
     try {
-      // 1. Check if user configured a real LLM API Key (Groq or other, local or Vercel env)
-      const effectiveApiKey = apiConfig.apiKey.trim() || envGroqKey.trim();
-      if (apiConfig.provider !== 'simulation' && effectiveApiKey) {
-        const assistantReplyText = await callRealApi(activePersona, newMessages, {
-          ...apiConfig,
-          apiKey: effectiveApiKey,
-        });
-
-        const assistantMsg: ChatMessage = {
-          id: `msg-resp-${Date.now()}`,
-          role: 'assistant',
-          content: assistantReplyText,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          personaId: activePersona.id,
-          modelUsed: `${apiConfig.provider}:${apiConfig.model}`,
-          isSimulated: false,
-        };
-
-        setSessions((prev) =>
-          prev.map((s) =>
-            s.id === currentSessionId
-              ? {
-                  ...s,
-                  messages: [...newMessages, assistantMsg],
-                  updatedAt: new Date().toISOString(),
-                }
-              : s
-          )
-        );
-      } else {
-        // 2. Hyper-accurate In-Character Simulation Engine
-        await new Promise((resolve) => setTimeout(resolve, apiConfig.simulationDelayMs));
-        const simulatedText = generateSimulatedReply(activePersona, messageContent, newMessages);
-
-        const assistantMsg: ChatMessage = {
-          id: `msg-sim-${Date.now()}`,
-          role: 'assistant',
-          content: simulatedText,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          personaId: activePersona.id,
-          modelUsed: 'mikah-in-character-engine',
-          isSimulated: true,
-        };
-
-        setSessions((prev) =>
-          prev.map((s) =>
-            s.id === currentSessionId
-              ? {
-                  ...s,
-                  messages: [...newMessages, assistantMsg],
-                  updatedAt: new Date().toISOString(),
-                }
-              : s
-          )
-        );
-      }
+      // Real streaming call to Groq LLM
+      await callRealApiStream(
+        activePersona,
+        newMessages,
+        { ...apiConfig, apiKey: effectiveApiKey },
+        (accumulatedText) => {
+          setSessions((prev) =>
+            prev.map((s) =>
+              s.id === currentSessionId
+                ? {
+                    ...s,
+                    messages: s.messages.map((m) =>
+                      m.id === assistantMsgId ? { ...m, content: accumulatedText } : m
+                    ),
+                  }
+                : s
+            )
+          );
+        }
+      );
     } catch (err: any) {
-      console.error('API Error:', err);
+      console.error('LLM API Error:', err);
       const errorMsg: ChatMessage = {
-        id: `msg-err-${Date.now()}`,
+        id: assistantMsgId,
         role: 'assistant',
-        content: `⚠️ **Groq API Connection Note:** ${err.message || 'API endpoint error'}.
+        content: `⚠️ **Groq LLM Connection Error:** ${err.message || 'API stream connection failed'}.
 
-> **Offline Persona Simulator Fallback:**
-${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
+Please verify your Groq API Key or check your rate limits at [console.groq.com](https://console.groq.com).`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         personaId: activePersona.id,
-        modelUsed: 'fallback-simulation',
-        isSimulated: true,
+        modelUsed: `${apiConfig.provider}:${apiConfig.model}`,
+        isSimulated: false,
       };
 
       setSessions((prev) =>
@@ -453,7 +547,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
           s.id === currentSessionId
             ? {
                 ...s,
-                messages: [...newMessages, errorMsg],
+                messages: s.messages.map((m) => (m.id === assistantMsgId ? errorMsg : m)),
                 updatedAt: new Date().toISOString(),
               }
             : s
@@ -465,88 +559,12 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
     }
   };
 
-  // Real LLM API caller (Groq, OpenAI, Gemini, etc.)
-  const callRealApi = async (persona: Persona, history: ChatMessage[], config: ApiConfig): Promise<string> => {
-    // 1. Groq / OpenAI / OpenRouter Format
-    if (config.provider === 'openai' || config.provider === 'openrouter' || config.provider === 'groq') {
-      const endpoint =
-        config.provider === 'groq'
-          ? 'https://api.groq.com/openai/v1/chat/completions'
-          : config.provider === 'openrouter'
-          ? 'https://openrouter.ai/api/v1/chat/completions'
-          : `${config.baseUrl.replace(/\/+$/, '')}/chat/completions`;
-
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${config.apiKey.trim()}`,
-        },
-        body: JSON.stringify({
-          model: config.model || (config.provider === 'groq' ? 'llama-3.3-70b-versatile' : 'gpt-4o'),
-          temperature: config.temperature,
-          max_tokens: config.maxTokens,
-          messages: [
-            { role: 'system', content: persona.systemPrompt },
-            ...history.map((m) => ({ role: m.role, content: m.content })),
-          ],
-        }),
-      });
-
-      if (!response.ok) {
-        const errJson = await response.json().catch(() => ({}));
-        throw new Error(errJson.error?.message || `HTTP ${response.status}: API Call Failed`);
-      }
-
-      const data = await response.json();
-      return data.choices?.[0]?.message?.content || 'No response returned from model.';
-    }
-
-    // 2. Google Gemini
-    if (config.provider === 'gemini') {
-      const model = config.model || 'gemini-1.5-flash';
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${config.apiKey}`;
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: persona.systemPrompt }] },
-          contents: history.map((m) => ({
-            role: m.role === 'user' ? 'user' : 'model',
-            parts: [{ text: m.content }],
-          })),
-        }),
-      });
-
-      if (!response.ok) {
-        const errJson = await response.json().catch(() => ({}));
-        throw new Error(errJson.error?.message || `Gemini HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response from Gemini.';
-    }
-
-    // Default simulation
-    return generateSimulatedReply(persona, history[history.length - 1].content, history);
-  };
-
   // Test API Connection
   const handleTestApi = async () => {
     setApiTestStatus({ loading: true });
     try {
-      if (apiConfig.provider === 'simulation') {
-        await new Promise((r) => setTimeout(r, 400));
-        setApiTestStatus({
-          loading: false,
-          success: true,
-          message: 'Offline Simulation Engine Ready. No external API key required!',
-        });
-        return;
-      }
-
-      const effectiveKey = apiConfig.apiKey.trim() || envGroqKey.trim();
-      if (!effectiveKey) {
+      const keyToTest = apiConfig.apiKey?.trim() || envGroqKey.trim();
+      if (!keyToTest) {
         setApiTestStatus({
           loading: false,
           success: false,
@@ -557,16 +575,17 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
 
       const probePersona: Persona = activePersona || MIKAH_PERSONA;
 
-      const res = await callRealApi(
+      const res = await callRealApiStream(
         probePersona,
-        [{ id: 'test', role: 'user', content: 'Say "GROQ_CONNECTED_SUCCESSFULLY" in 4 words or less.', timestamp: '' }],
-        { ...apiConfig, apiKey: effectiveKey, maxTokens: 30 }
+        [{ id: 'test', role: 'user', content: 'Say "GROQ_LLM_CONNECTED" in 3 words or less.', timestamp: '' }],
+        { ...apiConfig, apiKey: keyToTest, maxTokens: 25 },
+        () => {}
       );
 
       setApiTestStatus({
         loading: false,
         success: true,
-        message: `Success! Groq responded: "${res.slice(0, 50)}..."`,
+        message: `Success! Groq live model response: "${res.slice(0, 50)}..."`,
       });
     } catch (err: any) {
       setApiTestStatus({
@@ -652,7 +671,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
         avatar: newPersona.avatar?.trim() || '🤖',
         category: (newPersona.category as any) || 'Custom',
         systemPrompt: newPersona.systemPrompt.trim(),
-        backstory: newPersona.backstory?.trim() || 'Custom created persona for simulation in Aeethod OS.',
+        backstory: newPersona.backstory?.trim() || 'Custom created persona for LLM simulation in Aeethod OS.',
         speakingStyle: newPersona.speakingStyle?.trim() || 'Concise and informative',
         quirks: newPersona.quirks && newPersona.quirks.length > 0 ? newPersona.quirks : ['Custom analytical mindset'],
         temperature: newPersona.temperature ?? 0.7,
@@ -743,7 +762,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
             <button
               onClick={() => setIsApiSettingsOpen(true)}
               className="p-1 px-1.5 rounded text-[#9b9b9b] hover:text-white hover:bg-[#2c2c2c] transition flex items-center gap-1 text-[11px]"
-              title="Groq API & LLM Configuration"
+              title="Groq API & Model Settings"
             >
               <Zap className="w-3.5 h-3.5 text-amber-400" />
               <span className="font-mono text-[10px] text-amber-300 uppercase">
@@ -907,7 +926,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
         {/* Bottom Status / Footer */}
         <div className="p-3 border-t border-[#2e2e2e] bg-[#1d1d1d] flex items-center justify-between text-xs font-mono">
           <div className="flex items-center gap-1.5 text-[#9b9b9b]">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            <span className={`w-2 h-2 rounded-full ${effectiveApiKey ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
             <span className="text-[11px]">
               {apiConfig.provider.toUpperCase()} : {apiConfig.model}
             </span>
@@ -963,7 +982,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
               </div>
               <div>
                 <h2 className="font-bold text-sm text-white">Persona Chat Studio</h2>
-                <p className="text-[11px] text-[#9b9b9b]">Analytics & Databases • AI Simulation & Groq API</p>
+                <p className="text-[11px] text-[#9b9b9b]">Analytics & Databases • LLM Simulation Engine</p>
               </div>
             </div>
           )}
@@ -1034,37 +1053,56 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
           </div>
         </div>
 
-        {/* Groq API Status Banner */}
+        {/* Groq Live LLM Status & Instant Key Connector Bar */}
         {apiConfig.provider === 'groq' && (
-          <div className="bg-[#1c1c1c] border-b border-[#2e2e2e] px-5 py-2 flex items-center justify-between text-xs">
+          <div className="bg-[#1c1c1c] border-b border-[#2e2e2e] px-5 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2 min-w-0">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
-              <div className="truncate">
-                <span className="font-semibold text-white">Groq API Connected:</span>{' '}
-                <span className="font-mono text-amber-300">{apiConfig.model}</span>
-                {apiConfig.apiKey ? (
-                  <span className="ml-2 text-emerald-400 font-mono text-[10px] bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
-                    Live User Key Active
-                  </span>
-                ) : envGroqKey ? (
-                  <span className="ml-2 text-emerald-400 font-mono text-[10px] bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
-                    Vercel System Key Active (Public Access)
+              <span className={`w-2.5 h-2.5 rounded-full ${effectiveApiKey ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'} shrink-0`} />
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold text-white">Groq LLM Engine:</span>
+                <span className="font-mono text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 text-[11px]">
+                  {apiConfig.model}
+                </span>
+                {effectiveApiKey ? (
+                  <span className="text-emerald-400 font-mono text-[10px] bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" />
+                    <span>Live Streaming Active ({isUsingEnvKey ? 'Vercel Env' : 'Local Key'})</span>
                   </span>
                 ) : (
-                  <span className="ml-2 text-[#9b9b9b] text-[11px]">
-                    (No key set • Chatting via Mikah's in-character simulator engine)
+                  <span className="text-amber-300 text-[11px] font-medium flex items-center gap-1">
+                    <Zap className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Connect your Groq key below for real-time 300+ tok/sec AI simulation:</span>
                   </span>
                 )}
               </div>
             </div>
 
-            <button
-              onClick={() => setIsApiSettingsOpen(true)}
-              className="px-2.5 py-1 rounded bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-mono text-[11px] transition shrink-0 cursor-pointer flex items-center gap-1.5"
-            >
-              <Key className="w-3 h-3 text-amber-400" />
-              <span>{apiConfig.apiKey ? 'Change Key' : envGroqKey ? 'Override Key' : 'Enter Groq API Key'}</span>
-            </button>
+            {!effectiveApiKey ? (
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <input
+                  type="password"
+                  value={quickKeyInput}
+                  onChange={(e) => setQuickKeyInput(e.target.value)}
+                  placeholder="Paste Groq Key (gsk_...)"
+                  className="bg-[#141414] border border-amber-500/40 rounded-lg px-2.5 py-1 text-xs font-mono text-white placeholder-[#787878] focus:outline-none focus:border-amber-400 w-52"
+                />
+                <button
+                  onClick={handleSaveQuickKey}
+                  disabled={!quickKeyInput.trim()}
+                  className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-semibold text-xs transition cursor-pointer shrink-0"
+                >
+                  Connect
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsApiSettingsOpen(true)}
+                className="px-2.5 py-1 rounded bg-[#282828] hover:bg-[#323232] text-[#d4d4d4] hover:text-white border border-[#383838] font-mono text-[11px] transition shrink-0 cursor-pointer flex items-center gap-1.5"
+              >
+                <Key className="w-3 h-3 text-amber-400" />
+                <span>Manage Key / Settings</span>
+              </button>
+            )}
           </div>
         )}
 
@@ -1155,12 +1193,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                           <div className="flex items-center justify-between gap-3 pb-2 mb-2 border-b border-[#2e2e2e] text-[11px] font-mono text-[#787774]">
                             <div className="flex items-center gap-1.5">
                               <span className="font-bold text-[#d4d4d4]">{activePersona.name}</span>
-                              {msg.isSimulated && (
-                                <span className="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[9px]">
-                                  Simulated Engine
-                                </span>
-                              )}
-                              {msg.modelUsed && !msg.isSimulated && (
+                              {msg.modelUsed && (
                                 <span className="px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[9px]">
                                   {msg.modelUsed}
                                 </span>
@@ -1170,9 +1203,12 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                           </div>
                         )}
 
-                        {/* Message Content */}
+                        {/* Message Content with Streaming Cursor */}
                         <div className="whitespace-pre-wrap space-y-2 leading-relaxed">
                           {msg.content}
+                          {!isUser && isGenerating && msg.id === activeSession.messages[activeSession.messages.length - 1]?.id && (
+                            <span className="inline-block w-1.5 h-3.5 bg-amber-400 animate-pulse ml-0.5 align-middle" />
+                          )}
                         </div>
 
                         {/* Actions Bar (Copy message) */}
@@ -1207,15 +1243,15 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                   );
                 })}
 
-              {/* Typing Indicator */}
-              {isGenerating && (
+              {/* Initial Thinking Indicator before first token streams */}
+              {isGenerating && activeSession?.messages[activeSession.messages.length - 1]?.content === '' && (
                 <div className="flex gap-3 max-w-3xl mx-auto items-start">
                   <div className="w-8 h-8 rounded-lg bg-[#252525] border border-[#353535] flex items-center justify-center text-base shrink-0 mt-0.5">
                     {activePersona.avatar}
                   </div>
                   <div className="bg-[#222222] border border-[#2e2e2e] rounded-2xl rounded-tl-none p-3.5 flex items-center gap-2 text-xs font-mono text-[#9b9b9b]">
                     <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
-                    <span>{activePersona.name} is thinking & typing...</span>
+                    <span>Connecting to Groq Llama 3.3 70B stream...</span>
                   </div>
                 </div>
               )}
@@ -1256,7 +1292,11 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                   handleSendMessage();
                 }
               }}
-              placeholder={`Message ${activePersona?.name || 'Mikah'}... (Press Enter to send, Shift+Enter for new line)`}
+              placeholder={
+                effectiveApiKey
+                  ? `Message ${activePersona?.name || 'Mikah'} (Live Groq LLM)... (Press Enter to send, Shift+Enter for new line)`
+                  : 'Enter your Groq key above to start live LLM simulation with Mikah...'
+              }
               className="w-full bg-transparent px-3.5 py-2.5 text-xs text-[#e6e6e6] placeholder-[#6e6e6e] outline-none resize-none"
             />
 
@@ -1268,7 +1308,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                 </span>
                 <span>•</span>
                 <span className="text-amber-400">
-                  {apiConfig.apiKey ? `Groq: ${apiConfig.model}` : 'Simulated Engine'}
+                  {effectiveApiKey ? `Groq: ${apiConfig.model} (Streaming)` : 'Key Required'}
                 </span>
               </div>
 
@@ -1306,7 +1346,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                 <div>
                   <h3 className="font-bold text-sm text-white">Groq API & LLM Settings</h3>
                   <p className="text-[11px] text-[#9b9b9b] font-mono">
-                    Ultra-fast inference via Groq Cloud (Llama 3.3 70B Versatile)
+                    Real-time streaming inference via Groq Cloud (Llama 3.3 70B Versatile)
                   </p>
                 </div>
               </div>
@@ -1339,9 +1379,6 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                     } else if (prov === 'openrouter') {
                       defaultModel = 'meta-llama/llama-3.1-70b-instruct';
                       defaultUrl = 'https://openrouter.ai/api/v1';
-                    } else if (prov === 'ollama') {
-                      defaultModel = 'llama3';
-                      defaultUrl = 'http://localhost:11434';
                     }
 
                     setApiConfig((prev) => ({
@@ -1353,39 +1390,36 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                   }}
                   className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6] focus:outline-none focus:border-amber-500 cursor-pointer"
                 >
-                  <option value="groq">Groq Cloud (Llama 3.3 70B Versatile - Ultra Fast Recommended)</option>
-                  <option value="openai">OpenAI (GPT-4o, GPT-4o-mini, o1-preview)</option>
-                  <option value="gemini">Google Gemini (Gemini 1.5 Flash / Pro)</option>
-                  <option value="openrouter">OpenRouter (Multi-model provider)</option>
-                  <option value="ollama">Ollama (Localhost:11434 - Private)</option>
-                  <option value="simulation">Offline Simulation Mode (No API key needed)</option>
+                  <option value="groq">Groq Cloud (Llama 3.3 70B Versatile - 300+ Tokens/Sec)</option>
+                  <option value="openrouter">OpenRouter (Any open-source & commercial model)</option>
+                  <option value="openai">OpenAI (GPT-4o, GPT-4o-mini)</option>
                 </select>
                 <p className="text-[11px] text-[#787774] mt-1 font-mono">
-                  {apiConfig.provider === 'groq'
-                    ? '✦ Ultra-fast 300+ tokens/sec inference directly using Groq cloud endpoint.'
-                    : '✦ Directly prompts your model using active persona directives.'}
+                  ✦ Ultra-fast streaming directly prompts the live model using active persona directives.
                 </p>
               </div>
 
               {/* API Key Input */}
-              {apiConfig.provider !== 'simulation' && (
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="font-semibold text-white">Groq API Key</label>
-                    <span className="text-[10px] font-mono text-amber-400">Starts with gsk_...</span>
-                  </div>
-                  <input
-                    type="password"
-                    value={apiConfig.apiKey}
-                    onChange={(e) => setApiConfig((prev) => ({ ...prev, apiKey: e.target.value }))}
-                    placeholder="gsk_..."
-                    className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6] font-mono focus:outline-none focus:border-amber-500"
-                  />
-                  <p className="text-[10px] text-[#787774] mt-1">
-                    Keys are stored securely in your browser's local storage and sent only to Groq.
-                  </p>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-semibold text-white">Groq API Key</label>
+                  <span className="text-[10px] font-mono text-amber-400">Starts with gsk_...</span>
                 </div>
-              )}
+                <input
+                  type="password"
+                  value={apiConfig.apiKey}
+                  onChange={(e) => setApiConfig((prev) => ({ ...prev, apiKey: e.target.value }))}
+                  placeholder={envGroqKey ? 'Overriding Vercel environment key...' : 'gsk_...'}
+                  className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6] font-mono focus:outline-none focus:border-amber-500"
+                />
+                <p className="text-[10px] text-[#787774] mt-1">
+                  Free key from{' '}
+                  <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer" className="text-amber-400 underline">
+                    console.groq.com/keys
+                  </a>
+                  . Saved safely in local browser storage.
+                </p>
+              </div>
 
               {/* Model & Base URL */}
               <div className="grid grid-cols-2 gap-3">
@@ -1418,7 +1452,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                   <div className="flex items-center justify-between text-xs mb-1">
                     <span className="text-white font-medium">Temperature: {apiConfig.temperature}</span>
                     <span className="text-[10px] font-mono text-[#787774]">
-                      {apiConfig.temperature < 0.5 ? 'Precise & Deterministic' : 'Authentic & Dynamic'}
+                      {apiConfig.temperature < 0.5 ? 'Precise & Deterministic' : 'Authentic & Creative'}
                     </span>
                   </div>
                   <input
@@ -1610,7 +1644,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="font-semibold text-white">Core System Prompt & Directives *</label>
-                  <span className="text-[10px] font-mono text-amber-400">Fed to Groq / Simulator</span>
+                  <span className="text-[10px] font-mono text-amber-400">Fed directly to LLM</span>
                 </div>
                 <textarea
                   rows={4}
@@ -1702,7 +1736,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
               {/* Core System Prompt Box */}
               <div className="space-y-1.5">
                 <span className="text-[10px] font-mono uppercase text-amber-400 font-bold">
-                  Active System Prompt Directives
+                  Active LLM System Directives
                 </span>
                 <div className="p-3 bg-[#191919] border border-[#2e2e2e] rounded-xl text-xs font-mono text-[#d4d4d4] leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto">
                   {activePersona.systemPrompt}
