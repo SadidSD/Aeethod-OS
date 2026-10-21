@@ -74,7 +74,9 @@ async function run() {
     1863: 'sm1',     // Sun & Moon Base
     1387: 'xy1',     // XY Base
     1406: 'bw1',     // Black & White Base
-    1454: 'hgss1'    // HGSS Base
+    1454: 'hgss1',   // HGSS Base
+    24722: 'me55',   // 30th Celebration
+    24837: 'me55c'   // 30th Celebration Classic Collection
   };
 
   const enSetByCode = new Map(enSets.map(s => [s.set_code.toLowerCase(), s]));
