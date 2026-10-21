@@ -50,7 +50,7 @@ export interface ChatSession {
 
 export const DEFAULT_API_CONFIG: ApiConfig = {
   provider: 'groq',
-  apiKey: '',
+  apiKey: (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY) ? import.meta.env.VITE_GROQ_API_KEY : '',
   model: 'llama-3.3-70b-versatile',
   baseUrl: 'https://api.groq.com/openai/v1',
   temperature: 0.7,

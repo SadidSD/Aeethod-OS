@@ -144,6 +144,9 @@ export const PersonaChatView: React.FC = () => {
     return MIKAH_PERSONA.id;
   });
 
+  // Global Vercel Environment API Key support for shared access across all visitors
+  const envGroqKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY) || '';
+
   // Default API configuration set to Groq Llama-3.3-70B
   const [apiConfig, setApiConfig] = useState<ApiConfig>(() => {
     try {
@@ -154,12 +157,16 @@ export const PersonaChatView: React.FC = () => {
           ...DEFAULT_API_CONFIG,
           ...parsed,
           provider: 'groq',
+          apiKey: parsed.apiKey || envGroqKey,
           model: parsed.model || 'llama-3.3-70b-versatile',
           baseUrl: 'https://api.groq.com/openai/v1',
         };
       }
     } catch {}
-    return DEFAULT_API_CONFIG;
+    return {
+      ...DEFAULT_API_CONFIG,
+      apiKey: envGroqKey || DEFAULT_API_CONFIG.apiKey,
+    };
   });
 
   const [sessions, setSessions] = useState<ChatSession[]>(() => {
@@ -370,9 +377,13 @@ What questions do you have about your card shop intake, scanner hardware, or mar
     setIsGenerating(true);
 
     try {
-      // 1. Check if user configured a real LLM API Key (Groq or other)
-      if (apiConfig.provider !== 'simulation' && apiConfig.apiKey.trim()) {
-        const assistantReplyText = await callRealApi(activePersona, newMessages, apiConfig);
+      // 1. Check if user configured a real LLM API Key (Groq or other, local or Vercel env)
+      const effectiveApiKey = apiConfig.apiKey.trim() || envGroqKey.trim();
+      if (apiConfig.provider !== 'simulation' && effectiveApiKey) {
+        const assistantReplyText = await callRealApi(activePersona, newMessages, {
+          ...apiConfig,
+          apiKey: effectiveApiKey,
+        });
 
         const assistantMsg: ChatMessage = {
           id: `msg-resp-${Date.now()}`,
@@ -534,11 +545,12 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
         return;
       }
 
-      if (!apiConfig.apiKey.trim()) {
+      const effectiveKey = apiConfig.apiKey.trim() || envGroqKey.trim();
+      if (!effectiveKey) {
         setApiTestStatus({
           loading: false,
           success: false,
-          message: 'Please provide an API Key to test connection.',
+          message: 'Please provide an API Key or add VITE_GROQ_API_KEY in Vercel to test connection.',
         });
         return;
       }
@@ -548,7 +560,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
       const res = await callRealApi(
         probePersona,
         [{ id: 'test', role: 'user', content: 'Say "GROQ_CONNECTED_SUCCESSFULLY" in 4 words or less.', timestamp: '' }],
-        { ...apiConfig, maxTokens: 30 }
+        { ...apiConfig, apiKey: effectiveKey, maxTokens: 30 }
       );
 
       setApiTestStatus({
@@ -1032,7 +1044,11 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                 <span className="font-mono text-amber-300">{apiConfig.model}</span>
                 {apiConfig.apiKey ? (
                   <span className="ml-2 text-emerald-400 font-mono text-[10px] bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
-                    Live Key Active
+                    Live User Key Active
+                  </span>
+                ) : envGroqKey ? (
+                  <span className="ml-2 text-emerald-400 font-mono text-[10px] bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                    Vercel System Key Active (Public Access)
                   </span>
                 ) : (
                   <span className="ml-2 text-[#9b9b9b] text-[11px]">
@@ -1047,7 +1063,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
               className="px-2.5 py-1 rounded bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-mono text-[11px] transition shrink-0 cursor-pointer flex items-center gap-1.5"
             >
               <Key className="w-3 h-3 text-amber-400" />
-              <span>{apiConfig.apiKey ? 'Change Key' : 'Enter Groq API Key'}</span>
+              <span>{apiConfig.apiKey ? 'Change Key' : envGroqKey ? 'Override Key' : 'Enter Groq API Key'}</span>
             </button>
           </div>
         )}
