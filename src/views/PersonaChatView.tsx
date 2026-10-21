@@ -252,6 +252,20 @@ export const PersonaChatView: React.FC = () => {
     localStorage.setItem('aeethod_custom_personas', JSON.stringify(validOnes));
   }, [personas]);
 
+  // Auto-sync latest Mikah prompt definition into state on mount
+  useEffect(() => {
+    setPersonas((prev) => {
+      const idx = prev.findIndex((p) => p.id === MIKAH_PERSONA.id);
+      if (idx === -1) return [MIKAH_PERSONA, ...prev];
+      if (prev[idx].systemPrompt !== MIKAH_PERSONA.systemPrompt) {
+        const next = [...prev];
+        next[idx] = MIKAH_PERSONA;
+        return next;
+      }
+      return prev;
+    });
+  }, []);
+
   // Save API config to localStorage
   useEffect(() => {
     localStorage.setItem('aeethod_persona_api_config', JSON.stringify(apiConfig));
