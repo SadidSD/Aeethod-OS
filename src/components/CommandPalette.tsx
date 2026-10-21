@@ -31,7 +31,7 @@ export const CommandPalette: React.FC = () => {
     const q = query.toLowerCase();
 
     const staticPages = [
-      { id: 'persona-chat', name: 'Persona Chat Studio (Custom Personas & API Simulation)', path: '/persona-chat', category: 'AI & Simulation', emoji: '🤖' },
+      { id: 'persona-chat', name: 'Persona Chat Studio (Custom Personas & API Simulation)', path: '/persona-chat', category: 'Analytics & Databases', emoji: '🤖' },
       { id: 'catalog', name: 'Universal TCG Catalog (Pokellector Series)', path: '/catalog', category: 'Catalog & Inventory', emoji: '🎴' },
       { id: 'economics', name: 'TCG Microeconomics & Competitors Hub', path: '/topic/economics', category: 'Economics & Industry', emoji: '📈' },
       { id: 'game-theory', name: 'Game Theory War Room (Payoff Matrices & Battles)', path: '/game-theory', category: 'Strategy & Defense', emoji: '♟️' },

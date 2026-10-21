@@ -34,6 +34,9 @@ import {
   AlertCircle,
   HelpCircle,
   Wand2,
+  Database,
+  ArrowRight,
+  TrendingUp,
 } from 'lucide-react';
 
 import {
@@ -46,23 +49,105 @@ import {
   generateSimulatedReply,
 } from '../data/personaChatData';
 
+// Legacy personas to purge from storage to honor user's request for a clean slate
+const LEGACY_PERSONA_IDS = new Set([
+  'kenji-tcg',
+  'alex-saas',
+  'elena-systems',
+  'marcus-angel',
+  'maya-ux',
+]);
+
+// Starter templates for fast 1-click persona creation
+const PERSONA_STARTER_PRESETS: Array<Omit<Persona, 'id' | 'createdAt'>> = [
+  {
+    name: 'Market Intelligence Analyst',
+    tagline: 'TCG Liquidity, Price Velocity & Arbitrage Specialist',
+    avatar: '📊',
+    category: 'TCG Specialist',
+    systemPrompt: `You are an elite TCG Market Intelligence Analyst. You analyze market spreads, trading card price velocity, buylist margins, graded card premiums, and pop reports. Always provide concrete, data-backed reasoning and evaluate risk before opportunity. Keep answers structured with key takeaways and strategic bullet points.`,
+    backstory: 'Veteran market maker and secondary card market quantitative trader with 10+ years across eBay, TCGplayer, and auction houses.',
+    speakingStyle: 'Data-driven, precise, quantitative, risk-conscious',
+    quirks: ['Calculates spreads on every trade', 'Cites population report scarcity', 'Warns against artificial market manipulation'],
+    temperature: 0.7,
+    suggestedStarters: [
+      'Evaluate the margin spread between raw mint and PSA 10 slabs.',
+      'How should we structure buylist pricing for vintage booster boxes?',
+      'Identify the highest velocity card categories for cash flow rotation.'
+    ],
+    badgeColor: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+    isCustom: true,
+  },
+  {
+    name: 'Database & Systems Architect',
+    tagline: 'High-Concurrency PostgreSQL, Redis & API Performance',
+    avatar: '⚡',
+    category: 'Engineering',
+    systemPrompt: `You are a Principal Database & Systems Architect. You design ultra-reliable, high-throughput architectures for card inventory, real-time price updates, and transactional APIs. Focus on indexing, read-replicas, cache invalidation, connection pooling, and resilient schema migrations.`,
+    backstory: 'Former infrastructure lead handling 40,000+ QPS database clusters and low-latency inventory syncing.',
+    speakingStyle: 'Direct, technical, performance-obsessed, architecture-focused',
+    quirks: ['Recommends composite B-Tree indexes', 'Hates unindexed foreign keys', 'Emphasizes idempotent webhook processing'],
+    temperature: 0.6,
+    suggestedStarters: [
+      'Design a schema for tracking real-time card price histories.',
+      'How to optimize full-text card search across 500,000 items?',
+      'What caching strategy prevents database locks during high-traffic drops?'
+    ],
+    badgeColor: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+    isCustom: true,
+  },
+  {
+    name: 'Strategic Moat Advisor',
+    tagline: 'Unit Economics, Marketplace Defense & Network Effects',
+    avatar: '♟️',
+    category: 'Executive',
+    systemPrompt: `You are an executive strategic advisor specializing in vertical marketplace defensibility, counter-positioning against incumbents, and capital-efficient scale. You scrutinize transaction take-rates, customer acquisition costs, churn, and sustainable supplier lock-in.`,
+    backstory: 'Venture partner and 2x marketplace founder who scaled vertical commerce platforms to profitable exits.',
+    speakingStyle: 'Razor-sharp, incisive, strategic, high-leverage',
+    quirks: ['Focuses on second-order effects', 'Challenges vanity metrics', 'Demands clear operational wedges'],
+    temperature: 0.7,
+    suggestedStarters: [
+      'How do we counter-position against eBay and TCGplayer?',
+      'What prevents card dealers from taking transactions off-platform?',
+      'What is our core wedge to reach 200 high-volume power sellers?'
+    ],
+    badgeColor: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
+    isCustom: true,
+  },
+];
+
 export const PersonaChatView: React.FC = () => {
-  // 1. Core State
+  // 1. Core State: Custom Personas Only
   const [personas, setPersonas] = useState<Persona[]>(() => {
     try {
       const saved = localStorage.getItem('aeethod_custom_personas');
       if (saved) {
         const parsed: Persona[] = JSON.parse(saved);
-        // Merge with built-in personas so built-ins stay fresh
-        const builtInIds = new Set(INITIAL_PERSONAS.map((p) => p.id));
-        const customOnly = parsed.filter((p) => !builtInIds.has(p.id));
-        return [...INITIAL_PERSONAS, ...customOnly];
+        // Clean out legacy built-in personas so the user has a fresh slate
+        const validCustom = parsed.filter(
+          (p) => p && p.id && !LEGACY_PERSONA_IDS.has(p.id)
+        );
+        return validCustom;
       }
-    } catch {}
-    return INITIAL_PERSONAS;
+    } catch (e) {
+      console.error('Error loading custom personas', e);
+    }
+    return [];
   });
 
-  const [activePersonaId, setActivePersonaId] = useState<string>(INITIAL_PERSONAS[0].id);
+  const [activePersonaId, setActivePersonaId] = useState<string | null>(() => {
+    try {
+      const saved = localStorage.getItem('aeethod_custom_personas');
+      if (saved) {
+        const parsed: Persona[] = JSON.parse(saved);
+        const validCustom = parsed.filter(
+          (p) => p && p.id && !LEGACY_PERSONA_IDS.has(p.id)
+        );
+        return validCustom[0]?.id || null;
+      }
+    } catch {}
+    return null;
+  });
 
   const [apiConfig, setApiConfig] = useState<ApiConfig>(() => {
     try {
@@ -77,37 +162,28 @@ export const PersonaChatView: React.FC = () => {
       const saved = localStorage.getItem('aeethod_persona_chat_sessions');
       if (saved) {
         const parsed: ChatSession[] = JSON.parse(saved);
-        if (parsed.length > 0) return parsed;
+        // Retain only sessions matching custom personas, purge legacy sessions
+        const filtered = parsed.filter(
+          (s) => s && s.personaId && !LEGACY_PERSONA_IDS.has(s.personaId)
+        );
+        return filtered;
       }
     } catch {}
-    // Initial default session
-    return [
-      {
-        id: 'session-default',
-        title: 'Akihabara Market Intelligence & Grails',
-        personaId: INITIAL_PERSONAS[0].id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        messages: [
-          {
-            id: 'msg-init-1',
-            role: 'assistant',
-            content: `Konnichiwa! I am **Kenji Takahashi (高橋 健二)**, your Tokyo TCG & Vintage Grail Specialist.
-
-Whether you're analyzing Japanese **151 SV2a** Master Ball print runs, tracking **s6a Eevee Heroes Moonbreon**, or grading vintage **1996 PMCG Base Set** holos, I am at your service.
-
-What market signals or card valuations would you like to explore today?`,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            personaId: INITIAL_PERSONAS[0].id,
-            isSimulated: true,
-          },
-        ],
-      },
-    ];
+    return [];
   });
 
-  const [activeSessionId, setActiveSessionId] = useState<string>(() => {
-    return sessions[0]?.id || 'session-default';
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(() => {
+    try {
+      const saved = localStorage.getItem('aeethod_persona_chat_sessions');
+      if (saved) {
+        const parsed: ChatSession[] = JSON.parse(saved);
+        const filtered = parsed.filter(
+          (s) => s && s.personaId && !LEGACY_PERSONA_IDS.has(s.personaId)
+        );
+        return filtered[0]?.id || null;
+      }
+    } catch {}
+    return null;
   });
 
   const [inputMessage, setInputMessage] = useState('');
@@ -132,7 +208,7 @@ What market signals or card valuations would you like to explore today?`,
     category: 'Custom',
     systemPrompt: '',
     backstory: '',
-    speakingStyle: 'Professional, articulate, insightful',
+    speakingStyle: 'Analytical, concise, actionable',
     quirks: [],
     temperature: 0.7,
     suggestedStarters: [
@@ -148,7 +224,7 @@ What market signals or card valuations would you like to explore today?`,
 
   // Save Personas to localStorage whenever updated
   useEffect(() => {
-    const customOnes = personas.filter((p) => p.isCustom);
+    const customOnes = personas.filter((p) => p && !LEGACY_PERSONA_IDS.has(p.id));
     localStorage.setItem('aeethod_custom_personas', JSON.stringify(customOnes));
   }, [personas]);
 
@@ -159,12 +235,19 @@ What market signals or card valuations would you like to explore today?`,
 
   // Save sessions to localStorage
   useEffect(() => {
-    localStorage.setItem('aeethod_persona_chat_sessions', JSON.stringify(sessions));
+    const validSessions = sessions.filter((s) => s && !LEGACY_PERSONA_IDS.has(s.personaId));
+    localStorage.setItem('aeethod_persona_chat_sessions', JSON.stringify(validSessions));
   }, [sessions]);
 
-  // Active Session & Persona helpers
-  const activeSession = sessions.find((s) => s.id === activeSessionId) || sessions[0];
-  const activePersona = personas.find((p) => p.id === (activeSession?.personaId || activePersonaId)) || personas[0];
+  // Active Persona & Session references
+  const activePersona: Persona | null =
+    personas.find((p) => p.id === activePersonaId) || personas[0] || null;
+
+  const activeSession: ChatSession | null =
+    sessions.find((s) => s.id === activeSessionId) ||
+    (activePersona ? sessions.find((s) => s.personaId === activePersona.id) : null) ||
+    sessions[0] ||
+    null;
 
   // Auto-scroll chat to bottom
   useEffect(() => {
@@ -173,8 +256,19 @@ What market signals or card valuations would you like to explore today?`,
 
   // Create New Session
   const handleCreateNewSession = (personaId?: string) => {
-    const targetPersonaId = personaId || activePersona.id;
-    const targetPersona = personas.find((p) => p.id === targetPersonaId) || activePersona;
+    if (personas.length === 0) {
+      setIsCreatePersonaOpen(true);
+      return;
+    }
+
+    const targetPersona =
+      personas.find((p) => p.id === personaId) || activePersona || personas[0];
+
+    if (!targetPersona) {
+      setIsCreatePersonaOpen(true);
+      return;
+    }
+
     const newSessionId = `session-${Date.now()}`;
     const newSession: ChatSession = {
       id: newSessionId,
@@ -193,25 +287,10 @@ What market signals or card valuations would you like to explore today?`,
   // Delete Session
   const handleDeleteSession = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (sessions.length <= 1) {
-      // If last session, reset it instead of deleting
-      setSessions([
-        {
-          id: `session-${Date.now()}`,
-          title: `New Session with ${activePersona.name}`,
-          personaId: activePersona.id,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          messages: [],
-        },
-      ]);
-      return;
-    }
-
     const filtered = sessions.filter((s) => s.id !== id);
     setSessions(filtered);
     if (activeSessionId === id) {
-      setActiveSessionId(filtered[0]?.id || '');
+      setActiveSessionId(filtered[0]?.id || null);
     }
   };
 
@@ -226,9 +305,28 @@ What market signals or card valuations would you like to explore today?`,
   // Send Message Logic (Supports Real API with Intelligent Fallback)
   const handleSendMessage = async (textToSend?: string) => {
     const messageContent = (textToSend || inputMessage).trim();
-    if (!messageContent || isGenerating || !activeSession) return;
+    if (!messageContent || isGenerating || !activePersona) return;
 
     setInputMessage('');
+
+    // Ensure we have a valid session, create if none exists
+    let currentSession = activeSession;
+    let currentSessionId = activeSessionId;
+
+    if (!currentSession) {
+      const newSessionId = `session-${Date.now()}`;
+      currentSession = {
+        id: newSessionId,
+        title: messageContent.slice(0, 30) + (messageContent.length > 30 ? '...' : ''),
+        personaId: activePersona.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        messages: [],
+      };
+      setSessions([currentSession, ...sessions]);
+      setActiveSessionId(newSessionId);
+      currentSessionId = newSessionId;
+    }
 
     const userMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
@@ -239,16 +337,16 @@ What market signals or card valuations would you like to explore today?`,
 
     // Update session title if first user message
     const updatedTitle =
-      activeSession.messages.length === 0
+      currentSession.messages.length === 0
         ? messageContent.slice(0, 32) + (messageContent.length > 32 ? '...' : '')
-        : activeSession.title;
+        : currentSession.title;
 
-    const newMessages = [...activeSession.messages, userMessage];
+    const newMessages = [...currentSession.messages, userMessage];
 
     // Optimistically update session
     setSessions((prev) =>
       prev.map((s) =>
-        s.id === activeSession.id
+        s.id === currentSessionId
           ? {
               ...s,
               title: updatedTitle,
@@ -278,7 +376,7 @@ What market signals or card valuations would you like to explore today?`,
 
         setSessions((prev) =>
           prev.map((s) =>
-            s.id === activeSession.id
+            s.id === currentSessionId
               ? {
                   ...s,
                   messages: [...newMessages, assistantMsg],
@@ -304,7 +402,7 @@ What market signals or card valuations would you like to explore today?`,
 
         setSessions((prev) =>
           prev.map((s) =>
-            s.id === activeSession.id
+            s.id === currentSessionId
               ? {
                   ...s,
                   messages: [...newMessages, assistantMsg],
@@ -332,7 +430,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
 
       setSessions((prev) =>
         prev.map((s) =>
-          s.id === activeSession.id
+          s.id === currentSessionId
             ? {
                 ...s,
                 messages: [...newMessages, errorMsg],
@@ -443,7 +541,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
         setApiTestStatus({
           loading: false,
           success: true,
-          message: 'Simulation Engine Ready. No API key required!',
+          message: 'Offline Simulation Engine Ready. No external API key required!',
         });
         return;
       }
@@ -457,9 +555,25 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
         return;
       }
 
-      // Simple test ping
+      // Safe test persona if user hasn't created one yet
+      const probePersona: Persona = activePersona || {
+        id: 'probe',
+        name: 'Echo Probe',
+        tagline: 'Diagnostics',
+        avatar: '🤖',
+        category: 'Engineering',
+        systemPrompt: 'You are an API diagnostic responder. Always answer with CONNECTION_SUCCESSFUL.',
+        backstory: '',
+        speakingStyle: 'Concise',
+        quirks: [],
+        temperature: 0.2,
+        suggestedStarters: [],
+        badgeColor: '',
+        createdAt: '',
+      };
+
       const res = await callRealApi(
-        activePersona,
+        probePersona,
         [{ id: 'test', role: 'user', content: 'Respond with exactly: CONNECTION_SUCCESSFUL', timestamp: '' }],
         { ...apiConfig, maxTokens: 20 }
       );
@@ -467,7 +581,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
       setApiTestStatus({
         loading: false,
         success: true,
-        message: `Success! Response received: "${res.slice(0, 40)}..."`,
+        message: `Success! Model connected: "${res.slice(0, 40)}..."`,
       });
     } catch (err: any) {
       setApiTestStatus({
@@ -487,7 +601,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
 
   // Export Chat Session
   const handleExportSession = (format: 'markdown' | 'json') => {
-    if (!activeSession) return;
+    if (!activeSession || !activePersona) return;
     let content = '';
     let filename = `${activeSession.title.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
 
@@ -512,6 +626,15 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // Open Create Modal with a preset
+  const handleOpenPreset = (preset: Omit<Persona, 'id' | 'createdAt'>) => {
+    setEditingPersona(null);
+    setNewPersona({
+      ...preset,
+    });
+    setIsCreatePersonaOpen(true);
   };
 
   // Save / Update Persona
@@ -539,16 +662,19 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
       // Create new
       const created: Persona = {
         id: `persona-${Date.now()}`,
-        name: newPersona.name || 'Custom Persona',
-        tagline: newPersona.tagline || 'Custom Expert in Aeethod OS',
-        avatar: newPersona.avatar || '🤖',
+        name: newPersona.name.trim(),
+        tagline: newPersona.tagline?.trim() || 'Custom Expert in Aeethod OS',
+        avatar: newPersona.avatar?.trim() || '🤖',
         category: (newPersona.category as any) || 'Custom',
-        systemPrompt: newPersona.systemPrompt || '',
-        backstory: newPersona.backstory || 'Custom created persona for simulation in Aeethod OS.',
-        speakingStyle: newPersona.speakingStyle || 'Concise and informative',
-        quirks: newPersona.quirks || [],
-        temperature: newPersona.temperature || 0.7,
-        suggestedStarters: newPersona.suggestedStarters || ['Hello! How can you help me today?'],
+        systemPrompt: newPersona.systemPrompt.trim(),
+        backstory: newPersona.backstory?.trim() || 'Custom created persona for simulation in Aeethod OS.',
+        speakingStyle: newPersona.speakingStyle?.trim() || 'Concise and informative',
+        quirks: newPersona.quirks && newPersona.quirks.length > 0 ? newPersona.quirks : ['Custom analytical mindset'],
+        temperature: newPersona.temperature ?? 0.7,
+        suggestedStarters:
+          newPersona.suggestedStarters && newPersona.suggestedStarters.length > 0
+            ? newPersona.suggestedStarters
+            : ['Analyze the strategy and suggest 3 high-impact moves.', 'What are key risks with this approach?'],
         badgeColor: newPersona.badgeColor || 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
         createdAt: new Date().toISOString(),
         isCustom: true,
@@ -556,7 +682,19 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
 
       setPersonas((prev) => [...prev, created]);
       setActivePersonaId(created.id);
-      handleCreateNewSession(created.id);
+
+      // Create initial chat session
+      const newSessionId = `session-${Date.now()}`;
+      const newSession: ChatSession = {
+        id: newSessionId,
+        title: `Chat with ${created.name}`,
+        personaId: created.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        messages: [],
+      };
+      setSessions((prev) => [newSession, ...prev]);
+      setActiveSessionId(newSessionId);
     }
 
     setIsCreatePersonaOpen(false);
@@ -574,10 +712,11 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
   // Delete Custom Persona
   const handleDeleteCustomPersona = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Are you sure you want to delete this custom persona?')) return;
-    setPersonas((prev) => prev.filter((p) => p.id !== id));
+    if (!confirm('Are you sure you want to delete this persona?')) return;
+    const remaining = personas.filter((p) => p.id !== id);
+    setPersonas(remaining);
     if (activePersonaId === id) {
-      setActivePersonaId(INITIAL_PERSONAS[0].id);
+      setActivePersonaId(remaining[0]?.id || null);
     }
   };
 
@@ -606,17 +745,20 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
               <div className="w-6 h-6 rounded-lg bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-400">
                 <Bot className="w-3.5 h-3.5" />
               </div>
-              <span className="font-bold text-xs text-white uppercase tracking-wider">Persona Studio</span>
+              <div>
+                <span className="font-bold text-xs text-white uppercase tracking-wider block">Persona Studio</span>
+                <span className="text-[9px] text-[#787774] font-mono">Analytics & Databases</span>
+              </div>
             </div>
 
             <button
               onClick={() => setIsApiSettingsOpen(true)}
-              className="p-1 rounded text-[#9b9b9b] hover:text-white hover:bg-[#2c2c2c] transition flex items-center gap-1 text-[11px]"
-              title="API Configuration"
+              className="p-1 px-1.5 rounded text-[#9b9b9b] hover:text-white hover:bg-[#2c2c2c] transition flex items-center gap-1 text-[11px]"
+              title="API & LLM Configuration"
             >
               <Key className="w-3.5 h-3.5 text-amber-400" />
-              <span className="font-mono text-[10px] text-amber-300">
-                {apiConfig.provider === 'simulation' ? 'SIM' : apiConfig.provider.toUpperCase()}
+              <span className="font-mono text-[10px] text-amber-300 uppercase">
+                {apiConfig.provider === 'simulation' ? 'SIM' : apiConfig.provider}
               </span>
             </button>
           </div>
@@ -627,7 +769,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
             className="w-full py-1.5 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-sm shadow-indigo-600/20"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>New Chat Session</span>
+            <span>{personas.length === 0 ? 'Create Custom Persona' : 'New Chat Session'}</span>
           </button>
 
           {/* Search Sessions */}
@@ -644,10 +786,10 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
         </div>
 
         {/* Personas Carousel Header */}
-        <div className="px-3 pt-3 pb-1 border-b border-[#2e2e2e]">
+        <div className="px-3 pt-3 pb-2 border-b border-[#2e2e2e]">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-[#787774]">
-              Active Personas ({personas.length})
+              Custom Personas ({personas.length})
             </span>
             <button
               onClick={() => {
@@ -659,54 +801,67 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                   category: 'Custom',
                   systemPrompt: '',
                   backstory: '',
-                  speakingStyle: 'Professional, articulate, insightful',
+                  speakingStyle: 'Direct, analytical, structured',
                   quirks: [],
                   temperature: 0.7,
-                  suggestedStarters: ['How can I help you today?'],
+                  suggestedStarters: [
+                    'Analyze the strategy and suggest 3 high-impact moves.',
+                    'What are the primary risks with this approach?',
+                    'Draft a detailed implementation framework.'
+                  ],
                   badgeColor: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
                 });
                 setIsCreatePersonaOpen(true);
               }}
-              className="text-[11px] font-mono text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer"
+              className="text-[11px] font-mono text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer font-semibold"
             >
               <Plus className="w-3 h-3" />
-              <span>Create</span>
+              <span>+ Create</span>
             </button>
           </div>
 
           {/* Horizontal mini persona avatar strip */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2">
-            {personas.map((p) => {
-              const isSelected = p.id === activePersona.id;
-              return (
-                <button
-                  key={p.id}
-                  onClick={() => {
-                    setActivePersonaId(p.id);
-                    // If in current session without messages, rebind persona
-                    if (activeSession && activeSession.messages.length === 0) {
-                      setSessions((prev) =>
-                        prev.map((s) => (s.id === activeSession.id ? { ...s, personaId: p.id, title: `Chat with ${p.name}` } : s))
-                      );
-                    } else {
-                      handleCreateNewSession(p.id);
-                    }
-                  }}
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 transition-all cursor-pointer relative ${
-                    isSelected
-                      ? 'bg-indigo-600/30 border-2 border-indigo-500 shadow-sm scale-105'
-                      : 'bg-[#282828] hover:bg-[#323232] border border-[#383838]'
-                  }`}
-                  title={`${p.name} (${p.category})`}
-                >
-                  <span>{p.avatar}</span>
-                  {p.isCustom && (
+          {personas.length === 0 ? (
+            <div
+              onClick={() => setIsCreatePersonaOpen(true)}
+              className="py-2 px-2.5 rounded-lg border border-dashed border-[#383838] hover:border-indigo-500/60 bg-[#1d1d1d] hover:bg-[#242424] text-center cursor-pointer transition group"
+            >
+              <p className="text-[11px] text-[#9b9b9b] group-hover:text-white font-medium flex items-center justify-center gap-1.5">
+                <Plus className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Create your first persona</span>
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+              {personas.map((p) => {
+                const isSelected = p.id === activePersona?.id;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      setActivePersonaId(p.id);
+                      if (activeSession && activeSession.messages.length === 0) {
+                        setSessions((prev) =>
+                          prev.map((s) => (s.id === activeSession.id ? { ...s, personaId: p.id, title: `Chat with ${p.name}` } : s))
+                        );
+                      } else {
+                        handleCreateNewSession(p.id);
+                      }
+                    }}
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 transition-all cursor-pointer relative ${
+                      isSelected
+                        ? 'bg-indigo-600/30 border-2 border-indigo-500 shadow-sm scale-105'
+                        : 'bg-[#282828] hover:bg-[#323232] border border-[#383838]'
+                    }`}
+                    title={`${p.name} (${p.category})`}
+                  >
+                    <span>{p.avatar}</span>
                     <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Scrollable Chat Sessions List */}
@@ -716,7 +871,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
           </div>
 
           {filteredSessions.map((session) => {
-            const persona = personas.find((p) => p.id === session.personaId) || personas[0];
+            const persona = personas.find((p) => p.id === session.personaId);
             const isActive = session.id === activeSessionId;
             const lastMessage = session.messages[session.messages.length - 1];
 
@@ -734,7 +889,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                 }`}
               >
                 <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                  <span className="text-base shrink-0 mt-0.5">{persona.avatar}</span>
+                  <span className="text-base shrink-0 mt-0.5">{persona?.avatar || '🤖'}</span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
                       <span className={`text-xs font-semibold truncate ${isActive ? 'text-white' : 'text-[#d4d4d4]'}`}>
@@ -742,7 +897,9 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                       </span>
                     </div>
                     <p className="text-[11px] text-[#787774] truncate mt-0.5">
-                      {lastMessage ? lastMessage.content.replace(/[#*`_]/g, '').slice(0, 42) : `Ready to chat with ${persona.name}`}
+                      {lastMessage
+                        ? lastMessage.content.replace(/[#*`_]/g, '').slice(0, 42)
+                        : `Ready to chat with ${persona?.name || 'Persona'}`}
                     </p>
                   </div>
                 </div>
@@ -760,7 +917,9 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
 
           {filteredSessions.length === 0 && (
             <div className="p-4 text-center text-xs text-[#787774] italic">
-              No chat sessions found.
+              {personas.length === 0
+                ? 'No personas created yet. Click "+ Create" above.'
+                : 'No chat sessions found.'}
             </div>
           )}
         </div>
@@ -794,61 +953,88 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
       <div className="flex-1 flex flex-col min-w-0 h-full bg-[#191919]">
         {/* Chat Top Header */}
         <div className="h-14 px-5 border-b border-[#2e2e2e] bg-[#202020] flex items-center justify-between shrink-0 shadow-xs">
-          {/* Active Persona Identity */}
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-[#2a2a2a] border border-[#3a3a3a] flex items-center justify-center text-xl shrink-0 shadow-sm">
-              {activePersona.avatar}
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h2 className="font-bold text-sm text-white truncate">{activePersona.name}</h2>
-                {activePersona.japaneseName && (
-                  <span className="text-xs text-rose-400 font-mono hidden sm:inline">
-                    {activePersona.japaneseName}
-                  </span>
-                )}
-                <span className={`px-2 py-0.2 rounded text-[10px] font-mono border ${activePersona.badgeColor}`}>
-                  {activePersona.category}
-                </span>
-                {activePersona.isCustom && (
-                  <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono border border-emerald-500/30">
-                    Custom
-                  </span>
-                )}
+          {/* Active Persona Identity or No Persona Header */}
+          {activePersona ? (
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-[#2a2a2a] border border-[#3a3a3a] flex items-center justify-center text-xl shrink-0 shadow-sm">
+                {activePersona.avatar}
               </div>
-              <p className="text-[11px] text-[#9b9b9b] truncate">{activePersona.tagline}</p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h2 className="font-bold text-sm text-white truncate">{activePersona.name}</h2>
+                  <span className={`px-2 py-0.2 rounded text-[10px] font-mono border ${activePersona.badgeColor}`}>
+                    {activePersona.category}
+                  </span>
+                  <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono border border-emerald-500/30">
+                    Custom Persona
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#9b9b9b] truncate">{activePersona.tagline}</p>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shrink-0">
+                <Bot className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="font-bold text-sm text-white">Persona Chat Studio</h2>
+                <p className="text-[11px] text-[#9b9b9b]">Analytics & Databases • Create custom personas and simulate chat</p>
+              </div>
+            </div>
+          )}
 
           {/* Right Action Tools */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* View Persona Prompt Drawer Button */}
-            <button
-              onClick={() => setIsPersonaDrawerOpen(true)}
-              className="px-2.5 py-1 rounded-md bg-[#282828] hover:bg-[#323232] text-[#d4d4d4] hover:text-white text-xs border border-[#383838] transition flex items-center gap-1.5 cursor-pointer"
-              title="Inspect System Prompt & Persona Traits"
-            >
-              <BrainCircuit className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="hidden md:inline">Prompt & Bio</span>
-            </button>
+            {activePersona && (
+              <>
+                {/* Edit Persona */}
+                <button
+                  onClick={(e) => handleEditPersona(activePersona, e)}
+                  className="p-1.5 rounded-md hover:bg-[#2c2c2c] text-[#9b9b9b] hover:text-white transition"
+                  title="Edit Persona Directives & Details"
+                >
+                  <Edit3 className="w-4 h-4" />
+                </button>
 
-            {/* Clear Messages */}
-            <button
-              onClick={handleClearCurrentSession}
-              className="p-1.5 rounded-md hover:bg-[#2c2c2c] text-[#9b9b9b] hover:text-white transition"
-              title="Clear Session Messages"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
+                {/* View Persona Prompt Drawer Button */}
+                <button
+                  onClick={() => setIsPersonaDrawerOpen(true)}
+                  className="px-2.5 py-1 rounded-md bg-[#282828] hover:bg-[#323232] text-[#d4d4d4] hover:text-white text-xs border border-[#383838] transition flex items-center gap-1.5 cursor-pointer"
+                  title="Inspect System Prompt & Persona Traits"
+                >
+                  <BrainCircuit className="w-3.5 h-3.5 text-indigo-400" />
+                  <span className="hidden md:inline">Prompt & Bio</span>
+                </button>
 
-            {/* Export Dropdown */}
-            <button
-              onClick={() => handleExportSession('markdown')}
-              className="p-1.5 rounded-md hover:bg-[#2c2c2c] text-[#9b9b9b] hover:text-white transition"
-              title="Export Conversation to Markdown"
-            >
-              <Download className="w-4 h-4" />
-            </button>
+                {/* Clear Messages */}
+                <button
+                  onClick={handleClearCurrentSession}
+                  className="p-1.5 rounded-md hover:bg-[#2c2c2c] text-[#9b9b9b] hover:text-white transition"
+                  title="Clear Session Messages"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+
+                {/* Export Dropdown */}
+                <button
+                  onClick={() => handleExportSession('markdown')}
+                  className="p-1.5 rounded-md hover:bg-[#2c2c2c] text-[#9b9b9b] hover:text-white transition"
+                  title="Export Conversation to Markdown"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+
+                {/* Delete Current Persona */}
+                <button
+                  onClick={(e) => handleDeleteCustomPersona(activePersona.id, e)}
+                  className="p-1.5 rounded-md hover:bg-[#2c2c2c] text-[#9b9b9b] hover:text-rose-400 transition"
+                  title="Delete Persona"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </>
+            )}
 
             {/* API Config Button */}
             <button
@@ -864,152 +1050,271 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
           </div>
         </div>
 
-        {/* Message Stream */}
+        {/* Message Stream or Empty Launchpad */}
         <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5">
-          {/* Persona Hero Welcome (shown if no messages) */}
-          {activeSession.messages.length === 0 && (
-            <div className="max-w-2xl mx-auto py-8 space-y-6 text-center animate-fade-in">
-              <div className="w-20 h-20 rounded-3xl bg-[#222222] border border-[#333333] flex items-center justify-center text-4xl mx-auto shadow-xl shadow-black/40">
-                {activePersona.avatar}
-              </div>
-
-              <div className="space-y-1.5">
-                <h3 className="text-xl font-black text-white flex items-center justify-center gap-2">
-                  <span>{activePersona.name}</span>
-                  {activePersona.japaneseName && (
-                    <span className="text-sm font-mono text-rose-400">({activePersona.japaneseName})</span>
-                  )}
-                </h3>
-                <p className="text-xs text-indigo-300 font-mono">{activePersona.tagline}</p>
-                <p className="text-xs text-[#9b9b9b] max-w-md mx-auto leading-relaxed pt-1">
-                  {activePersona.backstory}
+          {/* ZERO PERSONAS LAUNCHPAD */}
+          {!activePersona ? (
+            <div className="max-w-3xl mx-auto py-10 space-y-8 animate-fade-in">
+              {/* Hero Banner */}
+              <div className="text-center space-y-3">
+                <div className="w-16 h-16 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center mx-auto text-indigo-400 shadow-lg shadow-indigo-600/10">
+                  <Bot className="w-8 h-8" />
+                </div>
+                <h3 className="text-2xl font-black text-white">Create Your Custom Persona</h3>
+                <p className="text-sm text-[#9b9b9b] max-w-lg mx-auto leading-relaxed">
+                  Start fresh with your own custom AI personas. Connect your API (OpenAI, Gemini, Groq, Ollama) or simulate chat offline with tailored system directives.
                 </p>
-              </div>
 
-              {/* Persona Quirks / Specialties */}
-              <div className="flex flex-wrap items-center justify-center gap-2 max-w-lg mx-auto">
-                {activePersona.quirks.map((quirk, idx) => (
-                  <span
-                    key={idx}
-                    className="px-2.5 py-1 rounded-full text-[11px] font-mono bg-[#222222] text-[#d4d4d4] border border-[#2e2e2e]"
+                <div className="pt-2">
+                  <button
+                    onClick={() => {
+                      setEditingPersona(null);
+                      setNewPersona({
+                        name: '',
+                        tagline: '',
+                        avatar: '🤖',
+                        category: 'Custom',
+                        systemPrompt: '',
+                        backstory: '',
+                        speakingStyle: 'Professional and strategic',
+                        quirks: [],
+                        temperature: 0.7,
+                        suggestedStarters: ['Analyze our situation.', 'Suggest 3 strategic moves.'],
+                        badgeColor: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
+                      });
+                      setIsCreatePersonaOpen(true);
+                    }}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition shadow-md shadow-indigo-600/30 cursor-pointer"
                   >
-                    ✦ {quirk}
-                  </span>
-                ))}
+                    <Plus className="w-4 h-4" />
+                    <span>+ Create Custom Persona</span>
+                  </button>
+                </div>
               </div>
 
-              {/* Suggested Starters */}
-              <div className="pt-4 space-y-2 max-w-lg mx-auto">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-[#787774] block">
-                  Click a prompt starter to begin simulation:
-                </span>
-                <div className="grid grid-cols-1 gap-2 text-left">
-                  {activePersona.suggestedStarters.map((starter, idx) => (
-                    <button
+              {/* Fast Starter Templates */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono uppercase tracking-wider text-[#787774]">
+                    Or choose a starter template:
+                  </span>
+                  <span className="text-[11px] font-mono text-indigo-400">1-Click Customization</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {PERSONA_STARTER_PRESETS.map((preset, idx) => (
+                    <div
                       key={idx}
-                      onClick={() => handleSendMessage(starter)}
-                      className="p-2.5 rounded-xl bg-[#222222] hover:bg-[#282828] border border-[#2e2e2e] hover:border-indigo-500/50 text-xs text-[#d4d4d4] hover:text-white transition flex items-center justify-between gap-2 group cursor-pointer"
+                      onClick={() => handleOpenPreset(preset)}
+                      className="p-4 rounded-xl bg-[#202020] hover:bg-[#252525] border border-[#2e2e2e] hover:border-indigo-500/50 transition cursor-pointer flex flex-col justify-between group space-y-3"
                     >
-                      <span>{starter}</span>
-                      <Send className="w-3 h-3 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                    </button>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-2xl">{preset.avatar}</span>
+                          <span className={`px-2 py-0.2 rounded text-[10px] font-mono border ${preset.badgeColor}`}>
+                            {preset.category}
+                          </span>
+                        </div>
+                        <h4 className="font-bold text-xs text-white group-hover:text-indigo-300 transition">
+                          {preset.name}
+                        </h4>
+                        <p className="text-[11px] text-[#9b9b9b] line-clamp-2 leading-relaxed">
+                          {preset.tagline}
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-[#2a2a2a] flex items-center justify-between text-[11px] font-mono text-indigo-400 group-hover:text-indigo-300">
+                        <span>Use Template</span>
+                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* Render Messages */}
-          {activeSession.messages.map((msg) => {
-            const isUser = msg.role === 'user';
-            return (
-              <div
-                key={msg.id}
-                className={`flex gap-3 max-w-3xl mx-auto group ${isUser ? 'justify-end' : 'justify-start'}`}
-              >
-                {/* Assistant Avatar */}
-                {!isUser && (
-                  <div className="w-8 h-8 rounded-lg bg-[#252525] border border-[#353535] flex items-center justify-center text-base shrink-0 mt-0.5 shadow-sm">
+              {/* Feature Highlights Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-[#262626] text-xs">
+                <div className="p-3 rounded-lg bg-[#1f1f1f] border border-[#2b2b2b] space-y-1">
+                  <div className="flex items-center gap-1.5 text-indigo-400 font-bold">
+                    <BrainCircuit className="w-4 h-4" />
+                    <span>System Directives</span>
+                  </div>
+                  <p className="text-[11px] text-[#8e8e8e]">
+                    Define role, backstory, tone, and signature quirks for targeted reasoning.
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-lg bg-[#1f1f1f] border border-[#2b2b2b] space-y-1">
+                  <div className="flex items-center gap-1.5 text-amber-400 font-bold">
+                    <Zap className="w-4 h-4" />
+                    <span>Real API or Simulation</span>
+                  </div>
+                  <p className="text-[11px] text-[#8e8e8e]">
+                    Use your OpenAI/Gemini/Groq keys or test completely offline in browser.
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-lg bg-[#1f1f1f] border border-[#2b2b2b] space-y-1">
+                  <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                    <Database className="w-4 h-4" />
+                    <span>Persistent State</span>
+                  </div>
+                  <p className="text-[11px] text-[#8e8e8e]">
+                    Sessions and personas stay saved locally in your browser storage.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Persona Welcome Card (shown if no messages in active session) */}
+              {(!activeSession || activeSession.messages.length === 0) && (
+                <div className="max-w-2xl mx-auto py-8 space-y-6 text-center animate-fade-in">
+                  <div className="w-20 h-20 rounded-3xl bg-[#222222] border border-[#333333] flex items-center justify-center text-4xl mx-auto shadow-xl shadow-black/40">
                     {activePersona.avatar}
                   </div>
-                )}
 
-                {/* Message Bubble */}
-                <div
-                  className={`relative rounded-2xl p-4 text-xs md:text-sm leading-relaxed max-w-[85%] sm:max-w-[78%] transition shadow-sm ${
-                    isUser
-                      ? 'bg-indigo-600 text-white rounded-tr-none'
-                      : 'bg-[#222222] text-[#e6e6e6] border border-[#2e2e2e] rounded-tl-none'
-                  }`}
-                >
-                  {/* Top metadata row for assistant */}
-                  {!isUser && (
-                    <div className="flex items-center justify-between gap-3 pb-2 mb-2 border-b border-[#2e2e2e] text-[11px] font-mono text-[#787774]">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-[#d4d4d4]">{activePersona.name}</span>
-                        {msg.isSimulated && (
-                          <span className="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[9px]">
-                            Simulated
-                          </span>
-                        )}
-                        {msg.modelUsed && !msg.isSimulated && (
-                          <span className="px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[9px]">
-                            {msg.modelUsed}
-                          </span>
-                        )}
-                      </div>
-                      <span>{msg.timestamp}</span>
+                  <div className="space-y-1.5">
+                    <h3 className="text-xl font-black text-white flex items-center justify-center gap-2">
+                      <span>{activePersona.name}</span>
+                    </h3>
+                    <p className="text-xs text-indigo-300 font-mono">{activePersona.tagline}</p>
+                    <p className="text-xs text-[#9b9b9b] max-w-md mx-auto leading-relaxed pt-1">
+                      {activePersona.backstory}
+                    </p>
+                  </div>
+
+                  {/* Persona Quirks / Specialties */}
+                  {activePersona.quirks && activePersona.quirks.length > 0 && (
+                    <div className="flex flex-wrap items-center justify-center gap-2 max-w-lg mx-auto">
+                      {activePersona.quirks.map((quirk, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2.5 py-1 rounded-full text-[11px] font-mono bg-[#222222] text-[#d4d4d4] border border-[#2e2e2e]"
+                        >
+                          ✦ {quirk}
+                        </span>
+                      ))}
                     </div>
                   )}
 
-                  {/* Message Content */}
-                  <div className="whitespace-pre-wrap space-y-2">
-                    {msg.content}
-                  </div>
+                  {/* Suggested Starters */}
+                  {activePersona.suggestedStarters && activePersona.suggestedStarters.length > 0 && (
+                    <div className="pt-4 space-y-2 max-w-lg mx-auto">
+                      <span className="text-[11px] font-mono uppercase tracking-wider text-[#787774] block">
+                        Click a prompt starter to begin simulation:
+                      </span>
+                      <div className="grid grid-cols-1 gap-2 text-left">
+                        {activePersona.suggestedStarters.map((starter, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => handleSendMessage(starter)}
+                            className="p-2.5 rounded-xl bg-[#222222] hover:bg-[#282828] border border-[#2e2e2e] hover:border-indigo-500/50 text-xs text-[#d4d4d4] hover:text-white transition flex items-center justify-between gap-2 group cursor-pointer"
+                          >
+                            <span>{starter}</span>
+                            <Send className="w-3 h-3 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
-                  {/* Actions Bar (Copy message) */}
-                  <div className="mt-2 pt-1 flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => handleCopy(msg.id, msg.content)}
-                      className="p-1 rounded text-[#787774] hover:text-[#d4d4d4] transition flex items-center gap-1 text-[10px] font-mono"
-                      title="Copy text"
+              {/* Render Messages */}
+              {activeSession &&
+                activeSession.messages.map((msg) => {
+                  const isUser = msg.role === 'user';
+                  return (
+                    <div
+                      key={msg.id}
+                      className={`flex gap-3 max-w-3xl mx-auto group ${isUser ? 'justify-end' : 'justify-start'}`}
                     >
-                      {copiedMsgId === msg.id ? (
-                        <>
-                          <Check className="w-3 h-3 text-emerald-400" />
-                          <span className="text-emerald-400">Copied</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3 h-3" />
-                          <span>Copy</span>
-                        </>
+                      {/* Assistant Avatar */}
+                      {!isUser && (
+                        <div className="w-8 h-8 rounded-lg bg-[#252525] border border-[#353535] flex items-center justify-center text-base shrink-0 mt-0.5 shadow-sm">
+                          {activePersona.avatar}
+                        </div>
                       )}
-                    </button>
+
+                      {/* Message Bubble */}
+                      <div
+                        className={`relative rounded-2xl p-4 text-xs md:text-sm leading-relaxed max-w-[85%] sm:max-w-[78%] transition shadow-sm ${
+                          isUser
+                            ? 'bg-indigo-600 text-white rounded-tr-none'
+                            : 'bg-[#222222] text-[#e6e6e6] border border-[#2e2e2e] rounded-tl-none'
+                        }`}
+                      >
+                        {/* Top metadata row for assistant */}
+                        {!isUser && (
+                          <div className="flex items-center justify-between gap-3 pb-2 mb-2 border-b border-[#2e2e2e] text-[11px] font-mono text-[#787774]">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-[#d4d4d4]">{activePersona.name}</span>
+                              {msg.isSimulated && (
+                                <span className="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[9px]">
+                                  Simulated
+                                </span>
+                              )}
+                              {msg.modelUsed && !msg.isSimulated && (
+                                <span className="px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[9px]">
+                                  {msg.modelUsed}
+                                </span>
+                              )}
+                            </div>
+                            <span>{msg.timestamp}</span>
+                          </div>
+                        )}
+
+                        {/* Message Content */}
+                        <div className="whitespace-pre-wrap space-y-2">
+                          {msg.content}
+                        </div>
+
+                        {/* Actions Bar (Copy message) */}
+                        <div className="mt-2 pt-1 flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => handleCopy(msg.id, msg.content)}
+                            className="p-1 rounded text-[#787774] hover:text-[#d4d4d4] transition flex items-center gap-1 text-[10px] font-mono cursor-pointer"
+                            title="Copy text"
+                          >
+                            {copiedMsgId === msg.id ? (
+                              <>
+                                <Check className="w-3 h-3 text-emerald-400" />
+                                <span className="text-emerald-400">Copied</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3" />
+                                <span>Copy</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* User Avatar */}
+                      {isUser && (
+                        <div className="w-8 h-8 rounded-lg bg-indigo-700 border border-indigo-500 flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5 shadow-sm">
+                          <User className="w-4 h-4" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+              {/* Typing Indicator */}
+              {isGenerating && (
+                <div className="flex gap-3 max-w-3xl mx-auto items-start">
+                  <div className="w-8 h-8 rounded-lg bg-[#252525] border border-[#353535] flex items-center justify-center text-base shrink-0 mt-0.5">
+                    {activePersona.avatar}
+                  </div>
+                  <div className="bg-[#222222] border border-[#2e2e2e] rounded-2xl rounded-tl-none p-3.5 flex items-center gap-2 text-xs font-mono text-[#9b9b9b]">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-indigo-400" />
+                    <span>{activePersona.name} is thinking & formulating response...</span>
                   </div>
                 </div>
-
-                {/* User Avatar */}
-                {isUser && (
-                  <div className="w-8 h-8 rounded-lg bg-indigo-700 border border-indigo-500 flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5 shadow-sm">
-                    <User className="w-4 h-4" />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-
-          {/* Typing Indicator */}
-          {isGenerating && (
-            <div className="flex gap-3 max-w-3xl mx-auto items-start">
-              <div className="w-8 h-8 rounded-lg bg-[#252525] border border-[#353535] flex items-center justify-center text-base shrink-0 mt-0.5">
-                {activePersona.avatar}
-              </div>
-              <div className="bg-[#222222] border border-[#2e2e2e] rounded-2xl rounded-tl-none p-3.5 flex items-center gap-2 text-xs font-mono text-[#9b9b9b]">
-                <RefreshCw className="w-3.5 h-3.5 animate-spin text-indigo-400" />
-                <span>{activePersona.name} is thinking & drafting response...</span>
-              </div>
-            </div>
+              )}
+            </>
           )}
 
           <div ref={chatEndRef} />
@@ -1017,8 +1322,8 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
 
         {/* Input & Starter Bar */}
         <div className="p-4 border-t border-[#2e2e2e] bg-[#202020] space-y-2">
-          {/* Horizontal Suggested Starters Pills when chat has started */}
-          {activeSession.messages.length > 0 && (
+          {/* Horizontal Suggested Starters Pills when chat has messages */}
+          {activePersona && activeSession && activeSession.messages.length > 0 && activePersona.suggestedStarters && (
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 text-xs">
               <span className="text-[10px] font-mono text-[#787774] uppercase shrink-0">Prompts:</span>
               {activePersona.suggestedStarters.map((starter, idx) => (
@@ -1038,6 +1343,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
             <textarea
               ref={inputRef}
               rows={2}
+              disabled={!activePersona}
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyDown={(e) => {
@@ -1046,28 +1352,42 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                   handleSendMessage();
                 }
               }}
-              placeholder={`Message ${activePersona.name}... (Press Enter to send, Shift+Enter for new line)`}
-              className="w-full bg-transparent px-3.5 py-2.5 text-xs text-[#e6e6e6] placeholder-[#6e6e6e] outline-none resize-none"
+              placeholder={
+                activePersona
+                  ? `Message ${activePersona.name}... (Press Enter to send, Shift+Enter for new line)`
+                  : 'Create a custom persona first to begin chatting...'
+              }
+              className={`w-full bg-transparent px-3.5 py-2.5 text-xs text-[#e6e6e6] placeholder-[#6e6e6e] outline-none resize-none ${
+                !activePersona ? 'cursor-not-allowed opacity-60' : ''
+              }`}
             />
 
             <div className="px-3 py-1.5 bg-[#1f1f1f] border-t border-[#2a2a2a] flex items-center justify-between text-[11px] font-mono text-[#787774]">
               <div className="flex items-center gap-2">
-                <span className="flex items-center gap-1">
-                  <span>Persona:</span>
-                  <span className="text-white font-bold">{activePersona.name}</span>
-                </span>
-                <span>•</span>
-                <span className="text-amber-400">
-                  {apiConfig.provider === 'simulation' ? 'Simulated Response' : `API: ${apiConfig.provider}`}
-                </span>
+                {activePersona ? (
+                  <>
+                    <span className="flex items-center gap-1">
+                      <span>Persona:</span>
+                      <span className="text-white font-bold">{activePersona.name}</span>
+                    </span>
+                    <span>•</span>
+                    <span className="text-amber-400">
+                      {apiConfig.provider === 'simulation' ? 'Simulated Engine' : `API: ${apiConfig.provider}`}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-indigo-400 font-semibold cursor-pointer" onClick={() => setIsCreatePersonaOpen(true)}>
+                    + Click here to create a custom persona
+                  </span>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleSendMessage()}
-                  disabled={!inputMessage.trim() || isGenerating}
+                  disabled={!activePersona || !inputMessage.trim() || isGenerating}
                   className={`px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
-                    inputMessage.trim() && !isGenerating
+                    activePersona && inputMessage.trim() && !isGenerating
                       ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs'
                       : 'bg-[#2a2a2a] text-[#6e6e6e] cursor-not-allowed'
                   }`}
@@ -1143,7 +1463,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                   }}
                   className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6] focus:outline-none focus:border-indigo-500 cursor-pointer"
                 >
-                  <option value="simulation">Offline Simulation Mode (No API key needed • Smart In-Character Engine)</option>
+                  <option value="simulation">Offline Simulation Mode (No API key needed • Smart In-Character Heuristic)</option>
                   <option value="openai">OpenAI (GPT-4o, GPT-4o-mini, o1-preview)</option>
                   <option value="gemini">Google Gemini (Gemini 1.5 Pro, Gemini 1.5 Flash)</option>
                   <option value="groq">Groq Cloud (Llama 3.3 70B, Mixtral - Ultra Fast)</option>
@@ -1152,8 +1472,8 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                 </select>
                 <p className="text-[11px] text-[#787774] mt-1 font-mono">
                   {apiConfig.provider === 'simulation'
-                    ? '✦ Runs the built-in collector & persona logic directly in your browser.'
-                    : '✦ Directly prompts your model using the active persona’s full system prompt.'}
+                    ? '✦ Runs the custom persona simulation directly in your browser without API keys.'
+                    : '✦ Directly prompts your model using the active persona’s full system directives.'}
                 </p>
               </div>
 
@@ -1162,7 +1482,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="font-semibold text-white">API Key</label>
-                    <span className="text-[10px] font-mono text-[#787774]">Stored in local browser storage</span>
+                    <span className="text-[10px] font-mono text-[#787774]">Stored safely in local browser storage</span>
                   </div>
                   <input
                     type="password"
@@ -1337,7 +1657,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                       className="w-12 h-10 text-center text-xl bg-[#191919] border border-[#2e2e2e] rounded-lg"
                     />
                     <div className="flex gap-1">
-                      {['🎴', '📐', '⚡', '♟️', '🎨', '💼', '🧙‍♂️'].map((emo) => (
+                      {['📊', '⚡', '♟️', '🎴', '🤖', '💼', '🧙‍♂️'].map((emo) => (
                         <button
                           key={emo}
                           type="button"
@@ -1353,12 +1673,12 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
 
                 {/* Name */}
                 <div className="col-span-2">
-                  <label className="font-semibold text-white block mb-1">Persona Name</label>
+                  <label className="font-semibold text-white block mb-1">Persona Name *</label>
                   <input
                     type="text"
                     value={newPersona.name}
                     onChange={(e) => setNewPersona((prev) => ({ ...prev, name: e.target.value }))}
-                    placeholder="e.g. Satoshi Nakamoto or Ruthless VC"
+                    placeholder="e.g. Market Quant, Chief Systems Architect..."
                     className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6]"
                   />
                 </div>
@@ -1372,7 +1692,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                     type="text"
                     value={newPersona.tagline}
                     onChange={(e) => setNewPersona((prev) => ({ ...prev, tagline: e.target.value }))}
-                    placeholder="e.g. Lead Tokenomics Engineer"
+                    placeholder="e.g. Secondary Market Spreads Specialist"
                     className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6]"
                   />
                 </div>
@@ -1384,11 +1704,11 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                     onChange={(e) => setNewPersona((prev) => ({ ...prev, category: e.target.value as any }))}
                     className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6]"
                   >
-                    <option value="Executive">Executive</option>
+                    <option value="Custom">Custom</option>
                     <option value="TCG Specialist">TCG Specialist</option>
                     <option value="Engineering">Engineering</option>
+                    <option value="Executive">Executive</option>
                     <option value="Product & UX">Product & UX</option>
-                    <option value="Custom">Custom</option>
                   </select>
                 </div>
               </div>
@@ -1396,14 +1716,14 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
               {/* Core System Prompt */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="font-semibold text-white">Core System Prompt & Persona Directives</label>
-                  <span className="text-[10px] font-mono text-indigo-400">Sent directly to LLM</span>
+                  <label className="font-semibold text-white">Core System Prompt & Directives *</label>
+                  <span className="text-[10px] font-mono text-indigo-400">Fed to LLM / Simulator</span>
                 </div>
                 <textarea
                   rows={4}
                   value={newPersona.systemPrompt}
                   onChange={(e) => setNewPersona((prev) => ({ ...prev, systemPrompt: e.target.value }))}
-                  placeholder="You are [Name], a world-class expert in... Your tone is... You always prioritize..."
+                  placeholder="You are [Name], a specialist in... Your tone is... You always prioritize..."
                   className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg p-3 text-xs text-[#e6e6e6] font-mono leading-relaxed"
                 />
               </div>
@@ -1416,7 +1736,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                     rows={2}
                     value={newPersona.backstory}
                     onChange={(e) => setNewPersona((prev) => ({ ...prev, backstory: e.target.value }))}
-                    placeholder="Brief history of their career and expertise..."
+                    placeholder="Background and career context..."
                     className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg p-2.5 text-xs text-[#e6e6e6]"
                   />
                 </div>
@@ -1427,7 +1747,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
                     rows={2}
                     value={newPersona.speakingStyle}
                     onChange={(e) => setNewPersona((prev) => ({ ...prev, speakingStyle: e.target.value }))}
-                    placeholder="e.g. Sarcastic, razor-sharp, bullet-points..."
+                    placeholder="e.g. Concise, data-driven, strategic..."
                     className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg p-2.5 text-xs text-[#e6e6e6]"
                   />
                 </div>
@@ -1460,7 +1780,7 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
       {/* ======================================================== */}
       {/* 5. PERSONA DETAIL & PROMPT DRAWER */}
       {/* ======================================================== */}
-      {isPersonaDrawerOpen && (
+      {isPersonaDrawerOpen && activePersona && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs animate-fade-in">
           <div className="w-full max-w-md bg-[#202020] border-l border-[#2e2e2e] h-full flex flex-col justify-between shadow-2xl p-6 overflow-y-auto space-y-6">
             <div className="space-y-5">
@@ -1497,20 +1817,22 @@ ${generateSimulatedReply(activePersona, messageContent, newMessages)}`,
               </div>
 
               {/* Quirks & Signature Traits */}
-              <div className="space-y-1.5">
-                <span className="text-[10px] font-mono uppercase text-[#787774]">Signature Quirks</span>
-                <div className="space-y-1">
-                  {activePersona.quirks.map((q, idx) => (
-                    <div
-                      key={idx}
-                      className="p-2 rounded-lg bg-[#252525] border border-[#2e2e2e] text-xs text-[#d4d4d4] flex items-center gap-2"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                      <span>{q}</span>
-                    </div>
-                  ))}
+              {activePersona.quirks && activePersona.quirks.length > 0 && (
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-mono uppercase text-[#787774]">Signature Quirks</span>
+                  <div className="space-y-1">
+                    {activePersona.quirks.map((q, idx) => (
+                      <div
+                        key={idx}
+                        className="p-2 rounded-lg bg-[#252525] border border-[#2e2e2e] text-xs text-[#d4d4d4] flex items-center gap-2"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                        <span>{q}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <button
