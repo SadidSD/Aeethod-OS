@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { randomUUID } from 'crypto';
 import { buildSeed } from './seed.js';
 import catalogRoutes from './catalogRoutes.js';
+import groqRoutes from './groqRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -134,6 +135,9 @@ app.get('/api/health', (_req, res) => res.json({ ok: true, file: DB_FILE }));
 
 // Universal TCG Catalog API (Supabase PostgreSQL backend)
 app.use('/api/catalog', catalogRoutes);
+
+// Groq API check & streaming proxy
+app.use('/api/groq', groqRoutes);
 
 app.get('/api/db', (_req, res) => res.json(db));
 

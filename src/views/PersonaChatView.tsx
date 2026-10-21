@@ -145,17 +145,16 @@ export const PersonaChatView: React.FC = () => {
     return MIKAH_PERSONA.id;
   });
 
-  // Default API configuration set to Groq Llama-3.3-70B
+  // Default API configuration set to Groq Llama-3.1/3.3
   const [apiConfig, setApiConfig] = useState<ApiConfig>(() => {
     try {
       const saved = localStorage.getItem('aeethod_persona_api_config');
       if (saved) {
         const parsed = JSON.parse(saved);
         const provider = parsed.provider === 'openai' ? 'openai' : 'groq';
-        let model = parsed.model || 'llama-3.3-70b-versatile';
-        // Auto-correct stale localStorage model if it was left as gpt-4o for Groq
+        let model = parsed.model || 'llama-3.1-8b-instant';
         if (provider === 'groq' && (!model || model === 'gpt-4o' || model.startsWith('gpt-') || model.startsWith('claude-'))) {
-          model = 'llama-3.3-70b-versatile';
+          model = 'llama-3.1-8b-instant';
         }
         return {
           ...DEFAULT_API_CONFIG,
@@ -173,16 +172,20 @@ export const PersonaChatView: React.FC = () => {
     };
   });
 
-  // Ensure state auto-sanitizes if localStorage held gpt-4o
-  useEffect(() => {
-    if (apiConfig.provider === 'groq' && (apiConfig.model === 'gpt-4o' || apiConfig.model?.startsWith('gpt-') || !apiConfig.model)) {
-      setApiConfig((prev) => ({
-        ...prev,
-        model: 'llama-3.3-70b-versatile',
-        baseUrl: 'https://api.groq.com/openai/v1',
-      }));
-    }
-  }, [apiConfig.provider, apiConfig.model]);
+  // Live Groq connection and model detection status
+  const [groqStatus, setGroqStatus] = useState<{
+    checking: boolean;
+    verified: boolean;
+    error?: string;
+    keySource?: 'vercel-env' | 'client' | 'none';
+    maskedKey?: string;
+    workingModel?: string;
+    availableModels: string[];
+  }>({
+    checking: false,
+    verified: false,
+    availableModels: ['llama-3.1-8b-instant', 'llama-3.3-70b-versatile', 'llama-3.1-70b-versatile', 'mixtral-8x7b-32768'],
+  });
 
   const [quickKeyInput, setQuickKeyInput] = useState('');
 
@@ -223,9 +226,6 @@ export const PersonaChatView: React.FC = () => {
   const [isPersonaDrawerOpen, setIsPersonaDrawerOpen] = useState(false);
   const [editingPersona, setEditingPersona] = useState<Persona | null>(null);
   const [sessionSearch, setSessionSearch] = useState('');
-  const [apiTestStatus, setApiTestStatus] = useState<{ loading: boolean; success?: boolean; message?: string }>({
-    loading: false,
-  });
 
   // Persona Creation Form State
   const [newPersona, setNewPersona] = useState<Partial<Persona>>({
@@ -281,10 +281,131 @@ export const PersonaChatView: React.FC = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeSession?.messages, isGenerating]);
 
-  const effectiveApiKey = apiConfig.apiKey?.trim() || envGroqKey.trim();
-  const isUsingEnvKey = !apiConfig.apiKey?.trim() && Boolean(envGroqKey.trim());
+  // Comprehensive Groq Model & Key Verification function
+  const checkGroqConnection = async (manualKey?: string) => {
+    setGroqStatus((prev) => ({ ...prev, checking: true, error: undefined }));
+    try {
+      const keyToUse = manualKey !== undefined ? manualKey : (apiConfig.apiKey || envGroqKey);
 
-  // Quick Key Save Handler
+      // 1. Test via serverless proxy /api/groq/check (checks Vercel env or passed key)
+      const res = await fetch('/api/groq/check', {
+        headers: keyToUse ? { Authorization: `Bearer ${keyToUse.trim()}` } : {},
+      }).catch(() => null);
+
+      if (res && res.ok) {
+        const data = await res.json();
+        if (data.ok && data.workingModel) {
+          setGroqStatus({
+            checking: false,
+            verified: true,
+            keySource: data.keySource,
+            maskedKey: data.maskedKey,
+            workingModel: data.workingModel,
+            availableModels: data.activeModels || ['llama-3.1-8b-instant', 'llama-3.3-70b-versatile'],
+          });
+          setApiConfig((prev) => ({
+            ...prev,
+            model: data.workingModel,
+            baseUrl: 'https://api.groq.com/openai/v1',
+          }));
+          return;
+        } else if (!data.ok && data.error) {
+          setGroqStatus((prev) => ({
+            ...prev,
+            checking: false,
+            verified: false,
+            error: data.error,
+            keySource: data.keySource,
+            maskedKey: data.maskedKey,
+          }));
+          return;
+        }
+      }
+
+      // 2. Direct browser fallback check if /api/groq/check is unreachable
+      if (keyToUse) {
+        const directRes = await fetch('https://api.groq.com/openai/v1/models', {
+          headers: { Authorization: `Bearer ${keyToUse.trim()}` },
+        });
+
+        if (!directRes.ok) {
+          const errData = await directRes.json().catch(() => ({}));
+          setGroqStatus((prev) => ({
+            ...prev,
+            checking: false,
+            verified: false,
+            error: errData.error?.message || `Groq direct API HTTP ${directRes.status}`,
+          }));
+          return;
+        }
+
+        const data = await directRes.json();
+        const models: string[] = (data.data || []).map((m: any) => m.id);
+        const chatModels = models.filter((id) => !id.includes('whisper') && !id.includes('guard'));
+
+        // Probe chat models to identify working model
+        let foundWorking = 'llama-3.1-8b-instant';
+        const candidates = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama-3.1-70b-versatile', 'llama3-70b-8192', ...chatModels];
+        for (const c of candidates) {
+          if (!chatModels.includes(c)) continue;
+          try {
+            const probe = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${keyToUse.trim()}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                model: c,
+                messages: [{ role: 'user', content: 'hi' }],
+                max_tokens: 2,
+              }),
+            });
+            if (probe.ok) {
+              foundWorking = c;
+              break;
+            }
+          } catch {}
+        }
+
+        setGroqStatus({
+          checking: false,
+          verified: true,
+          keySource: 'client',
+          maskedKey: keyToUse.slice(0, 7) + '...' + keyToUse.slice(-4),
+          workingModel: foundWorking,
+          availableModels: chatModels.length > 0 ? chatModels : ['llama-3.1-8b-instant', 'llama-3.3-70b-versatile'],
+        });
+
+        setApiConfig((prev) => ({
+          ...prev,
+          model: foundWorking,
+        }));
+      } else {
+        setGroqStatus((prev) => ({
+          ...prev,
+          checking: false,
+          verified: false,
+          error: 'No Groq API key found in Vercel environment or locally.',
+          keySource: 'none',
+        }));
+      }
+    } catch (err: any) {
+      setGroqStatus((prev) => ({
+        ...prev,
+        checking: false,
+        verified: false,
+        error: err.message,
+      }));
+    }
+  };
+
+  // Run auto-check on mount
+  useEffect(() => {
+    checkGroqConnection();
+  }, []);
+
+  // Quick Key Save & Verify Handler
   const handleSaveQuickKey = () => {
     if (!quickKeyInput.trim()) return;
     const cleanKey = quickKeyInput.trim();
@@ -292,9 +413,9 @@ export const PersonaChatView: React.FC = () => {
       ...prev,
       provider: 'groq',
       apiKey: cleanKey,
-      model: 'llama-3.3-70b-versatile',
       baseUrl: 'https://api.groq.com/openai/v1',
     }));
+    checkGroqConnection(cleanKey);
     setQuickKeyInput('');
   };
 
@@ -341,7 +462,7 @@ export const PersonaChatView: React.FC = () => {
     );
   };
 
-  // Real Streaming LLM API Caller via Fetch & ReadableStream
+  // Real Streaming LLM API Caller with Vercel proxy & direct fallback
   const callRealApiStream = async (
     persona: Persona,
     history: ChatMessage[],
@@ -349,8 +470,76 @@ export const PersonaChatView: React.FC = () => {
     onChunk: (accumulatedText: string) => void
   ): Promise<string> => {
     const keyToUse = config.apiKey?.trim() || envGroqKey.trim();
+    const modelToUse = groqStatus.workingModel || config.model || 'llama-3.1-8b-instant';
+
+    // 1. Attempt streaming via serverless proxy /api/groq/chat (uses Vercel env key seamlessly)
+    try {
+      const proxyRes = await fetch('/api/groq/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(keyToUse ? { Authorization: `Bearer ${keyToUse}` } : {}),
+        },
+        body: JSON.stringify({
+          model: modelToUse,
+          temperature: config.temperature ?? 0.7,
+          max_tokens: config.maxTokens ?? 1024,
+          stream: true,
+          messages: [
+            { role: 'system', content: persona.systemPrompt },
+            ...history.map((m) => ({ role: m.role, content: m.content })),
+          ],
+        }),
+      });
+
+      if (proxyRes.ok) {
+        const reader = proxyRes.body?.getReader();
+        if (reader) {
+          const decoder = new TextDecoder('utf-8');
+          let accumulated = '';
+          let buffer = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed || trimmed.startsWith(':')) continue;
+              if (trimmed === 'data: [DONE]') break;
+              if (trimmed.startsWith('data: ')) {
+                try {
+                  const parsed = JSON.parse(trimmed.slice(6));
+                  const delta = parsed.choices?.[0]?.delta?.content;
+                  if (delta) {
+                    accumulated += delta;
+                    onChunk(accumulated);
+                  }
+                } catch {}
+              }
+            }
+          }
+          if (accumulated.trim()) return accumulated;
+        }
+      } else {
+        const errJson = await proxyRes.json().catch(() => ({}));
+        if (errJson.error?.message) {
+          throw new Error(errJson.error.message);
+        }
+      }
+    } catch (e: any) {
+      if (!keyToUse) {
+        throw new Error(e.message || 'Groq connection failed. Please check your Vercel GROQ_API_KEY.');
+      }
+    }
+
+    // 2. Direct client fallback to Groq endpoint if proxy is unavailable
     if (!keyToUse) {
-      throw new Error('Groq API Key is required. Please paste your key to enable live LLM simulation.');
+      throw new Error('Groq API Key is required. Please paste your key or set GROQ_API_KEY in Vercel.');
     }
 
     const endpoint =
@@ -359,15 +548,6 @@ export const PersonaChatView: React.FC = () => {
         : config.provider === 'openrouter'
         ? 'https://openrouter.ai/api/v1/chat/completions'
         : `${config.baseUrl.replace(/\/+$/, '')}/chat/completions`;
-
-    let modelToUse = config.model;
-    if (config.provider === 'groq') {
-      if (!modelToUse || modelToUse === 'gpt-4o' || modelToUse.startsWith('gpt-') || modelToUse.startsWith('claude-')) {
-        modelToUse = 'llama-3.3-70b-versatile';
-      }
-    } else if (!modelToUse) {
-      modelToUse = 'gpt-4o';
-    }
 
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -419,9 +599,7 @@ export const PersonaChatView: React.FC = () => {
               accumulated += delta;
               onChunk(accumulated);
             }
-          } catch {
-            // Partial JSON line
-          }
+          } catch {}
         }
       }
     }
@@ -469,39 +647,6 @@ export const PersonaChatView: React.FC = () => {
 
     const newMessages = [...currentSession.messages, userMessage];
 
-    // If no key is configured, prompt user to add their Groq key
-    if (!effectiveApiKey) {
-      const keyPromptMsg: ChatMessage = {
-        id: `msg-resp-${Date.now()}`,
-        role: 'assistant',
-        content: `⚠️ **Groq API Key Required for Live Simulation:**
-
-To chat with **${activePersona.name}** in a true live LLM simulation, please connect your Groq API Key:
-
-1. Grab a free API key at **[console.groq.com/keys](https://console.groq.com/keys)** (Takes 10 seconds, zero payment needed).
-2. Paste your key in the top amber bar and click **Connect**.
-3. Or configure \`VITE_GROQ_API_KEY\` in your Vercel project settings for instant public access across all visitors.`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        personaId: activePersona.id,
-        modelUsed: 'groq:unauthenticated',
-        isSimulated: false,
-      };
-
-      setSessions((prev) =>
-        prev.map((s) =>
-          s.id === currentSessionId
-            ? {
-                ...s,
-                title: updatedTitle,
-                messages: [...newMessages, keyPromptMsg],
-                updatedAt: new Date().toISOString(),
-              }
-            : s
-        )
-      );
-      return;
-    }
-
     // Placeholder assistant message for streaming
     const assistantMsgId = `msg-resp-${Date.now()}`;
     const initialAssistantMsg: ChatMessage = {
@@ -510,7 +655,7 @@ To chat with **${activePersona.name}** in a true live LLM simulation, please con
       content: '',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       personaId: activePersona.id,
-      modelUsed: `${apiConfig.provider}:${apiConfig.model}`,
+      modelUsed: `groq:${groqStatus.workingModel || apiConfig.model}`,
       isSimulated: false,
     };
 
@@ -535,7 +680,7 @@ To chat with **${activePersona.name}** in a true live LLM simulation, please con
       await callRealApiStream(
         activePersona,
         newMessages,
-        { ...apiConfig, apiKey: effectiveApiKey },
+        apiConfig,
         (accumulatedText) => {
           setSessions((prev) =>
             prev.map((s) =>
@@ -558,7 +703,7 @@ To chat with **${activePersona.name}** in a true live LLM simulation, please con
         role: 'assistant',
         content: `⚠️ **Groq LLM Connection Error:** ${err.message || 'API stream connection failed'}.
 
-Please verify your Groq API Key or check your rate limits at [console.groq.com](https://console.groq.com).`,
+Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq key or connect a valid model.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         personaId: activePersona.id,
         modelUsed: `${apiConfig.provider}:${apiConfig.model}`,
@@ -579,43 +724,6 @@ Please verify your Groq API Key or check your rate limits at [console.groq.com](
     } finally {
       setIsGenerating(false);
       inputRef.current?.focus();
-    }
-  };
-
-  // Test API Connection
-  const handleTestApi = async () => {
-    setApiTestStatus({ loading: true });
-    try {
-      const keyToTest = apiConfig.apiKey?.trim() || envGroqKey.trim();
-      if (!keyToTest) {
-        setApiTestStatus({
-          loading: false,
-          success: false,
-          message: 'Please provide an API Key or add VITE_GROQ_API_KEY in Vercel to test connection.',
-        });
-        return;
-      }
-
-      const probePersona: Persona = activePersona || MIKAH_PERSONA;
-
-      const res = await callRealApiStream(
-        probePersona,
-        [{ id: 'test', role: 'user', content: 'Say "GROQ_LLM_CONNECTED" in 3 words or less.', timestamp: '' }],
-        { ...apiConfig, apiKey: keyToTest, maxTokens: 25 },
-        () => {}
-      );
-
-      setApiTestStatus({
-        loading: false,
-        success: true,
-        message: `Success! Groq live model response: "${res.slice(0, 50)}..."`,
-      });
-    } catch (err: any) {
-      setApiTestStatus({
-        loading: false,
-        success: false,
-        message: `Error: ${err.message}`,
-      });
     }
   };
 
@@ -949,9 +1057,11 @@ Please verify your Groq API Key or check your rate limits at [console.groq.com](
         {/* Bottom Status / Footer */}
         <div className="p-3 border-t border-[#2e2e2e] bg-[#1d1d1d] flex items-center justify-between text-xs font-mono">
           <div className="flex items-center gap-1.5 text-[#9b9b9b]">
-            <span className={`w-2 h-2 rounded-full ${effectiveApiKey ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
+            <span
+              className={`w-2 h-2 rounded-full ${groqStatus.verified ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`}
+            />
             <span className="text-[11px]">
-              {apiConfig.provider.toUpperCase()} : {apiConfig.model}
+              {apiConfig.provider.toUpperCase()} : {groqStatus.workingModel || apiConfig.model}
             </span>
           </div>
 
@@ -1070,64 +1180,87 @@ Please verify your Groq API Key or check your rate limits at [console.groq.com](
             >
               <Zap className="w-3.5 h-3.5 text-amber-400" />
               <span className="hidden lg:inline font-mono text-[11px]">
-                {apiConfig.provider === 'groq' ? 'Groq: Llama 3.3' : apiConfig.model}
+                {groqStatus.workingModel || apiConfig.model}
               </span>
             </button>
           </div>
         </div>
 
-        {/* Groq Live LLM Status & Instant Key Connector Bar */}
-        {apiConfig.provider === 'groq' && (
-          <div className="bg-[#1c1c1c] border-b border-[#2e2e2e] px-5 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className={`w-2.5 h-2.5 rounded-full ${effectiveApiKey ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'} shrink-0`} />
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-semibold text-white">Groq LLM Engine:</span>
-                <span className="font-mono text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 text-[11px]">
-                  {apiConfig.model}
-                </span>
-                {effectiveApiKey ? (
-                  <span className="text-emerald-400 font-mono text-[10px] bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" />
-                    <span>Live Streaming Active ({isUsingEnvKey ? 'Vercel Env' : 'Local Key'})</span>
-                  </span>
-                ) : (
-                  <span className="text-amber-300 text-[11px] font-medium flex items-center gap-1">
-                    <Zap className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Connect your Groq key below for real-time 300+ tok/sec AI simulation:</span>
-                  </span>
-                )}
-              </div>
-            </div>
+        {/* Live Groq Model Detection & Connection Diagnostic Bar */}
+        <div className="bg-[#1c1c1c] border-b border-[#2e2e2e] px-5 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 min-w-0">
+            <span
+              className={`w-2.5 h-2.5 rounded-full ${
+                groqStatus.verified ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'
+              } shrink-0`}
+            />
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-semibold text-white">Groq Live Engine:</span>
+              <span className="font-mono text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 text-[11px] font-bold">
+                {groqStatus.workingModel || apiConfig.model}
+              </span>
 
-            {!effectiveApiKey ? (
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+              {groqStatus.verified ? (
+                <span className="text-emerald-400 font-mono text-[10px] bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>
+                    Verified & Connected ({groqStatus.keySource === 'vercel-env' ? 'Vercel Env' : 'Local Key'} {groqStatus.maskedKey || ''})
+                  </span>
+                </span>
+              ) : groqStatus.checking ? (
+                <span className="text-amber-300 text-[11px] flex items-center gap-1.5 font-mono">
+                  <RefreshCw className="w-3 h-3 animate-spin text-amber-400" />
+                  <span>Testing Vercel Groq key and probing active models...</span>
+                </span>
+              ) : groqStatus.error ? (
+                <span className="text-rose-400 text-[11px] font-mono flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{groqStatus.error.slice(0, 75)}...</span>
+                </span>
+              ) : (
+                <span className="text-amber-300 text-[11px] font-medium flex items-center gap-1">
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Connect your Groq key below for real-time AI simulation:</span>
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => checkGroqConnection()}
+              disabled={groqStatus.checking}
+              className="px-2.5 py-1 rounded bg-[#282828] hover:bg-[#323232] text-[#d4d4d4] hover:text-white border border-[#383838] font-mono text-[11px] transition shrink-0 cursor-pointer flex items-center gap-1.5"
+              title="Test Vercel environment key and find working model"
+            >
+              {groqStatus.checking ? (
+                <RefreshCw className="w-3 h-3 animate-spin text-amber-400" />
+              ) : (
+                <RefreshCw className="w-3 h-3 text-amber-400" />
+              )}
+              <span>Auto-Detect Working Model</span>
+            </button>
+
+            {!groqStatus.verified && (
+              <div className="flex items-center gap-2">
                 <input
                   type="password"
                   value={quickKeyInput}
                   onChange={(e) => setQuickKeyInput(e.target.value)}
-                  placeholder="Paste Groq Key (gsk_...)"
-                  className="bg-[#141414] border border-amber-500/40 rounded-lg px-2.5 py-1 text-xs font-mono text-white placeholder-[#787878] focus:outline-none focus:border-amber-400 w-52"
+                  placeholder="Paste Key (gsk_...)"
+                  className="bg-[#141414] border border-amber-500/40 rounded-lg px-2.5 py-1 text-xs font-mono text-white placeholder-[#787878] focus:outline-none focus:border-amber-400 w-44"
                 />
                 <button
                   onClick={handleSaveQuickKey}
-                  disabled={!quickKeyInput.trim()}
+                  disabled={!quickKeyInput.trim() || groqStatus.checking}
                   className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-semibold text-xs transition cursor-pointer shrink-0"
                 >
                   Connect
                 </button>
               </div>
-            ) : (
-              <button
-                onClick={() => setIsApiSettingsOpen(true)}
-                className="px-2.5 py-1 rounded bg-[#282828] hover:bg-[#323232] text-[#d4d4d4] hover:text-white border border-[#383838] font-mono text-[11px] transition shrink-0 cursor-pointer flex items-center gap-1.5"
-              >
-                <Key className="w-3 h-3 text-amber-400" />
-                <span>Manage Key / Settings</span>
-              </button>
             )}
           </div>
-        )}
+        </div>
 
         {/* Message Stream */}
         <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5">
@@ -1274,7 +1407,7 @@ Please verify your Groq API Key or check your rate limits at [console.groq.com](
                   </div>
                   <div className="bg-[#222222] border border-[#2e2e2e] rounded-2xl rounded-tl-none p-3.5 flex items-center gap-2 text-xs font-mono text-[#9b9b9b]">
                     <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
-                    <span>Connecting to Groq Llama 3.3 70B stream...</span>
+                    <span>Connecting to Groq live model stream...</span>
                   </div>
                 </div>
               )}
@@ -1315,11 +1448,7 @@ Please verify your Groq API Key or check your rate limits at [console.groq.com](
                   handleSendMessage();
                 }
               }}
-              placeholder={
-                effectiveApiKey
-                  ? `Message ${activePersona?.name || 'Mikah'} (Live Groq LLM)... (Press Enter to send, Shift+Enter for new line)`
-                  : 'Enter your Groq key above to start live LLM simulation with Mikah...'
-              }
+              placeholder={`Message ${activePersona?.name || 'Mikah'} (Live Groq LLM)... (Press Enter to send, Shift+Enter for new line)`}
               className="w-full bg-transparent px-3.5 py-2.5 text-xs text-[#e6e6e6] placeholder-[#6e6e6e] outline-none resize-none"
             />
 
@@ -1331,7 +1460,7 @@ Please verify your Groq API Key or check your rate limits at [console.groq.com](
                 </span>
                 <span>•</span>
                 <span className="text-amber-400">
-                  {effectiveApiKey ? `Groq: ${apiConfig.model} (Streaming)` : 'Key Required'}
+                  Groq: {groqStatus.workingModel || apiConfig.model}
                 </span>
               </div>
 
@@ -1367,9 +1496,9 @@ Please verify your Groq API Key or check your rate limits at [console.groq.com](
                   <Zap className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-white">Groq API & LLM Settings</h3>
+                  <h3 className="font-bold text-sm text-white">Groq API & Model Settings</h3>
                   <p className="text-[11px] text-[#9b9b9b] font-mono">
-                    Real-time streaming inference via Groq Cloud (Llama 3.3 70B Versatile)
+                    Real-time streaming inference via Groq Cloud
                   </p>
                 </div>
               </div>
@@ -1390,15 +1519,12 @@ Please verify your Groq API Key or check your rate limits at [console.groq.com](
                   value={apiConfig.provider}
                   onChange={(e) => {
                     const prov = e.target.value as any;
-                    let defaultModel = 'llama-3.3-70b-versatile';
+                    let defaultModel = 'llama-3.1-8b-instant';
                     let defaultUrl = 'https://api.groq.com/openai/v1';
 
                     if (prov === 'openai') {
                       defaultModel = 'gpt-4o';
                       defaultUrl = 'https://api.openai.com/v1';
-                    } else if (prov === 'gemini') {
-                      defaultModel = 'gemini-1.5-flash';
-                      defaultUrl = 'https://generativelanguage.googleapis.com';
                     } else if (prov === 'openrouter') {
                       defaultModel = 'meta-llama/llama-3.1-70b-instruct';
                       defaultUrl = 'https://openrouter.ai/api/v1';
@@ -1413,13 +1539,10 @@ Please verify your Groq API Key or check your rate limits at [console.groq.com](
                   }}
                   className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6] focus:outline-none focus:border-amber-500 cursor-pointer"
                 >
-                  <option value="groq">Groq Cloud (Llama 3.3 70B Versatile - 300+ Tokens/Sec)</option>
+                  <option value="groq">Groq Cloud (Recommended • 300+ Tokens/Sec)</option>
                   <option value="openrouter">OpenRouter (Any open-source & commercial model)</option>
                   <option value="openai">OpenAI (GPT-4o, GPT-4o-mini)</option>
                 </select>
-                <p className="text-[11px] text-[#787774] mt-1 font-mono">
-                  ✦ Ultra-fast streaming directly prompts the live model using active persona directives.
-                </p>
               </div>
 
               {/* API Key Input */}
@@ -1440,45 +1563,38 @@ Please verify your Groq API Key or check your rate limits at [console.groq.com](
                   <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer" className="text-amber-400 underline">
                     console.groq.com/keys
                   </a>
-                  . Saved safely in local browser storage.
+                  . Keys are also auto-read from Vercel’s <code>GROQ_API_KEY</code>.
                 </p>
               </div>
 
-              {/* Model & Base URL */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-semibold text-white block mb-1">Model Name</label>
-                  {apiConfig.provider === 'groq' ? (
-                    <select
-                      value={apiConfig.model}
-                      onChange={(e) => setApiConfig((prev) => ({ ...prev, model: e.target.value }))}
-                      className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6] font-mono focus:outline-none focus:border-amber-500 cursor-pointer"
-                    >
-                      <option value="llama-3.3-70b-versatile">llama-3.3-70b-versatile (Recommended • 70B Deep Reasoning)</option>
-                      <option value="llama-3.1-8b-instant">llama-3.1-8b-instant (Fastest • Ultra-Low Latency)</option>
-                      <option value="mixtral-8x7b-32768">mixtral-8x7b-32768 (32k High Context)</option>
-                    </select>
-                  ) : (
-                    <input
-                      type="text"
-                      value={apiConfig.model}
-                      onChange={(e) => setApiConfig((prev) => ({ ...prev, model: e.target.value }))}
-                      placeholder="e.g. gpt-4o or meta-llama/llama-3.1-70b-instruct"
-                      className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6] font-mono focus:outline-none focus:border-amber-500"
-                    />
-                  )}
-                </div>
-
-                <div>
-                  <label className="font-semibold text-white block mb-1">Base URL Endpoint</label>
+              {/* Model Selector */}
+              <div>
+                <label className="font-semibold text-white block mb-1">Model Name</label>
+                {apiConfig.provider === 'groq' ? (
+                  <select
+                    value={groqStatus.workingModel || apiConfig.model}
+                    onChange={(e) => {
+                      const selected = e.target.value;
+                      setApiConfig((prev) => ({ ...prev, model: selected }));
+                      setGroqStatus((prev) => ({ ...prev, workingModel: selected }));
+                    }}
+                    className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6] font-mono focus:outline-none focus:border-amber-500 cursor-pointer"
+                  >
+                    {groqStatus.availableModels.map((m) => (
+                      <option key={m} value={m}>
+                        {m} {m.includes('8b') ? '(Instant • Ultra-Fast)' : m.includes('70b') ? '(Deep Reasoning)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
                   <input
                     type="text"
-                    value={apiConfig.baseUrl}
-                    onChange={(e) => setApiConfig((prev) => ({ ...prev, baseUrl: e.target.value }))}
-                    placeholder="https://api.groq.com/openai/v1"
+                    value={apiConfig.model}
+                    onChange={(e) => setApiConfig((prev) => ({ ...prev, model: e.target.value }))}
+                    placeholder="e.g. gpt-4o"
                     className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6] font-mono focus:outline-none focus:border-amber-500"
                   />
-                </div>
+                )}
               </div>
 
               {/* Sliders: Temperature & Max Tokens */}
@@ -1521,32 +1637,31 @@ Please verify your Groq API Key or check your rate limits at [console.groq.com](
               {/* Live Connection Test Button & Feedback */}
               <div className="pt-2 border-t border-[#2e2e2e]">
                 <button
-                  onClick={handleTestApi}
-                  disabled={apiTestStatus.loading}
+                  onClick={() => checkGroqConnection()}
+                  disabled={groqStatus.checking}
                   className="px-3 py-1.5 rounded-lg bg-[#282828] hover:bg-[#323232] text-xs font-semibold text-[#d4d4d4] border border-[#383838] transition flex items-center gap-2 cursor-pointer"
                 >
-                  {apiTestStatus.loading ? (
+                  {groqStatus.checking ? (
                     <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
                   ) : (
                     <Zap className="w-3.5 h-3.5 text-amber-400" />
                   )}
-                  <span>Test Groq Connection Now</span>
+                  <span>Test Key & Probe Models</span>
                 </button>
 
-                {apiTestStatus.message && (
-                  <div
-                    className={`mt-2 p-2.5 rounded-lg text-xs font-mono flex items-center gap-2 ${
-                      apiTestStatus.success
-                        ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30'
-                        : 'bg-rose-500/10 text-rose-300 border border-rose-500/30'
-                    }`}
-                  >
-                    {apiTestStatus.success ? (
-                      <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-                    ) : (
-                      <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-                    )}
-                    <span>{apiTestStatus.message}</span>
+                {groqStatus.error && (
+                  <div className="mt-2 p-2.5 rounded-lg text-xs font-mono bg-rose-500/10 text-rose-300 border border-rose-500/30 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                    <span>{groqStatus.error}</span>
+                  </div>
+                )}
+
+                {groqStatus.verified && (
+                  <div className="mt-2 p-2.5 rounded-lg text-xs font-mono bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+                    <span>
+                      Success! Verified model: <strong>{groqStatus.workingModel}</strong> ({groqStatus.keySource})
+                    </span>
                   </div>
                 )}
               </div>
