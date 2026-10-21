@@ -48,6 +48,7 @@ import {
   INITIAL_PERSONAS,
   MIKAH_PERSONA,
 } from '../data/personaChatData';
+import { useStore } from '../store';
 
 // Legacy personas to purge from storage
 const LEGACY_PERSONA_IDS = new Set([
@@ -117,6 +118,9 @@ const PERSONA_STARTER_PRESETS: Array<Omit<Persona, 'id' | 'createdAt'>> = [
 ];
 
 export const PersonaChatView: React.FC = () => {
+  const { theme } = useStore();
+  const isLight = theme === 'light';
+
   // Global Vercel Environment API Key support for shared access
   const envGroqKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY) || '';
 
@@ -883,31 +887,47 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
   });
 
   return (
-    <div className="flex h-full w-full bg-[#191919] text-[#e6e6e6] overflow-hidden select-text">
+    <div className={`flex h-full w-full overflow-hidden select-text transition-colors duration-150 ${
+      isLight ? 'bg-white text-slate-800' : 'bg-[#121214] text-[#e6e6e6]'
+    }`}>
       {/* ======================================================== */}
       {/* 1. LEFT SIDEBAR: SESSIONS & PERSONA DIRECTORY */}
       {/* ======================================================== */}
-      <div className="w-72 bg-[#202020] border-r border-[#2e2e2e] flex flex-col justify-between shrink-0 h-full">
+      <div className={`w-72 md:w-80 border-r flex flex-col justify-between shrink-0 h-full transition-colors duration-150 ${
+        isLight ? 'bg-[#fcfcfd] border-slate-200/90 text-slate-800' : 'bg-[#18181b] border-zinc-800 text-zinc-100'
+      }`}>
         {/* Top Header & Actions */}
-        <div className="p-3 border-b border-[#2e2e2e] space-y-3">
+        <div className={`p-3.5 border-b space-y-3 ${
+          isLight ? 'border-slate-200/80 bg-white' : 'border-zinc-800 bg-zinc-900/50'
+        }`}>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-400">
-                <Bot className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2.5">
+              <div className={`w-7 h-7 rounded-lg flex items-center justify-center shadow-2xs ${
+                isLight ? 'bg-indigo-50 border border-indigo-200/80 text-indigo-600' : 'bg-indigo-600/30 border border-indigo-500/40 text-indigo-400'
+              }`}>
+                <Bot className="w-4 h-4" />
               </div>
               <div>
-                <span className="font-bold text-xs text-white uppercase tracking-wider block">Persona Studio</span>
-                <span className="text-[9px] text-[#787774] font-mono">Analytics & Databases</span>
+                <span className={`font-bold text-xs uppercase tracking-wider block ${
+                  isLight ? 'text-slate-900' : 'text-white'
+                }`}>Persona Studio</span>
+                <span className={`text-[10px] font-mono ${
+                  isLight ? 'text-slate-400 font-medium' : 'text-zinc-500'
+                }`}>Analytics & Intelligence</span>
               </div>
             </div>
 
             <button
               onClick={() => setIsApiSettingsOpen(true)}
-              className="p-1 px-1.5 rounded text-[#9b9b9b] hover:text-white hover:bg-[#2c2c2c] transition flex items-center gap-1 text-[11px]"
+              className={`p-1.5 px-2.5 rounded-lg transition flex items-center gap-1.5 text-xs font-mono border cursor-pointer ${
+                isLight
+                  ? 'bg-amber-50/80 hover:bg-amber-100/80 border-amber-200/80 text-amber-900 font-semibold shadow-2xs'
+                  : 'hover:bg-zinc-800 text-zinc-400 border-zinc-700 bg-zinc-800/40'
+              }`}
               title="Groq API & Model Settings"
             >
-              <Zap className="w-3.5 h-3.5 text-amber-400" />
-              <span className="font-mono text-[10px] text-amber-300 uppercase">
+              <Zap className="w-3.5 h-3.5 text-amber-500" />
+              <span className="font-mono text-[10px] uppercase font-bold">
                 {apiConfig.provider === 'groq' ? 'GROQ' : apiConfig.provider}
               </span>
             </button>
@@ -916,29 +936,43 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
           {/* New Chat Button */}
           <button
             onClick={() => handleCreateNewSession()}
-            className="w-full py-1.5 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-sm shadow-indigo-600/20"
+            className={`w-full py-2 px-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-xs ${
+              isLight
+                ? 'bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/10'
+                : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20'
+            }`}
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4" />
             <span>New Chat Session</span>
           </button>
 
           {/* Search Sessions */}
           <div className="relative">
-            <Search className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#787774]" />
+            <Search className={`w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 ${
+              isLight ? 'text-slate-400' : 'text-zinc-500'
+            }`} />
             <input
               type="text"
               value={sessionSearch}
               onChange={(e) => setSessionSearch(e.target.value)}
               placeholder="Search chat sessions..."
-              className="w-full bg-[#191919] border border-[#2e2e2e] rounded-md pl-7 pr-2.5 py-1 text-xs text-[#e6e6e6] placeholder-[#6e6e6e] focus:outline-none focus:border-indigo-500"
+              className={`w-full rounded-xl pl-9 pr-3 py-1.5 text-xs focus:outline-none transition shadow-2xs ${
+                isLight
+                  ? 'bg-white border border-slate-200/90 text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10'
+                  : 'bg-zinc-900 border border-zinc-800 text-zinc-200 placeholder-zinc-500 focus:border-indigo-500'
+              }`}
             />
           </div>
         </div>
 
         {/* Personas Carousel Header */}
-        <div className="px-3 pt-3 pb-2 border-b border-[#2e2e2e]">
+        <div className={`px-3.5 pt-3 pb-2.5 border-b ${
+          isLight ? 'border-slate-200/80 bg-slate-50/50' : 'border-zinc-800 bg-zinc-900/20'
+        }`}>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-[#787774]">
+            <span className={`text-[10px] font-mono font-semibold uppercase tracking-wider ${
+              isLight ? 'text-slate-500' : 'text-zinc-400'
+            }`}>
               Personas ({personas.length})
             </span>
             <button
@@ -963,7 +997,9 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
                 });
                 setIsCreatePersonaOpen(true);
               }}
-              className="text-[11px] font-mono text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer font-semibold"
+              className={`text-[11px] font-mono flex items-center gap-1 cursor-pointer font-semibold ${
+                isLight ? 'text-indigo-600 hover:text-indigo-700' : 'text-indigo-400 hover:text-indigo-300'
+              }`}
             >
               <Plus className="w-3 h-3" />
               <span>+ Create</span>
@@ -971,7 +1007,7 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
           </div>
 
           {/* Horizontal mini persona avatar strip */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
             {personas.map((p) => {
               const isSelected = p.id === activePersona?.id;
               const isMikah = p.id === MIKAH_PERSONA.id;
@@ -988,18 +1024,22 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
                       handleCreateNewSession(p.id);
                     }
                   }}
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 transition-all cursor-pointer relative ${
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm shrink-0 transition-all cursor-pointer relative ${
                     isSelected
-                      ? 'bg-amber-600/30 border-2 border-amber-500 shadow-sm scale-105'
-                      : 'bg-[#282828] hover:bg-[#323232] border border-[#383838]'
+                      ? (isLight
+                          ? 'bg-amber-50 border-2 border-amber-500 shadow-xs scale-105'
+                          : 'bg-amber-600/30 border-2 border-amber-500 shadow-sm scale-105')
+                      : (isLight
+                          ? 'bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 shadow-2xs'
+                          : 'bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300')
                   }`}
                   title={`${p.name} (${p.tagline})`}
                 >
                   <span>{p.avatar}</span>
                   {isMikah ? (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400" title="SortSwift Founder" />
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-400 ring-2 ring-white" title="SortSwift Founder" />
                   ) : (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500" />
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
                   )}
                 </button>
               );
@@ -1008,8 +1048,10 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
         </div>
 
         {/* Scrollable Chat Sessions List */}
-        <div className="flex-1 overflow-y-auto p-2 space-y-1">
-          <div className="px-2 py-1 text-[10px] font-mono font-semibold uppercase tracking-wider text-[#787774]">
+        <div className="flex-1 overflow-y-auto p-2.5 space-y-1">
+          <div className={`px-2 py-1 text-[10px] font-mono font-semibold uppercase tracking-wider ${
+            isLight ? 'text-slate-400' : 'text-zinc-500'
+          }`}>
             Recent Sessions
           </div>
 
@@ -1025,21 +1067,31 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
                   setActiveSessionId(session.id);
                   setActivePersonaId(session.personaId);
                 }}
-                className={`group p-2 rounded-lg cursor-pointer transition flex items-start justify-between gap-2 border ${
+                className={`group p-2.5 rounded-xl cursor-pointer transition flex items-start justify-between gap-2 border ${
                   isActive
-                    ? 'bg-[#282828] border-indigo-500/40 text-white'
-                    : 'bg-transparent hover:bg-[#252525] border-transparent text-[#9b9b9b]'
+                    ? (isLight
+                        ? 'bg-white border-slate-200/90 shadow-xs text-slate-900 ring-1 ring-slate-200/80'
+                        : 'bg-zinc-800/90 border-indigo-500/40 text-white')
+                    : (isLight
+                        ? 'bg-transparent hover:bg-slate-100/70 border-transparent text-slate-600 hover:text-slate-900'
+                        : 'bg-transparent hover:bg-zinc-800/50 border-transparent text-zinc-400 hover:text-zinc-200')
                 }`}
               >
                 <div className="flex items-start gap-2.5 min-w-0 flex-1">
                   <span className="text-base shrink-0 mt-0.5">{persona?.avatar || '🤖'}</span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
-                      <span className={`text-xs font-semibold truncate ${isActive ? 'text-white' : 'text-[#d4d4d4]'}`}>
+                      <span className={`text-xs font-semibold truncate ${
+                        isActive
+                          ? (isLight ? 'text-slate-900' : 'text-white')
+                          : (isLight ? 'text-slate-700' : 'text-zinc-300')
+                      }`}>
                         {session.title}
                       </span>
                     </div>
-                    <p className="text-[11px] text-[#787774] truncate mt-0.5">
+                    <p className={`text-[11px] truncate mt-0.5 ${
+                      isLight ? 'text-slate-400' : 'text-zinc-500'
+                    }`}>
                       {lastMessage
                         ? lastMessage.content.replace(/[#*`_]/g, '').slice(0, 42)
                         : `Ready to chat with ${persona?.name || 'Persona'}`}
@@ -1049,36 +1101,44 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
 
                 <button
                   onClick={(e) => handleDeleteSession(session.id, e)}
-                  className="opacity-0 group-hover:opacity-100 p-1 rounded text-[#787774] hover:text-rose-400 hover:bg-[#323232] transition shrink-0"
+                  className={`opacity-0 group-hover:opacity-100 p-1.5 rounded-lg transition shrink-0 ${
+                    isLight ? 'text-slate-400 hover:text-rose-600 hover:bg-rose-50' : 'text-zinc-500 hover:text-rose-400 hover:bg-zinc-800'
+                  }`}
                   title="Delete Session"
                 >
-                  <Trash2 className="w-3 h-3" />
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             );
           })}
 
           {filteredSessions.length === 0 && (
-            <div className="p-4 text-center text-xs text-[#787774] italic">
+            <div className={`p-6 text-center text-xs italic ${
+              isLight ? 'text-slate-400' : 'text-zinc-500'
+            }`}>
               No chat sessions found.
             </div>
           )}
         </div>
 
         {/* Bottom Status / Footer */}
-        <div className="p-3 border-t border-[#2e2e2e] bg-[#1d1d1d] flex items-center justify-between text-xs font-mono">
-          <div className="flex items-center gap-1.5 text-[#9b9b9b]">
+        <div className={`p-3 border-t flex items-center justify-between text-xs font-mono ${
+          isLight ? 'border-slate-200/80 bg-white text-slate-600' : 'border-zinc-800 bg-zinc-900 text-zinc-400'
+        }`}>
+          <div className="flex items-center gap-2">
             <span
-              className={`w-2 h-2 rounded-full ${groqStatus.verified ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`}
+              className={`w-2 h-2 rounded-full ${groqStatus.verified ? 'bg-emerald-500 ring-2 ring-emerald-500/20' : 'bg-amber-400 animate-pulse'}`}
             />
-            <span className="text-[11px]">
-              {apiConfig.provider.toUpperCase()} : {groqStatus.workingModel || apiConfig.model}
+            <span className="text-[11px] truncate max-w-[140px]">
+              {groqStatus.workingModel || apiConfig.model}
             </span>
           </div>
 
           <button
             onClick={() => setIsApiSettingsOpen(true)}
-            className="p-1 rounded text-[#9b9b9b] hover:text-white transition flex items-center gap-1 text-[11px]"
+            className={`p-1 px-2 rounded-lg transition flex items-center gap-1 text-[11px] border cursor-pointer ${
+              isLight ? 'hover:bg-slate-100 text-slate-600 border-slate-200' : 'hover:bg-zinc-800 text-zinc-300 border-zinc-700'
+            }`}
           >
             <Settings className="w-3.5 h-3.5" />
             <span>Config</span>
@@ -1089,84 +1149,123 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
       {/* ======================================================== */}
       {/* 2. MAIN CHAT AREA */}
       {/* ======================================================== */}
-      <div className="flex-1 flex flex-col min-w-0 h-full bg-[#191919]">
+      <div className={`flex-1 flex flex-col min-w-0 h-full transition-colors duration-150 ${
+        isLight ? 'bg-white' : 'bg-[#121214]'
+      }`}>
         {/* Chat Top Header */}
-        <div className="h-14 px-5 border-b border-[#2e2e2e] bg-[#202020] flex items-center justify-between shrink-0 shadow-xs">
+        <div className={`h-16 px-6 border-b flex items-center justify-between shrink-0 shadow-xs transition-colors ${
+          isLight ? 'bg-white/95 backdrop-blur-md border-slate-200/80' : 'bg-[#18181b] border-zinc-800'
+        }`}>
           {/* Active Persona Identity */}
           {activePersona ? (
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-[#2a2a2a] border border-[#3a3a3a] flex items-center justify-center text-xl shrink-0 shadow-sm">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xl shrink-0 shadow-2xs border ${
+                isLight
+                  ? 'bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200/80 text-amber-900'
+                  : 'bg-zinc-800 border-zinc-700 text-white'
+              }`}>
                 {activePersona.avatar}
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <h2 className="font-bold text-sm text-white truncate">{activePersona.name}</h2>
+                  <h2 className={`font-bold text-sm tracking-tight truncate ${
+                    isLight ? 'text-slate-900' : 'text-white'
+                  }`}>
+                    {activePersona.name}
+                  </h2>
                   {activePersona.id === MIKAH_PERSONA.id ? (
-                    <span className="px-2 py-0.2 rounded text-[10px] font-mono border bg-amber-500/20 text-amber-300 border-amber-500/30 font-semibold">
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono border font-semibold ${
+                      isLight ? 'bg-amber-50 text-amber-800 border-amber-200/90' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                    }`}>
                       SortSwift Founder
                     </span>
                   ) : (
-                    <span className={`px-2 py-0.2 rounded text-[10px] font-mono border ${activePersona.badgeColor}`}>
+                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono border ${activePersona.badgeColor}`}>
                       {activePersona.category}
                     </span>
                   )}
                   {activePersona.isCustom && activePersona.id !== MIKAH_PERSONA.id && (
-                    <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono border border-emerald-500/30">
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[10px] font-mono border border-emerald-500/30 font-medium">
                       Custom Persona
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-[#9b9b9b] truncate">{activePersona.tagline}</p>
+                <p className={`text-xs truncate ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
+                  {activePersona.tagline}
+                </p>
               </div>
             </div>
           ) : (
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 flex items-center justify-center text-indigo-600 shrink-0">
                 <Bot className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="font-bold text-sm text-white">Persona Chat Studio</h2>
-                <p className="text-[11px] text-[#9b9b9b]">Analytics & Databases • LLM Simulation Engine</p>
+                <h2 className={`font-bold text-sm ${isLight ? 'text-slate-900' : 'text-white'}`}>Persona Chat Studio</h2>
+                <p className={`text-xs ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>Analytics & Databases • LLM Simulation Engine</p>
               </div>
             </div>
           )}
 
-          {/* Right Action Tools */}
-          <div className="flex items-center gap-2 shrink-0">
+          {/* Right Action Tools & Model Pill */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            {/* Integrated Live Model Badge */}
+            <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border font-mono text-xs shadow-2xs transition ${
+              isLight ? 'bg-slate-50 border-slate-200/90 text-slate-700' : 'bg-zinc-800/90 border-zinc-700 text-zinc-200'
+            }`}>
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  groqStatus.verified ? 'bg-emerald-500 ring-4 ring-emerald-500/20' : 'bg-amber-400 animate-pulse'
+                } shrink-0`}
+              />
+              <span className="font-semibold text-[11px] truncate max-w-[130px] md:max-w-[200px]">
+                {groqStatus.workingModel || apiConfig.model}
+              </span>
+              <button
+                onClick={() => checkGroqConnection()}
+                disabled={groqStatus.checking}
+                title="Auto-Detect & Test Groq Model"
+                className={`p-1 rounded-md transition cursor-pointer ${
+                  isLight ? 'hover:bg-slate-200/70 text-slate-400 hover:text-slate-700' : 'hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                <RefreshCw className={`w-3 h-3 ${groqStatus.checking ? 'animate-spin text-amber-500' : ''}`} />
+              </button>
+            </div>
+
             {activePersona && (
               <>
-                {/* Edit Persona */}
-                <button
-                  onClick={(e) => handleEditPersona(activePersona, e)}
-                  className="p-1.5 rounded-md hover:bg-[#2c2c2c] text-[#9b9b9b] hover:text-white transition"
-                  title="Edit Persona Directives & Details"
-                >
-                  <Edit3 className="w-4 h-4" />
-                </button>
-
                 {/* View Persona Prompt Drawer Button */}
                 <button
                   onClick={() => setIsPersonaDrawerOpen(true)}
-                  className="px-2.5 py-1 rounded-md bg-[#282828] hover:bg-[#323232] text-[#d4d4d4] hover:text-white text-xs border border-[#383838] transition flex items-center gap-1.5 cursor-pointer"
-                  title="Inspect System Prompt & Persona Traits"
+                  className={`px-3 py-1.5 rounded-xl text-xs border transition flex items-center gap-1.5 cursor-pointer font-medium shadow-2xs ${
+                    isLight
+                      ? 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700 hover:text-slate-900'
+                      : 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-200'
+                  }`}
+                  title="Inspect System Prompt & Persona Directives"
                 >
-                  <BrainCircuit className="w-3.5 h-3.5 text-indigo-400" />
+                  <BrainCircuit className="w-3.5 h-3.5 text-indigo-500" />
                   <span className="hidden md:inline">Prompt & Bio</span>
                 </button>
 
                 {/* Clear Messages */}
                 <button
                   onClick={handleClearCurrentSession}
-                  className="p-1.5 rounded-md hover:bg-[#2c2c2c] text-[#9b9b9b] hover:text-white transition"
+                  className={`p-2 rounded-xl transition cursor-pointer border shadow-2xs ${
+                    isLight ? 'bg-white hover:bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-900' : 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-400 hover:text-white'
+                  }`}
                   title="Clear Session Messages"
                 >
                   <RotateCcw className="w-4 h-4" />
                 </button>
 
-                {/* Export Dropdown */}
+                {/* Export Conversation */}
                 <button
                   onClick={() => handleExportSession('markdown')}
-                  className="p-1.5 rounded-md hover:bg-[#2c2c2c] text-[#9b9b9b] hover:text-white transition"
+                  className={`p-2 rounded-xl transition cursor-pointer border shadow-2xs ${
+                    isLight ? 'bg-white hover:bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-900' : 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-400 hover:text-white'
+                  }`}
                   title="Export Conversation to Markdown"
                 >
                   <Download className="w-4 h-4" />
@@ -1175,7 +1274,9 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
                 {/* Delete Current Persona */}
                 <button
                   onClick={(e) => handleDeleteCustomPersona(activePersona.id, e)}
-                  className="p-1.5 rounded-md hover:bg-[#2c2c2c] text-[#9b9b9b] hover:text-rose-400 transition"
+                  className={`p-2 rounded-xl transition cursor-pointer border shadow-2xs ${
+                    isLight ? 'bg-white hover:bg-rose-50 border-slate-200 text-slate-500 hover:text-rose-600' : 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-400 hover:text-rose-400'
+                  }`}
                   title="Delete Persona"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -1186,121 +1287,82 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
             {/* API Config Button */}
             <button
               onClick={() => setIsApiSettingsOpen(true)}
-              className="px-2.5 py-1 rounded-md bg-[#282828] hover:bg-[#323232] text-xs border border-[#383838] transition flex items-center gap-1.5 cursor-pointer text-[#d4d4d4]"
+              className={`p-2 rounded-xl transition cursor-pointer border shadow-2xs ${
+                isLight ? 'bg-white hover:bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-900' : 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-400 hover:text-white'
+              }`}
               title="Configure Groq API and Model"
             >
-              <Zap className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden lg:inline font-mono text-[11px]">
-                {groqStatus.workingModel || apiConfig.model}
-              </span>
+              <Settings className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Live Groq Model Detection & Connection Diagnostic Bar */}
-        <div className="bg-[#1c1c1c] border-b border-[#2e2e2e] px-5 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 min-w-0">
-            <span
-              className={`w-2.5 h-2.5 rounded-full ${
-                groqStatus.verified ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'
-              } shrink-0`}
-            />
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-white">Groq Live Engine:</span>
-              <span className="font-mono text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 text-[11px] font-bold">
-                {groqStatus.workingModel || apiConfig.model}
-              </span>
-
-              {groqStatus.verified ? (
-                <span className="text-emerald-400 font-mono text-[10px] bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  <span>
-                    Verified & Connected ({groqStatus.keySource === 'vercel-env' ? 'Vercel Env' : 'Local Key'} {groqStatus.maskedKey || ''})
-                  </span>
-                </span>
-              ) : groqStatus.checking ? (
-                <span className="text-amber-300 text-[11px] flex items-center gap-1.5 font-mono">
-                  <RefreshCw className="w-3 h-3 animate-spin text-amber-400" />
-                  <span>Testing Vercel Groq key and probing active models...</span>
-                </span>
-              ) : groqStatus.error ? (
-                <span className="text-rose-400 text-[11px] font-mono flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>{groqStatus.error.slice(0, 75)}...</span>
-                </span>
-              ) : (
-                <span className="text-amber-300 text-[11px] font-medium flex items-center gap-1">
-                  <Zap className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Connect your Groq key below for real-time AI simulation:</span>
-                </span>
-              )}
+        {/* Optional Warning / Notice Bar (Only if key is missing or error occurred) */}
+        {!groqStatus.verified && (
+          <div className={`px-6 py-2.5 border-b flex flex-wrap items-center justify-between text-xs gap-3 ${
+            isLight ? 'bg-amber-50/90 border-amber-200 text-amber-900' : 'bg-amber-950/40 border-amber-800/40 text-amber-200'
+          }`}>
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>{groqStatus.error || 'Groq API key required for live AI responses.'}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="password"
+                value={quickKeyInput}
+                onChange={(e) => setQuickKeyInput(e.target.value)}
+                placeholder="Paste key (gsk_...)"
+                className={`px-3 py-1 text-xs font-mono rounded-lg border outline-none shadow-2xs ${
+                  isLight ? 'bg-white border-amber-300 text-slate-900 focus:border-amber-500' : 'bg-zinc-900 border-amber-500/40 text-white'
+                }`}
+              />
+              <button
+                onClick={handleSaveQuickKey}
+                disabled={!quickKeyInput.trim() || groqStatus.checking}
+                className="px-3.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs transition cursor-pointer shadow-xs"
+              >
+                Connect
+              </button>
             </div>
           </div>
+        )}
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => checkGroqConnection()}
-              disabled={groqStatus.checking}
-              className="px-2.5 py-1 rounded bg-[#282828] hover:bg-[#323232] text-[#d4d4d4] hover:text-white border border-[#383838] font-mono text-[11px] transition shrink-0 cursor-pointer flex items-center gap-1.5"
-              title="Test Vercel environment key and find working model"
-            >
-              {groqStatus.checking ? (
-                <RefreshCw className="w-3 h-3 animate-spin text-amber-400" />
-              ) : (
-                <RefreshCw className="w-3 h-3 text-amber-400" />
-              )}
-              <span>Auto-Detect Working Model</span>
-            </button>
-
-            {!groqStatus.verified && (
-              <div className="flex items-center gap-2">
-                <input
-                  type="password"
-                  value={quickKeyInput}
-                  onChange={(e) => setQuickKeyInput(e.target.value)}
-                  placeholder="Paste Key (gsk_...)"
-                  className="bg-[#141414] border border-amber-500/40 rounded-lg px-2.5 py-1 text-xs font-mono text-white placeholder-[#787878] focus:outline-none focus:border-amber-400 w-44"
-                />
-                <button
-                  onClick={handleSaveQuickKey}
-                  disabled={!quickKeyInput.trim() || groqStatus.checking}
-                  className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-semibold text-xs transition cursor-pointer shrink-0"
-                >
-                  Connect
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Message Stream */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5">
+        {/* Message Stream Area */}
+        <div className={`flex-1 overflow-y-auto p-4 md:p-8 space-y-6 ${
+          isLight ? 'bg-[#fafafa]' : 'bg-[#121214]'
+        }`}>
           {activePersona && (
             <>
               {/* Persona Welcome Card (shown if no messages in active session) */}
               {(!activeSession || activeSession.messages.length === 0) && (
-                <div className="max-w-2xl mx-auto py-8 space-y-6 text-center animate-fade-in">
-                  <div className="w-20 h-20 rounded-3xl bg-[#222222] border border-[#333333] flex items-center justify-center text-4xl mx-auto shadow-xl shadow-black/40">
+                <div className={`max-w-2xl mx-auto py-10 px-8 rounded-3xl border text-center animate-fade-in shadow-xs ${
+                  isLight ? 'bg-white border-slate-200/80 text-slate-800' : 'bg-zinc-900/60 border-zinc-800 text-zinc-200'
+                }`}>
+                  <div className={`w-20 h-20 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-4 shadow-sm border ${
+                    isLight ? 'bg-gradient-to-br from-amber-50 to-orange-100/60 border-amber-200' : 'bg-zinc-800 border-zinc-700'
+                  }`}>
                     {activePersona.avatar}
                   </div>
 
-                  <div className="space-y-1.5">
-                    <h3 className="text-xl font-black text-white flex items-center justify-center gap-2">
-                      <span>{activePersona.name}</span>
-                    </h3>
-                    <p className="text-xs text-amber-300 font-mono">{activePersona.tagline}</p>
-                    <p className="text-xs text-[#9b9b9b] max-w-md mx-auto leading-relaxed pt-1">
-                      {activePersona.backstory}
-                    </p>
-                  </div>
+                  <h3 className={`text-xl font-bold tracking-tight mb-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                    {activePersona.name}
+                  </h3>
+                  <p className={`text-xs font-mono font-semibold mb-3 ${isLight ? 'text-amber-800' : 'text-amber-300'}`}>
+                    {activePersona.tagline}
+                  </p>
+                  <p className={`text-xs max-w-md mx-auto leading-relaxed mb-6 ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
+                    {activePersona.backstory}
+                  </p>
 
                   {/* Persona Quirks / Specialties */}
                   {activePersona.quirks && activePersona.quirks.length > 0 && (
-                    <div className="flex flex-wrap items-center justify-center gap-2 max-w-lg mx-auto">
+                    <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-lg mx-auto mb-6">
                       {activePersona.quirks.map((quirk, idx) => (
                         <span
                           key={idx}
-                          className="px-2.5 py-1 rounded-full text-[11px] font-mono bg-[#222222] text-[#d4d4d4] border border-[#2e2e2e]"
+                          className={`px-3 py-1 rounded-full text-[11px] font-mono border ${
+                            isLight ? 'bg-slate-50 text-slate-700 border-slate-200/90 shadow-2xs' : 'bg-zinc-800 text-zinc-300 border-zinc-700'
+                          }`}
                         >
                           ✦ {quirk}
                         </span>
@@ -1308,21 +1370,29 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
                     </div>
                   )}
 
-                  {/* Suggested Starters */}
+                  {/* Suggested Starters Grid */}
                   {activePersona.suggestedStarters && activePersona.suggestedStarters.length > 0 && (
-                    <div className="pt-4 space-y-2 max-w-lg mx-auto">
-                      <span className="text-[11px] font-mono uppercase tracking-wider text-[#787774] block">
-                        Click a prompt starter to begin:
+                    <div className="space-y-3 text-left">
+                      <span className={`text-[10px] font-mono uppercase tracking-wider block font-semibold text-center ${
+                        isLight ? 'text-slate-400' : 'text-zinc-500'
+                      }`}>
+                        Click an operational prompt to start:
                       </span>
-                      <div className="grid grid-cols-1 gap-2 text-left">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         {activePersona.suggestedStarters.map((starter, idx) => (
                           <button
                             key={idx}
                             onClick={() => handleSendMessage(starter)}
-                            className="p-2.5 rounded-xl bg-[#222222] hover:bg-[#282828] border border-[#2e2e2e] hover:border-amber-500/50 text-xs text-[#d4d4d4] hover:text-white transition flex items-center justify-between gap-2 group cursor-pointer"
+                            className={`p-3.5 rounded-2xl border text-xs font-medium transition flex items-center justify-between gap-3 group cursor-pointer text-left ${
+                              isLight
+                                ? 'bg-white hover:bg-slate-50 border-slate-200/90 hover:border-indigo-300 text-slate-800 hover:text-indigo-950 shadow-2xs hover:shadow-xs'
+                                : 'bg-zinc-800/80 hover:bg-zinc-700 border-zinc-700 text-zinc-200'
+                            }`}
                           >
-                            <span>{starter}</span>
-                            <Send className="w-3 h-3 text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                            <span className="leading-snug">{starter}</span>
+                            <Send className={`w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ${
+                              isLight ? 'text-indigo-600' : 'text-amber-400'
+                            }`} />
                           </button>
                         ))}
                       </div>
@@ -1338,30 +1408,42 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
                   return (
                     <div
                       key={msg.id}
-                      className={`flex gap-3 max-w-3xl mx-auto group ${isUser ? 'justify-end' : 'justify-start'}`}
+                      className={`flex gap-3 max-w-4xl mx-auto group ${isUser ? 'justify-end' : 'justify-start'}`}
                     >
                       {/* Assistant Avatar */}
                       {!isUser && (
-                        <div className="w-8 h-8 rounded-lg bg-[#252525] border border-[#353535] flex items-center justify-center text-base shrink-0 mt-0.5 shadow-sm">
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0 mt-0.5 border shadow-2xs ${
+                          isLight ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-zinc-800 border-zinc-700'
+                        }`}>
                           {activePersona.avatar}
                         </div>
                       )}
 
-                      {/* Message Bubble */}
+                      {/* Message Bubble Card */}
                       <div
-                        className={`relative rounded-2xl p-4 text-xs md:text-sm leading-relaxed max-w-[85%] sm:max-w-[78%] transition shadow-sm ${
+                        className={`relative rounded-2xl p-4.5 text-sm leading-relaxed transition shadow-xs ${
                           isUser
-                            ? 'bg-indigo-600 text-white rounded-tr-none'
-                            : 'bg-[#222222] text-[#e6e6e6] border border-[#2e2e2e] rounded-tl-none'
+                            ? (isLight
+                                ? 'bg-slate-900 text-white rounded-tr-xs max-w-[80%] sm:max-w-[72%]'
+                                : 'bg-indigo-600 text-white rounded-tr-xs max-w-[80%] sm:max-w-[72%]')
+                            : (isLight
+                                ? 'bg-white border border-slate-200/90 text-slate-800 rounded-tl-xs max-w-[88%] sm:max-w-[82%]'
+                                : 'bg-zinc-900 border border-zinc-800 text-zinc-200 rounded-tl-xs max-w-[88%] sm:max-w-[82%]')
                         }`}
                       >
-                        {/* Top metadata row for assistant */}
+                        {/* Assistant Header inside card */}
                         {!isUser && (
-                          <div className="flex items-center justify-between gap-3 pb-2 mb-2 border-b border-[#2e2e2e] text-[11px] font-mono text-[#787774]">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-bold text-[#d4d4d4]">{activePersona.name}</span>
+                          <div className={`flex items-center justify-between gap-3 pb-2.5 mb-3 border-b text-[11px] font-mono ${
+                            isLight ? 'border-slate-100 text-slate-400' : 'border-zinc-800 text-zinc-500'
+                          }`}>
+                            <div className="flex items-center gap-2">
+                              <span className={`font-bold ${isLight ? 'text-slate-900' : 'text-zinc-100'}`}>
+                                {activePersona.name}
+                              </span>
                               {msg.modelUsed && (
-                                <span className="px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[9px]">
+                                <span className={`px-2 py-0.5 rounded-md text-[10px] border ${
+                                  isLight ? 'bg-slate-100 text-slate-600 border-slate-200/80' : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
+                                }`}>
                                   {msg.modelUsed}
                                 </span>
                               )}
@@ -1371,53 +1453,56 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
                         )}
 
                         {/* Message Content with Streaming Cursor */}
-                        <div className="whitespace-pre-wrap space-y-2 leading-relaxed">
+                        <div className={`whitespace-pre-wrap space-y-2 leading-relaxed selection:bg-amber-100 ${
+                          isUser ? 'text-slate-100' : (isLight ? 'text-slate-800' : 'text-zinc-200')
+                        }`}>
                           {msg.content}
                           {!isUser && isGenerating && msg.id === activeSession.messages[activeSession.messages.length - 1]?.id && (
-                            <span className="inline-block w-1.5 h-3.5 bg-amber-400 animate-pulse ml-0.5 align-middle" />
+                            <span className="inline-block w-1.5 h-4 bg-amber-500 animate-pulse ml-0.5 align-middle rounded-full" />
                           )}
                         </div>
 
                         {/* Actions Bar (Copy message) */}
-                        <div className="mt-2 pt-1 flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={() => handleCopy(msg.id, msg.content)}
-                            className="p-1 rounded text-[#787774] hover:text-[#d4d4d4] transition flex items-center gap-1 text-[10px] font-mono cursor-pointer"
-                            title="Copy text"
-                          >
-                            {copiedMsgId === msg.id ? (
-                              <>
-                                <Check className="w-3 h-3 text-emerald-400" />
-                                <span className="text-emerald-400">Copied</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3 h-3" />
-                                <span>Copy</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
+                        {!isUser && (
+                          <div className="mt-3 pt-2 border-t flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => handleCopy(msg.id, msg.content)}
+                              className={`p-1.5 px-2.5 rounded-lg transition flex items-center gap-1.5 text-xs font-mono cursor-pointer ${
+                                isLight ? 'text-slate-400 hover:text-slate-800 hover:bg-slate-100' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
+                              }`}
+                              title="Copy text"
+                            >
+                              {copiedMsgId === msg.id ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                  <span className="text-emerald-600 font-semibold">Copied</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-3.5 h-3.5" />
+                                  <span>Copy</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        )}
                       </div>
-
-                      {/* User Avatar */}
-                      {isUser && (
-                        <div className="w-8 h-8 rounded-lg bg-indigo-700 border border-indigo-500 flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5 shadow-sm">
-                          <User className="w-4 h-4" />
-                        </div>
-                      )}
                     </div>
                   );
                 })}
 
               {/* Initial Thinking Indicator before first token streams */}
               {isGenerating && activeSession?.messages[activeSession.messages.length - 1]?.content === '' && (
-                <div className="flex gap-3 max-w-3xl mx-auto items-start">
-                  <div className="w-8 h-8 rounded-lg bg-[#252525] border border-[#353535] flex items-center justify-center text-base shrink-0 mt-0.5">
+                <div className="flex gap-3 max-w-4xl mx-auto items-start">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0 mt-0.5 border shadow-2xs ${
+                    isLight ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-zinc-800 border-zinc-700'
+                  }`}>
                     {activePersona.avatar}
                   </div>
-                  <div className="bg-[#222222] border border-[#2e2e2e] rounded-2xl rounded-tl-none p-3.5 flex items-center gap-2 text-xs font-mono text-[#9b9b9b]">
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                  <div className={`rounded-2xl rounded-tl-none p-4 flex items-center gap-2.5 text-xs font-mono border shadow-xs ${
+                    isLight ? 'bg-white border-slate-200/90 text-slate-600' : 'bg-zinc-900 border-zinc-800 text-zinc-400'
+                  }`}>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-500" />
                     <span>Connecting to Groq live model stream...</span>
                   </div>
                 </div>
@@ -1428,26 +1513,41 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
           <div ref={chatEndRef} />
         </div>
 
-        {/* Input & Starter Bar */}
-        <div className="p-4 border-t border-[#2e2e2e] bg-[#202020] space-y-2">
-          {/* Horizontal Suggested Starters Pills when chat has messages */}
-          {activePersona && activeSession && activeSession.messages.length > 0 && activePersona.suggestedStarters && (
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 text-xs">
-              <span className="text-[10px] font-mono text-[#787774] uppercase shrink-0">Prompts:</span>
-              {activePersona.suggestedStarters.map((starter, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSendMessage(starter)}
-                  className="px-2.5 py-1 rounded-full bg-[#282828] hover:bg-[#323232] text-[#d4d4d4] hover:text-white border border-[#353535] whitespace-nowrap text-[11px] font-mono transition shrink-0 cursor-pointer"
-                >
-                  {starter}
-                </button>
-              ))}
-            </div>
-          )}
+        {/* Suggested Prompts Ribbon (Above Composer when chat has messages) */}
+        {activePersona && activeSession && activeSession.messages.length > 0 && activePersona.suggestedStarters && (
+          <div className={`px-6 py-2.5 border-t flex items-center gap-2 overflow-x-auto no-scrollbar text-xs shrink-0 ${
+            isLight ? 'bg-white/80 backdrop-blur-md border-slate-200/80' : 'bg-zinc-900/80 border-zinc-800'
+          }`}>
+            <span className={`text-[10px] font-mono uppercase font-bold shrink-0 ${
+              isLight ? 'text-slate-400' : 'text-zinc-500'
+            }`}>
+              Prompts:
+            </span>
+            {activePersona.suggestedStarters.map((starter, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleSendMessage(starter)}
+                className={`px-3 py-1.5 rounded-xl border whitespace-nowrap text-xs font-medium transition shrink-0 cursor-pointer shadow-2xs ${
+                  isLight
+                    ? 'bg-white hover:bg-slate-50 border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-900'
+                    : 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-300'
+                }`}
+              >
+                {starter}
+              </button>
+            ))}
+          </div>
+        )}
 
-          {/* Input Box */}
-          <div className="relative bg-[#191919] border border-[#2e2e2e] focus-within:border-amber-500 rounded-xl overflow-hidden shadow-inner transition">
+        {/* Modern Floating Composer Dock */}
+        <div className={`px-6 py-4 border-t shrink-0 ${
+          isLight ? 'bg-white/95 backdrop-blur-md border-slate-200/80' : 'bg-[#18181b] border-zinc-800'
+        }`}>
+          <div className={`max-w-4xl mx-auto border rounded-2xl p-3 transition-all duration-200 shadow-[0_4px_24px_rgba(0,0,0,0.05)] ${
+            isLight
+              ? 'bg-white border-slate-200/90 focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10'
+              : 'bg-zinc-900 border-zinc-800 focus-within:border-amber-500'
+          }`}>
             <textarea
               ref={inputRef}
               rows={2}
@@ -1459,34 +1559,48 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
                   handleSendMessage();
                 }
               }}
-              placeholder={`Message ${activePersona?.name || 'Mikah'} (Live Groq LLM)... (Press Enter to send, Shift+Enter for new line)`}
-              className="w-full bg-transparent px-3.5 py-2.5 text-xs text-[#e6e6e6] placeholder-[#6e6e6e] outline-none resize-none"
+              placeholder={`Message ${activePersona?.name || 'Mikah'} (Live Groq LLM)...`}
+              className={`w-full bg-transparent px-3 py-2 text-sm outline-none resize-none leading-relaxed ${
+                isLight ? 'text-slate-800 placeholder-slate-400' : 'text-zinc-200 placeholder-zinc-500'
+              }`}
             />
 
-            <div className="px-3 py-1.5 bg-[#1f1f1f] border-t border-[#2a2a2a] flex items-center justify-between text-[11px] font-mono text-[#787774]">
+            <div className={`px-3 pt-2 mt-1 border-t flex items-center justify-between text-xs ${
+              isLight ? 'border-slate-100 text-slate-400' : 'border-zinc-800 text-zinc-500'
+            }`}>
               <div className="flex items-center gap-2">
-                <span className="flex items-center gap-1">
-                  <span>Persona:</span>
-                  <span className="text-white font-bold">{activePersona?.name}</span>
+                <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                  isLight ? 'bg-slate-100 text-slate-700' : 'bg-zinc-800 text-zinc-300'
+                }`}>
+                  {activePersona?.name}
                 </span>
                 <span>•</span>
-                <span className="text-amber-400">
+                <span className={`font-mono text-[11px] ${
+                  isLight ? 'text-amber-800 font-semibold' : 'text-amber-400'
+                }`}>
                   Groq: {groqStatus.workingModel || apiConfig.model}
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-mono hidden sm:inline">
+                  Enter ↵ to send
+                </span>
                 <button
                   onClick={() => handleSendMessage()}
                   disabled={!inputMessage.trim() || isGenerating}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+                  className={`px-4 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs ${
                     inputMessage.trim() && !isGenerating
-                      ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-xs'
-                      : 'bg-[#2a2a2a] text-[#6e6e6e] cursor-not-allowed'
+                      ? (isLight
+                          ? 'bg-slate-900 hover:bg-slate-800 text-white'
+                          : 'bg-indigo-600 hover:bg-indigo-500 text-white')
+                      : (isLight
+                          ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
+                          : 'bg-zinc-800 text-zinc-600 cursor-not-allowed')
                   }`}
                 >
                   <span>Send</span>
-                  <Send className="w-3 h-3" />
+                  <Send className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -1498,24 +1612,30 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
       {/* 3. API CONFIGURATION MODAL */}
       {/* ======================================================== */}
       {isApiSettingsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-fade-in">
-          <div className="bg-[#202020] border border-[#2e2e2e] rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl text-[#e6e6e6]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+          <div className={`rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl border transition-colors ${
+            isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-[#202020] border-[#2e2e2e] text-[#e6e6e6]'
+          }`}>
             {/* Modal Header */}
-            <div className="p-4 border-b border-[#2e2e2e] flex items-center justify-between bg-[#242424]">
+            <div className={`p-4 border-b flex items-center justify-between ${
+              isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#242424] border-[#2e2e2e]'
+            }`}>
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                <div className="p-2 rounded-xl bg-amber-500/15 text-amber-600 border border-amber-500/30">
                   <Zap className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-white">Groq API & Model Settings</h3>
-                  <p className="text-[11px] text-[#9b9b9b] font-mono">
+                  <h3 className={`font-bold text-sm ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                    Groq API & Model Settings
+                  </h3>
+                  <p className={`text-[11px] font-mono ${isLight ? 'text-slate-500' : 'text-[#9b9b9b]'}`}>
                     Real-time streaming inference via Groq Cloud
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsApiSettingsOpen(false)}
-                className="p-1 rounded text-[#787774] hover:text-white transition"
+                className={`p-1.5 rounded-lg transition ${isLight ? 'text-slate-400 hover:text-slate-700 hover:bg-slate-200' : 'text-[#787774] hover:text-white'}`}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1525,7 +1645,9 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
             <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
               {/* Provider Selection */}
               <div>
-                <label className="font-semibold text-white block mb-1">LLM Provider</label>
+                <label className={`font-semibold block mb-1 ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                  LLM Provider
+                </label>
                 <select
                   value={apiConfig.provider}
                   onChange={(e) => {
@@ -1548,7 +1670,11 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
                       baseUrl: defaultUrl,
                     }));
                   }}
-                  className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6] focus:outline-none focus:border-amber-500 cursor-pointer"
+                  className={`w-full rounded-xl px-3 py-2 text-xs border outline-none cursor-pointer transition ${
+                    isLight
+                      ? 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-indigo-500'
+                      : 'bg-[#191919] border-[#2e2e2e] text-[#e6e6e6] focus:border-amber-500'
+                  }`}
                 >
                   <option value="groq">Groq Cloud (Recommended • 300+ Tokens/Sec)</option>
                   <option value="openrouter">OpenRouter (Any open-source & commercial model)</option>
@@ -1559,28 +1685,36 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
               {/* API Key Input */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="font-semibold text-white">Groq API Key</label>
-                  <span className="text-[10px] font-mono text-amber-400">Starts with gsk_...</span>
+                  <label className={`font-semibold ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                    Groq API Key
+                  </label>
+                  <span className="text-[10px] font-mono text-amber-500 font-medium">Starts with gsk_...</span>
                 </div>
                 <input
                   type="password"
                   value={apiConfig.apiKey}
                   onChange={(e) => setApiConfig((prev) => ({ ...prev, apiKey: e.target.value }))}
                   placeholder={envGroqKey ? 'Overriding Vercel environment key...' : 'gsk_...'}
-                  className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6] font-mono focus:outline-none focus:border-amber-500"
+                  className={`w-full rounded-xl px-3 py-2 text-xs font-mono border outline-none transition ${
+                    isLight
+                      ? 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-indigo-500'
+                      : 'bg-[#191919] border-[#2e2e2e] text-[#e6e6e6] focus:border-amber-500'
+                  }`}
                 />
-                <p className="text-[10px] text-[#787774] mt-1">
+                <p className={`text-[10px] mt-1 ${isLight ? 'text-slate-500' : 'text-[#787774]'}`}>
                   Free key from{' '}
-                  <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer" className="text-amber-400 underline">
+                  <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer" className="text-amber-500 underline font-semibold">
                     console.groq.com/keys
                   </a>
-                  . Keys are also auto-read from Vercel’s <code>GROQ_API_KEY</code>.
+                  . Automatically loaded from Vercel’s <code>GROQ_API_KEY</code> if configured.
                 </p>
               </div>
 
               {/* Model Selector */}
               <div>
-                <label className="font-semibold text-white block mb-1">Model Name</label>
+                <label className={`font-semibold block mb-1 ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                  Model Name
+                </label>
                 {apiConfig.provider === 'groq' ? (
                   <select
                     value={groqStatus.workingModel || apiConfig.model}
@@ -1589,7 +1723,11 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
                       setApiConfig((prev) => ({ ...prev, model: selected }));
                       setGroqStatus((prev) => ({ ...prev, workingModel: selected }));
                     }}
-                    className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6] font-mono focus:outline-none focus:border-amber-500 cursor-pointer"
+                    className={`w-full rounded-xl px-3 py-2 text-xs font-mono border outline-none cursor-pointer transition ${
+                      isLight
+                        ? 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-indigo-500'
+                        : 'bg-[#191919] border-[#2e2e2e] text-[#e6e6e6] focus:border-amber-500'
+                    }`}
                   >
                     {groqStatus.availableModels.map((m) => (
                       <option key={m} value={m}>
@@ -1603,17 +1741,23 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
                     value={apiConfig.model}
                     onChange={(e) => setApiConfig((prev) => ({ ...prev, model: e.target.value }))}
                     placeholder="e.g. gpt-4o"
-                    className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6] font-mono focus:outline-none focus:border-amber-500"
+                    className={`w-full rounded-xl px-3 py-2 text-xs font-mono border outline-none transition ${
+                      isLight
+                        ? 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-indigo-500'
+                        : 'bg-[#191919] border-[#2e2e2e] text-[#e6e6e6] focus:border-amber-500'
+                    }`}
                   />
                 )}
               </div>
 
               {/* Sliders: Temperature & Max Tokens */}
-              <div className="space-y-3 pt-2 border-t border-[#2e2e2e]">
+              <div className={`space-y-3 pt-3 border-t ${isLight ? 'border-slate-200' : 'border-[#2e2e2e]'}`}>
                 <div>
                   <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-white font-medium">Temperature: {apiConfig.temperature}</span>
-                    <span className="text-[10px] font-mono text-[#787774]">
+                    <span className={`font-medium ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                      Temperature: {apiConfig.temperature}
+                    </span>
+                    <span className={`text-[10px] font-mono ${isLight ? 'text-slate-500' : 'text-[#787774]'}`}>
                       {apiConfig.temperature < 0.5 ? 'Precise & Deterministic' : 'Authentic & Creative'}
                     </span>
                   </div>
@@ -1630,8 +1774,12 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
 
                 <div>
                   <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-white font-medium">Max Tokens: {apiConfig.maxTokens}</span>
-                    <span className="text-[10px] font-mono text-[#787774]">Response Length Limit</span>
+                    <span className={`font-medium ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                      Max Tokens: {apiConfig.maxTokens}
+                    </span>
+                    <span className={`text-[10px] font-mono ${isLight ? 'text-slate-500' : 'text-[#787774]'}`}>
+                      Response Length Limit
+                    </span>
                   </div>
                   <input
                     type="range"
@@ -1646,30 +1794,34 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
               </div>
 
               {/* Live Connection Test Button & Feedback */}
-              <div className="pt-2 border-t border-[#2e2e2e]">
+              <div className={`pt-3 border-t ${isLight ? 'border-slate-200' : 'border-[#2e2e2e]'}`}>
                 <button
                   onClick={() => checkGroqConnection()}
                   disabled={groqStatus.checking}
-                  className="px-3 py-1.5 rounded-lg bg-[#282828] hover:bg-[#323232] text-xs font-semibold text-[#d4d4d4] border border-[#383838] transition flex items-center gap-2 cursor-pointer"
+                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold border transition flex items-center gap-2 cursor-pointer shadow-2xs ${
+                    isLight
+                      ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800'
+                      : 'bg-[#282828] hover:bg-[#323232] text-[#d4d4d4] border-[#383838]'
+                  }`}
                 >
                   {groqStatus.checking ? (
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-500" />
                   ) : (
-                    <Zap className="w-3.5 h-3.5 text-amber-400" />
+                    <Zap className="w-3.5 h-3.5 text-amber-500" />
                   )}
                   <span>Test Key & Probe Models</span>
                 </button>
 
                 {groqStatus.error && (
-                  <div className="mt-2 p-2.5 rounded-lg text-xs font-mono bg-rose-500/10 text-rose-300 border border-rose-500/30 flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                  <div className="mt-2.5 p-3 rounded-xl text-xs font-mono bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
                     <span>{groqStatus.error}</span>
                   </div>
                 )}
 
                 {groqStatus.verified && (
-                  <div className="mt-2 p-2.5 rounded-lg text-xs font-mono bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+                  <div className="mt-2.5 p-3 rounded-xl text-xs font-mono bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
                     <span>
                       Success! Verified model: <strong>{groqStatus.workingModel}</strong> ({groqStatus.keySource})
                     </span>
@@ -1679,17 +1831,21 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 bg-[#242424] border-t border-[#2e2e2e] flex items-center justify-between">
+            <div className={`p-4 border-t flex items-center justify-between ${
+              isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#242424] border-[#2e2e2e]'
+            }`}>
               <button
                 onClick={() => setApiConfig(DEFAULT_API_CONFIG)}
-                className="text-xs font-mono text-[#787774] hover:text-white transition"
+                className={`text-xs font-mono transition cursor-pointer ${
+                  isLight ? 'text-slate-500 hover:text-slate-900' : 'text-[#787774] hover:text-white'
+                }`}
               >
                 Reset to Default
               </button>
 
               <button
                 onClick={() => setIsApiSettingsOpen(false)}
-                className="px-4 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs transition cursor-pointer shadow-xs"
+                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition cursor-pointer shadow-xs"
               >
                 Save & Close
               </button>
@@ -1702,19 +1858,23 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
       {/* 4. CREATE / EDIT CUSTOM PERSONA MODAL */}
       {/* ======================================================== */}
       {isCreatePersonaOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-fade-in">
-          <div className="bg-[#202020] border border-[#2e2e2e] rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl text-[#e6e6e6]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+          <div className={`rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border transition-colors ${
+            isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-[#202020] border-[#2e2e2e] text-[#e6e6e6]'
+          }`}>
             {/* Modal Header */}
-            <div className="p-4 border-b border-[#2e2e2e] flex items-center justify-between bg-[#242424]">
+            <div className={`p-4 border-b flex items-center justify-between ${
+              isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#242424] border-[#2e2e2e]'
+            }`}>
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                <div className="p-2 rounded-xl bg-indigo-500/15 text-indigo-600 border border-indigo-500/30">
                   <Bot className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-white">
+                  <h3 className={`font-bold text-sm ${isLight ? 'text-slate-900' : 'text-white'}`}>
                     {editingPersona ? `Edit Persona: ${editingPersona.name}` : 'Create Custom Persona'}
                   </h3>
-                  <p className="text-[11px] text-[#9b9b9b] font-mono">
+                  <p className={`text-[11px] font-mono ${isLight ? 'text-slate-500' : 'text-[#9b9b9b]'}`}>
                     Define persona system instructions, personality, quirks, and prompt starters
                   </p>
                 </div>
@@ -1724,7 +1884,7 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
                   setIsCreatePersonaOpen(false);
                   setEditingPersona(null);
                 }}
-                className="p-1 rounded text-[#787774] hover:text-white transition"
+                className={`p-1.5 rounded-lg transition ${isLight ? 'text-slate-400 hover:text-slate-700 hover:bg-slate-200' : 'text-[#787774] hover:text-white'}`}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1735,22 +1895,28 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
               <div className="grid grid-cols-3 gap-3">
                 {/* Avatar Picker */}
                 <div>
-                  <label className="font-semibold text-white block mb-1">Avatar Emoji</label>
+                  <label className={`font-semibold block mb-1 ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                    Avatar Emoji
+                  </label>
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
                       maxLength={2}
                       value={newPersona.avatar}
                       onChange={(e) => setNewPersona((prev) => ({ ...prev, avatar: e.target.value }))}
-                      className="w-12 h-10 text-center text-xl bg-[#191919] border border-[#2e2e2e] rounded-lg"
+                      className={`w-12 h-10 text-center text-xl rounded-xl border outline-none ${
+                        isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#191919] border-[#2e2e2e]'
+                      }`}
                     />
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 flex-wrap">
                       {['⚙️', '📊', '⚡', '♟️', '🎴', '🤖', '💼'].map((emo) => (
                         <button
                           key={emo}
                           type="button"
                           onClick={() => setNewPersona((prev) => ({ ...prev, avatar: emo }))}
-                          className="w-7 h-7 rounded bg-[#282828] hover:bg-[#333333] flex items-center justify-center text-xs"
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs transition cursor-pointer ${
+                            isLight ? 'bg-slate-100 hover:bg-slate-200' : 'bg-[#282828] hover:bg-[#333333]'
+                          }`}
                         >
                           {emo}
                         </button>
@@ -1761,13 +1927,17 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
 
                 {/* Name */}
                 <div className="col-span-2">
-                  <label className="font-semibold text-white block mb-1">Persona Name *</label>
+                  <label className={`font-semibold block mb-1 ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                    Persona Name *
+                  </label>
                   <input
                     type="text"
                     value={newPersona.name}
                     onChange={(e) => setNewPersona((prev) => ({ ...prev, name: e.target.value }))}
                     placeholder="e.g. Mikah Walters, Market Quant, etc."
-                    className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6]"
+                    className={`w-full rounded-xl px-3 py-2 text-xs border outline-none ${
+                      isLight ? 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-indigo-500' : 'bg-[#191919] border-[#2e2e2e] text-[#e6e6e6]'
+                    }`}
                   />
                 </div>
               </div>
@@ -1775,22 +1945,30 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
               {/* Tagline & Category */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-white block mb-1">Role / Tagline</label>
+                  <label className={`font-semibold block mb-1 ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                    Role / Tagline
+                  </label>
                   <input
                     type="text"
                     value={newPersona.tagline}
                     onChange={(e) => setNewPersona((prev) => ({ ...prev, tagline: e.target.value }))}
                     placeholder="e.g. Founder of SortSwift • Super Sorter Lead"
-                    className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6]"
+                    className={`w-full rounded-xl px-3 py-2 text-xs border outline-none ${
+                      isLight ? 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-indigo-500' : 'bg-[#191919] border-[#2e2e2e] text-[#e6e6e6]'
+                    }`}
                   />
                 </div>
 
                 <div>
-                  <label className="font-semibold text-white block mb-1">Category</label>
+                  <label className={`font-semibold block mb-1 ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                    Category
+                  </label>
                   <select
                     value={newPersona.category}
                     onChange={(e) => setNewPersona((prev) => ({ ...prev, category: e.target.value as any }))}
-                    className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-[#e6e6e6]"
+                    className={`w-full rounded-xl px-3 py-2 text-xs border outline-none cursor-pointer ${
+                      isLight ? 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-indigo-500' : 'bg-[#191919] border-[#2e2e2e] text-[#e6e6e6]'
+                    }`}
                   >
                     <option value="Custom">Custom</option>
                     <option value="Engineering">Engineering</option>
@@ -1804,59 +1982,75 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
               {/* Core System Prompt */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="font-semibold text-white">Core System Prompt & Directives *</label>
-                  <span className="text-[10px] font-mono text-amber-400">Fed directly to LLM</span>
+                  <label className={`font-semibold ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                    Core System Prompt & Directives *
+                  </label>
+                  <span className="text-[10px] font-mono text-amber-500 font-medium">Fed directly to LLM</span>
                 </div>
                 <textarea
                   rows={4}
                   value={newPersona.systemPrompt}
                   onChange={(e) => setNewPersona((prev) => ({ ...prev, systemPrompt: e.target.value }))}
                   placeholder="You are [Name], a specialist in... Your tone is... You always prioritize..."
-                  className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg p-3 text-xs text-[#e6e6e6] font-mono leading-relaxed"
+                  className={`w-full rounded-xl p-3 text-xs font-mono leading-relaxed border outline-none ${
+                    isLight ? 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-indigo-500' : 'bg-[#191919] border-[#2e2e2e] text-[#e6e6e6]'
+                  }`}
                 />
               </div>
 
               {/* Backstory & Speaking Style */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-white block mb-1">Backstory & Experience</label>
+                  <label className={`font-semibold block mb-1 ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                    Backstory & Experience
+                  </label>
                   <textarea
                     rows={2}
                     value={newPersona.backstory}
                     onChange={(e) => setNewPersona((prev) => ({ ...prev, backstory: e.target.value }))}
                     placeholder="Background and career context..."
-                    className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg p-2.5 text-xs text-[#e6e6e6]"
+                    className={`w-full rounded-xl p-2.5 text-xs border outline-none ${
+                      isLight ? 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-indigo-500' : 'bg-[#191919] border-[#2e2e2e] text-[#e6e6e6]'
+                    }`}
                   />
                 </div>
 
                 <div>
-                  <label className="font-semibold text-white block mb-1">Speaking Style & Tone</label>
+                  <label className={`font-semibold block mb-1 ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                    Speaking Style & Tone
+                  </label>
                   <textarea
                     rows={2}
                     value={newPersona.speakingStyle}
                     onChange={(e) => setNewPersona((prev) => ({ ...prev, speakingStyle: e.target.value }))}
                     placeholder="e.g. Conversational, energetic, uses 'haha', '🙂'..."
-                    className="w-full bg-[#191919] border border-[#2e2e2e] rounded-lg p-2.5 text-xs text-[#e6e6e6]"
+                    className={`w-full rounded-xl p-2.5 text-xs border outline-none ${
+                      isLight ? 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-indigo-500' : 'bg-[#191919] border-[#2e2e2e] text-[#e6e6e6]'
+                    }`}
                   />
                 </div>
               </div>
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 bg-[#242424] border-t border-[#2e2e2e] flex items-center justify-end gap-3">
+            <div className={`p-4 border-t flex items-center justify-end gap-3 ${
+              isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#242424] border-[#2e2e2e]'
+            }`}>
               <button
                 onClick={() => {
                   setIsCreatePersonaOpen(false);
                   setEditingPersona(null);
                 }}
-                className="px-4 py-1.5 rounded-lg bg-[#282828] hover:bg-[#323232] text-xs font-semibold text-[#d4d4d4]"
+                className={`px-4 py-2 rounded-xl text-xs font-semibold transition cursor-pointer border ${
+                  isLight ? 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700' : 'bg-[#282828] hover:bg-[#323232] border-[#383838] text-[#d4d4d4]'
+                }`}
               >
                 Cancel
               </button>
 
               <button
                 onClick={handleSaveCustomPersona}
-                className="px-4 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs shadow-xs"
+                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition cursor-pointer"
               >
                 {editingPersona ? 'Save Changes' : 'Create Persona'}
               </button>
@@ -1870,19 +2064,27 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
       {/* ======================================================== */}
       {isPersonaDrawerOpen && activePersona && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs animate-fade-in">
-          <div className="w-full max-w-md bg-[#202020] border-l border-[#2e2e2e] h-full flex flex-col justify-between shadow-2xl p-6 overflow-y-auto space-y-6">
+          <div className={`w-full max-w-md border-l h-full flex flex-col justify-between shadow-2xl p-6 overflow-y-auto space-y-6 transition-colors ${
+            isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-[#202020] border-[#2e2e2e] text-white'
+          }`}>
             <div className="space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-[#2e2e2e]">
+              <div className={`flex items-center justify-between pb-3 border-b ${
+                isLight ? 'border-slate-200' : 'border-[#2e2e2e]'
+              }`}>
                 <div className="flex items-center gap-2.5">
                   <span className="text-3xl">{activePersona.avatar}</span>
                   <div>
-                    <h3 className="font-bold text-base text-white">{activePersona.name}</h3>
-                    <span className="text-xs text-amber-400 font-mono">{activePersona.category}</span>
+                    <h3 className={`font-bold text-base ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                      {activePersona.name}
+                    </h3>
+                    <span className="text-xs text-amber-600 dark:text-amber-400 font-mono font-semibold">
+                      {activePersona.category}
+                    </span>
                   </div>
                 </div>
                 <button
                   onClick={() => setIsPersonaDrawerOpen(false)}
-                  className="p-1 rounded text-[#787774] hover:text-white"
+                  className={`p-1.5 rounded-lg transition ${isLight ? 'text-slate-400 hover:text-slate-700 hover:bg-slate-100' : 'text-[#787774] hover:text-white'}`}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -1890,16 +2092,24 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
 
               {/* Tagline & Bio */}
               <div className="space-y-1">
-                <span className="text-[10px] font-mono uppercase text-[#787774]">Professional Bio</span>
-                <p className="text-xs text-[#d4d4d4] leading-relaxed">{activePersona.backstory}</p>
+                <span className={`text-[10px] font-mono uppercase font-bold ${
+                  isLight ? 'text-slate-400' : 'text-[#787774]'
+                }`}>
+                  Professional Bio
+                </span>
+                <p className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-[#d4d4d4]'}`}>
+                  {activePersona.backstory}
+                </p>
               </div>
 
               {/* Core System Prompt Box */}
               <div className="space-y-1.5">
-                <span className="text-[10px] font-mono uppercase text-amber-400 font-bold">
+                <span className="text-[10px] font-mono uppercase text-amber-600 dark:text-amber-400 font-bold">
                   Active LLM System Directives
                 </span>
-                <div className="p-3 bg-[#191919] border border-[#2e2e2e] rounded-xl text-xs font-mono text-[#d4d4d4] leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto">
+                <div className={`p-3.5 rounded-2xl border text-xs font-mono leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto shadow-inner ${
+                  isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-[#191919] border-[#2e2e2e] text-[#d4d4d4]'
+                }`}>
                   {activePersona.systemPrompt}
                 </div>
               </div>
@@ -1907,14 +2117,20 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
               {/* Quirks & Signature Traits */}
               {activePersona.quirks && activePersona.quirks.length > 0 && (
                 <div className="space-y-1.5">
-                  <span className="text-[10px] font-mono uppercase text-[#787774]">Signature Quirks</span>
-                  <div className="space-y-1">
+                  <span className={`text-[10px] font-mono uppercase font-bold ${
+                    isLight ? 'text-slate-400' : 'text-[#787774]'
+                  }`}>
+                    Signature Quirks
+                  </span>
+                  <div className="space-y-1.5">
                     {activePersona.quirks.map((q, idx) => (
                       <div
                         key={idx}
-                        className="p-2 rounded-lg bg-[#252525] border border-[#2e2e2e] text-xs text-[#d4d4d4] flex items-center gap-2"
+                        className={`p-2.5 rounded-xl border text-xs flex items-center gap-2 shadow-2xs ${
+                          isLight ? 'bg-slate-50 border-slate-200 text-slate-700' : 'bg-[#252525] border-[#2e2e2e] text-[#d4d4d4]'
+                        }`}
                       >
-                        <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                         <span>{q}</span>
                       </div>
                     ))}
@@ -1933,7 +2149,7 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
                     ]);
                     alert('Mikah Walters has been refreshed with the latest authentic founder directives.');
                   }}
-                  className="w-full py-1.5 px-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full py-2 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   <span>Sync Latest Mikah Personality Prompt</span>
@@ -1943,7 +2159,9 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
 
             <button
               onClick={() => setIsPersonaDrawerOpen(false)}
-              className="w-full py-2 rounded-lg bg-[#282828] hover:bg-[#323232] text-xs font-semibold text-white border border-[#383838] transition cursor-pointer"
+              className={`w-full py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer border ${
+                isLight ? 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800' : 'bg-[#282828] hover:bg-[#323232] text-white border-[#383838]'
+              }`}
             >
               Close Drawer
             </button>
