@@ -120,20 +120,17 @@ export const PersonaChatView: React.FC = () => {
   // Global Vercel Environment API Key support for shared access
   const envGroqKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY) || '';
 
-  // 1. Core State: Pre-loaded with Mikah Walters & custom personas
+  // 1. Core State: Pre-loaded with latest Mikah Walters & custom personas
   const [personas, setPersonas] = useState<Persona[]>(() => {
     try {
       const saved = localStorage.getItem('aeethod_custom_personas');
       if (saved) {
         const parsed: Persona[] = JSON.parse(saved);
-        const validCustom = parsed.filter(
-          (p) => p && p.id && !LEGACY_PERSONA_IDS.has(p.id)
+        // Exclude legacy personas and stale Mikah so latest code prompt always takes precedence
+        const customOnly = parsed.filter(
+          (p) => p && p.id && !LEGACY_PERSONA_IDS.has(p.id) && p.id !== MIKAH_PERSONA.id
         );
-        const hasMikah = validCustom.some((p) => p.id === MIKAH_PERSONA.id);
-        if (!hasMikah) {
-          return [MIKAH_PERSONA, ...validCustom];
-        }
-        return validCustom;
+        return [MIKAH_PERSONA, ...customOnly];
       }
     } catch (e) {
       console.error('Error loading custom personas', e);
@@ -482,8 +479,8 @@ export const PersonaChatView: React.FC = () => {
         },
         body: JSON.stringify({
           model: modelToUse,
-          temperature: config.temperature ?? 0.7,
-          max_tokens: config.maxTokens ?? 1024,
+          temperature: persona.temperature ?? config.temperature ?? 0.65,
+          max_tokens: persona.id === MIKAH_PERSONA.id ? Math.min(config.maxTokens ?? 1024, 300) : (config.maxTokens ?? 1024),
           stream: true,
           messages: [
             { role: 'system', content: persona.systemPrompt },
@@ -557,8 +554,8 @@ export const PersonaChatView: React.FC = () => {
       },
       body: JSON.stringify({
         model: modelToUse,
-        temperature: config.temperature ?? 0.7,
-        max_tokens: config.maxTokens ?? 1024,
+        temperature: persona.temperature ?? config.temperature ?? 0.65,
+        max_tokens: persona.id === MIKAH_PERSONA.id ? Math.min(config.maxTokens ?? 1024, 300) : (config.maxTokens ?? 1024),
         stream: true,
         messages: [
           { role: 'system', content: persona.systemPrompt },
@@ -1909,6 +1906,24 @@ Please click **"Auto-Detect Working Model"** in the top bar to verify your Groq 
                     ))}
                   </div>
                 </div>
+              )}
+
+              {/* Sync / Refresh Mikah button */}
+              {activePersona.id === MIKAH_PERSONA.id && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPersonas((prev) => [
+                      MIKAH_PERSONA,
+                      ...prev.filter((p) => p.id !== MIKAH_PERSONA.id),
+                    ]);
+                    alert('Mikah Walters has been refreshed with the latest authentic founder directives.');
+                  }}
+                  className="w-full py-1.5 px-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Sync Latest Mikah Personality Prompt</span>
+                </button>
               )}
             </div>
 
