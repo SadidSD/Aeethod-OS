@@ -30,6 +30,7 @@ import { CardKnowledgeHubView } from './views/CardKnowledgeHubView';
 import { CardAnatomyView } from './views/CardAnatomyView';
 import { UniversalCatalogView } from './views/UniversalCatalogView';
 import { PersonaChatView } from './views/PersonaChatView';
+import { CardGeckoView } from './views/CardGeckoView';
 
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 
@@ -223,6 +224,13 @@ export const App: React.FC = () => {
       case 'simulator':
       case 'chat-session':
         return <PersonaChatView />;
+
+      case 'market-tracker':
+      case 'gecko':
+      case 'pokegecko':
+      case 'card-gecko':
+      case 'market-terminal':
+        return <CardGeckoView />;
 
       case 'metrics':
         return <SaaSMetricsView />;

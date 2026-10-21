@@ -30,6 +30,7 @@ import {
   Database,
   Bot,
   MessageSquare,
+  TrendingUp,
 } from 'lucide-react';
 
 
@@ -156,6 +157,14 @@ export const Sidebar: React.FC = () => {
             title="Persona Chat Studio & Simulator"
           >
             <Bot className="w-4 h-4 text-purple-400" />
+          </a>
+
+          <a
+            href="#/market-tracker"
+            className="w-8 h-8 rounded-md hover:bg-[#2c2c2c] flex items-center justify-center text-[#9b9b9b] hover:text-white transition"
+            title="PokéGecko Market Terminal"
+          >
+            <TrendingUp className="w-4 h-4 text-emerald-400" />
           </a>
 
           <a
@@ -503,6 +512,19 @@ export const Sidebar: React.FC = () => {
 
             {databasesOpen && (
               <div className="space-y-0.5 pl-2 pt-0.5 border-l border-[#2e2e2e] ml-2.5">
+                <a
+                  href="#/market-tracker"
+                  className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs transition ${
+                    currentPath === 'market-tracker' || currentPath === 'gecko' || currentPath === 'pokegecko' || currentPath === 'market-terminal'
+                      ? 'bg-emerald-600/20 text-emerald-300 font-medium border border-emerald-500/30'
+                      : 'text-[#9b9b9b] hover:text-white hover:bg-[#282828]'
+                  }`}
+                >
+                  <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="font-semibold text-white">PokéGecko Terminal</span>
+                  <span className="ml-auto text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded-full font-mono">LIVE</span>
+                </a>
+
                 <a
                   href="#/persona-chat"
                   className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs transition ${
