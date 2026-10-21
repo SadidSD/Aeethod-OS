@@ -12,3 +12,5 @@ data/pokemon-tcg-data/
 data/tcgdex-cards-database/
 data/tcgplayer_cache/
 data/backups/
+
+.vercel
