@@ -31,6 +31,8 @@ export const CommandPalette: React.FC = () => {
     const q = query.toLowerCase();
 
     const staticPages = [
+      { id: 'persona-chat', name: 'Persona Chat Studio (Custom Personas & API Simulation)', path: '/persona-chat', category: 'AI & Simulation', emoji: '🤖' },
+      { id: 'catalog', name: 'Universal TCG Catalog (Pokellector Series)', path: '/catalog', category: 'Catalog & Inventory', emoji: '🎴' },
       { id: 'economics', name: 'TCG Microeconomics & Competitors Hub', path: '/topic/economics', category: 'Economics & Industry', emoji: '📈' },
       { id: 'game-theory', name: 'Game Theory War Room (Payoff Matrices & Battles)', path: '/game-theory', category: 'Strategy & Defense', emoji: '♟️' },
       { id: 'competitors', name: 'Competitor Matrix (26 Providers Analyzed)', path: '/competitors', category: 'Intelligence', emoji: '⚔️' },
@@ -83,6 +85,16 @@ export const CommandPalette: React.FC = () => {
                 Quick Jumps
               </span>
               <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    navigate('/persona-chat');
+                    setPaletteOpen(false);
+                  }}
+                  className="flex items-center gap-2 p-2 rounded-lg bg-ink-800 hover:bg-ink-700 text-slate-200 transition text-left border border-purple-500/30"
+                >
+                  <span className="text-sm">🤖</span>
+                  <span className="font-medium text-purple-300">Persona Chat Studio</span>
+                </button>
                 <button
                   onClick={() => {
                     navigate('/home');

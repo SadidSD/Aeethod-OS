@@ -29,6 +29,7 @@ import { ProductDetailView } from './views/ProductDetailView';
 import { CardKnowledgeHubView } from './views/CardKnowledgeHubView';
 import { CardAnatomyView } from './views/CardAnatomyView';
 import { UniversalCatalogView } from './views/UniversalCatalogView';
+import { PersonaChatView } from './views/PersonaChatView';
 
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 
@@ -214,6 +215,14 @@ export const App: React.FC = () => {
       case 'card-anatomy':
       case 'anatomy':
         return <CardAnatomyView />;
+
+      case 'chat':
+      case 'persona-chat':
+      case 'persona':
+      case 'personas':
+      case 'simulator':
+      case 'chat-session':
+        return <PersonaChatView />;
 
       case 'metrics':
         return <SaaSMetricsView />;
