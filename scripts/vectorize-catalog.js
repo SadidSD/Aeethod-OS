@@ -25,28 +25,37 @@ async function main() {
   const startTime = Date.now();
   let sessionVariants = 0;
   let sessionImages = 0;
+  let failedImagesCount = 0;
   const BATCH_SIZE = 50;
 
-  console.log('\n3. Starting batch streaming pipeline...\n');
+  // Keyset cursor pagination by UUID
+  let lastSeenId = '00000000-0000-0000-0000-000000000000';
+
+  console.log('\n3. Starting keyset streaming pipeline...\n');
 
   while (true) {
     const batchT0 = Date.now();
 
-    // Fetch next batch of unvectorized variants
+    // Fetch next batch using keyset pagination (v.id > lastSeenId)
     const { rows } = await pool.query(`
       SELECT v.id AS variant_id, v.image_front_url
       FROM card_variants v
       LEFT JOIN card_fingerprints f ON v.id = f.variant_id
-      WHERE f.id IS NULL 
+      WHERE v.id > $1 
+        AND f.id IS NULL 
         AND v.image_front_url IS NOT NULL 
         AND v.image_front_url != ''
-      LIMIT $1
-    `, [BATCH_SIZE]);
+      ORDER BY v.id ASC
+      LIMIT $2
+    `, [lastSeenId, BATCH_SIZE]);
 
     if (!rows || rows.length === 0) {
-      console.log('\n✅ No more unvectorized variants found! All cards complete.');
+      console.log('\n✅ Reached end of catalog! Keyset streaming complete.');
       break;
     }
+
+    // Always advance the keyset cursor forward so we NEVER get stuck on 404s
+    lastSeenId = rows[rows.length - 1].variant_id;
 
     // Deduplicate unique image URLs in this batch
     const urlMap = new Map();
@@ -90,9 +99,9 @@ async function main() {
         }
         sessionImages++;
       } else {
-        // In case an individual image fails (e.g. 404 or network timeout)
+        failedImagesCount++;
         const failedUrl = res.reason?.url || 'unknown';
-        console.warn(`   [Skip] Failed image fetch: ${failedUrl.slice(0, 50)}... (${res.reason?.message || 'Error'})`);
+        console.warn(`   [Skip 404] Remote image missing: ${failedUrl.slice(0, 55)}...`);
       }
     }
 
@@ -123,12 +132,15 @@ async function main() {
       `[${pct}%] ${totalDone}/${totalTarget} variants | ` +
       `Batch: ${rows.length} vars (${uniqueUrls.length} imgs) in ${batchElapsedMs}ms | ` +
       `Speed: ${speedVariantsPerSec} var/s (${speedImagesPerSec} img/s) | ` +
-      `ETA: ${etaMin} min`
+      `ETA: ${etaMin} min | ` +
+      `Skips: ${failedImagesCount}`
     );
   }
 
   const finalMin = ((Date.now() - startTime) / 60000).toFixed(1);
   console.log(`\n=== CATALOG VECTORIZATION RUN FINISHED IN ${finalMin} MINUTES ===`);
+  console.log(`Total Variants Done: ${totalDone}`);
+  console.log(`Total 404 Images Skipped: ${failedImagesCount}`);
   process.exit(0);
 }
 
